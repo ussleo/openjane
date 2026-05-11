@@ -1,18 +1,21 @@
 """
 OpenJane — Massive.com API client
-Documentación oficial: https://docs.massive.com/api
+Documentación: https://massive.com/docs
+Registro gratuito: https://massive.com (sin tarjeta de crédito)
 
-Tier gratuito: datos con ~15min de retraso, acciones USA, opciones, forex, crypto.
-Sin tarjeta de crédito. Registro en https://massive.com
+Nota sobre el free tier:
+- Disponible: históricos EOD, cierre anterior, detalles de ticker, agrupados diarios
+- No disponible en free: real-time snapshots, opciones, last trade (requieren plan de pago)
+- Para datos de opciones e IV, usar EODHD + yfinance como alternativa
 """
 
 import os
 import json
 import urllib.request
 import urllib.parse
-from datetime import datetime
+from datetime import datetime, timedelta
 
-MASSIVE_BASE = "https://api.massive.com/v1"
+MASSIVE_BASE = "https://api.massive.com"
 API_KEY = os.environ.get("MASSIVE_API_KEY", "")
 
 
@@ -20,88 +23,142 @@ def _get(endpoint: str, params: dict = None) -> dict:
     if not API_KEY:
         raise RuntimeError(
             "MASSIVE_API_KEY no configurada. "
-            "Copia .env.example como .env y añade tu API key de https://massive.com"
+            "Copia .env.example como .env y añade tu key de https://massive.com"
         )
-    headers = {"Authorization": f"Bearer {API_KEY}", "Accept": "application/json"}
     url = f"{MASSIVE_BASE}{endpoint}"
     if params:
         url += "?" + urllib.parse.urlencode(params)
-    req = urllib.request.Request(url, headers=headers)
+    req = urllib.request.Request(
+        url, headers={"Authorization": f"Bearer {API_KEY}", "Accept": "application/json"}
+    )
     with urllib.request.urlopen(req, timeout=10) as resp:
         return json.loads(resp.read().decode())
 
 
-# ── Cotización en tiempo real (delayed 15min en free tier) ──────────────────
+# ── Cierre anterior (free tier) ─────────────────────────────────────────────
 
-def quote(ticker: str) -> dict:
+def prev_close(ticker: str) -> dict:
     """
-    Retorna precio, bid, ask, volumen y timestamp para un ticker USA.
+    Retorna el cierre, apertura, máximo, mínimo y volumen del día anterior.
+    Es el endpoint más fiable del free tier — siempre disponible.
 
-    Ejemplo de respuesta:
+    Ejemplo de retorno:
     {
         "symbol": "AAPL",
-        "price": 189.45,
-        "bid": 189.44,
-        "ask": 189.46,
-        "spread_pct": 0.011,
-        "volume": 42_381_200,
-        "timestamp": "2024-01-15T16:00:00Z"
+        "close": 213.49,
+        "open": 211.20,
+        "high": 214.08,
+        "low": 210.10,
+        "volume": 48_200_000,
+        "date": "2026-05-08"
     }
     """
-    data = _get(f"/quote/{ticker.upper()}")
-    bid = data.get("bid", 0)
-    ask = data.get("ask", 0)
-    spread_pct = round((ask - bid) / ask * 100, 4) if ask else None
+    data = _get(f"/v2/aggs/ticker/{ticker.upper()}/prev")
+    results = data.get("results", [])
+    if not results:
+        return {"symbol": ticker.upper(), "error": "Sin datos disponibles"}
+    r = results[0]
+    ts = r.get("t", 0)
+    date_str = datetime.utcfromtimestamp(ts / 1000).strftime("%Y-%m-%d") if ts else "N/A"
     return {
-        "symbol": data.get("symbol"),
-        "price": data.get("last") or data.get("price"),
-        "bid": bid,
-        "ask": ask,
-        "spread_pct": spread_pct,
-        "volume": data.get("volume"),
-        "timestamp": data.get("timestamp") or datetime.utcnow().isoformat() + "Z",
+        "symbol": ticker.upper(),
+        "close": r.get("c"),
+        "open": r.get("o"),
+        "high": r.get("h"),
+        "low": r.get("l"),
+        "volume": int(r.get("v", 0)),
+        "vwap": r.get("vw"),
+        "date": date_str,
+        "source": "Massive.com (free tier — datos EOD)",
     }
 
 
-# ── Spread bid-ask ──────────────────────────────────────────────────────────
+# ── Históricos OHLCV ────────────────────────────────────────────────────────
 
-def spread_analysis(ticker: str) -> dict:
+def historical_bars(ticker: str, days: int = 20, timespan: str = "day") -> list[dict]:
     """
-    Análisis de microestructura: spread relativo y clasificación de liquidez.
-    Usado por la skill microstructure-analysis.
+    Barras históricas OHLCV para los últimos N días.
+    timespan: 'day', 'week', 'month'
     """
-    q = quote(ticker)
-    spread = q["spread_pct"]
+    date_to = datetime.utcnow().strftime("%Y-%m-%d")
+    date_from = (datetime.utcnow() - timedelta(days=days + 10)).strftime("%Y-%m-%d")
+    data = _get(
+        f"/v2/aggs/ticker/{ticker.upper()}/range/1/{timespan}/{date_from}/{date_to}",
+        {"adjusted": "true", "sort": "asc", "limit": days},
+    )
+    results = data.get("results", [])
+    bars = []
+    for r in results:
+        ts = r.get("t", 0)
+        bars.append({
+            "date": datetime.utcfromtimestamp(ts / 1000).strftime("%Y-%m-%d"),
+            "open": r.get("o"),
+            "high": r.get("h"),
+            "low": r.get("l"),
+            "close": r.get("c"),
+            "volume": int(r.get("v", 0)),
+            "vwap": r.get("vw"),
+        })
+    return bars
 
-    if spread is None:
-        liquidity_label = "Sin datos"
-    elif spread < 0.05:
-        liquidity_label = "Alta — institucional"
-    elif spread < 0.15:
-        liquidity_label = "Normal"
-    elif spread < 0.5:
-        liquidity_label = "Reducida"
+
+# ── Spread bid-ask estimado (free tier) ─────────────────────────────────────
+
+def spread_estimate(ticker: str) -> dict:
+    """
+    Estima spread bid-ask usando el rango intraday del día anterior (high - low).
+    En free tier no hay bid/ask en tiempo real — esto es una aproximación
+    basada en la volatilidad intraday.
+
+    Interpretación:
+    - spread_pct < 0.5%: activo líquido
+    - spread_pct 0.5–2%: liquidez moderada
+    - spread_pct > 2%: activo ilíquido o jornada volátil
+    """
+    pc = prev_close(ticker)
+    if "error" in pc:
+        return pc
+
+    high = pc.get("high", 0)
+    low = pc.get("low", 0)
+    close = pc.get("close", 0)
+
+    intraday_range_pct = round((high - low) / close * 100, 4) if close else None
+
+    if intraday_range_pct is None:
+        liquidity = "Sin datos"
+    elif intraday_range_pct < 0.5:
+        liquidity = "Alta — institucional"
+    elif intraday_range_pct < 2.0:
+        liquidity = "Normal"
+    elif intraday_range_pct < 5.0:
+        liquidity = "Reducida"
     else:
-        liquidity_label = "Ilíquida / Estrés"
+        liquidity = "Ilíquida / Estrés"
 
     return {
-        **q,
-        "liquidity_label": liquidity_label,
-        "transaction_cost_pct": round((spread or 0) * 2, 4),
+        **pc,
+        "intraday_range_pct": intraday_range_pct,
+        "liquidity_label": liquidity,
+        "note": "Spread estimado via rango intraday (free tier — no hay bid/ask en tiempo real)",
     }
 
 
-# ── Volumen y ADV ───────────────────────────────────────────────────────────
+# ── Perfil de volumen ────────────────────────────────────────────────────────
 
 def volume_profile(ticker: str, days: int = 20) -> dict:
     """
-    Volumen de hoy vs promedio de los últimos N días (ADV).
-    Usado para calcular VPIN conceptual y señal de flujo.
+    Volumen del día anterior vs ADV de los últimos N días.
+    Señal de flujo basada en volumen relativo.
     """
-    data = _get(f"/volume/{ticker.upper()}", {"days": days})
-    adv = data.get("avg_daily_volume")
-    today_vol = data.get("today_volume") or data.get("volume")
-    ratio = round(today_vol / adv, 2) if adv and today_vol else None
+    bars = historical_bars(ticker, days=days)
+    if not bars:
+        return {"symbol": ticker.upper(), "error": "Sin datos de volumen"}
+
+    volumes = [b["volume"] for b in bars if b["volume"]]
+    adv = int(sum(volumes) / len(volumes)) if volumes else 0
+    today_vol = volumes[-1] if volumes else 0
+    ratio = round(today_vol / adv, 2) if adv else None
 
     flow_signal = "Neutral"
     if ratio:
@@ -110,66 +167,43 @@ def volume_profile(ticker: str, days: int = 20) -> dict:
         elif ratio > 1.5:
             flow_signal = "Volumen alto — flujo direccional probable"
         elif ratio < 0.5:
-            flow_signal = "Volumen bajo — mercado ilíquido"
+            flow_signal = "Volumen bajo — mercado inactivo"
 
     return {
         "symbol": ticker.upper(),
         "adv_days": days,
         "adv": adv,
-        "today_volume": today_vol,
+        "last_session_volume": today_vol,
         "volume_ratio": ratio,
         "flow_signal": flow_signal,
+        "date": bars[-1]["date"] if bars else "N/A",
+        "source": "Massive.com (free tier)",
     }
 
 
-# ── Opciones: volatilidad implícita ────────────────────────────────────────
+# ── Detalles del ticker ──────────────────────────────────────────────────────
 
-def options_iv(ticker: str, expiry: str = None) -> dict:
+def ticker_details(ticker: str) -> dict:
     """
-    Volatilidad implícita at-the-money y skew básico.
-    expiry: formato YYYY-MM-DD. Si None, usa el vencimiento más próximo.
-    Usado por la skill vol-surface.
+    Nombre, sector, mercado, descripción, capitalización estimada.
+    Endpoint /v3/reference/tickers — disponible en free tier.
     """
-    params = {}
-    if expiry:
-        params["expiry"] = expiry
-    data = _get(f"/options/iv/{ticker.upper()}", params)
+    data = _get(f"/v3/reference/tickers/{ticker.upper()}")
+    r = data.get("results", {})
     return {
         "symbol": ticker.upper(),
-        "expiry": data.get("expiry"),
-        "iv_atm": data.get("iv_atm"),           # IV call ATM
-        "iv_25d_call": data.get("iv_25d_call"),  # 25-delta call
-        "iv_25d_put": data.get("iv_25d_put"),    # 25-delta put (skew)
-        "put_call_ratio": data.get("put_call_ratio"),
-        "timestamp": data.get("timestamp") or datetime.utcnow().isoformat() + "Z",
-    }
-
-
-# ── VIX y régimen de volatilidad ────────────────────────────────────────────
-
-def vix_current() -> dict:
-    """
-    Nivel actual del VIX y clasificación de régimen de volatilidad.
-    Usado por regime-classification y vol-surface.
-    """
-    data = _get("/quote/VIX")
-    vix = data.get("last") or data.get("price", 0)
-
-    if vix < 15:
-        regime = "Calma — estrategias de venta de vol favorecidas"
-    elif vix < 20:
-        regime = "Normal"
-    elif vix < 30:
-        regime = "Volatilidad elevada — reducir exposición"
-    elif vix < 40:
-        regime = "Crisis — preservar capital"
-    else:
-        regime = "Pánico extremo — históricamente señal de agotamiento"
-
-    return {
-        "vix": vix,
-        "vol_regime": regime,
-        "timestamp": data.get("timestamp") or datetime.utcnow().isoformat() + "Z",
+        "name": r.get("name"),
+        "market": r.get("market"),
+        "locale": r.get("locale"),
+        "primary_exchange": r.get("primary_exchange"),
+        "type": r.get("type"),
+        "active": r.get("active"),
+        "currency": r.get("currency_name"),
+        "description": (r.get("description") or "")[:300],
+        "homepage": r.get("homepage_url"),
+        "employees": r.get("total_employees"),
+        "list_date": r.get("list_date"),
+        "source": "Massive.com (free tier)",
     }
 
 
@@ -178,20 +212,15 @@ def vix_current() -> dict:
 if __name__ == "__main__":
     import sys
 
-    if len(sys.argv) < 2:
-        print("Uso: python massive_client.py <TICKER>")
-        print("Ejemplo: python massive_client.py AAPL")
-        sys.exit(1)
+    ticker = sys.argv[1].upper() if len(sys.argv) > 1 else "AAPL"
+    print(f"\n── Prev Close: {ticker} ─────────────────")
+    print(json.dumps(prev_close(ticker), indent=2))
 
-    ticker = sys.argv[1].upper()
-    print(f"\n── Quote: {ticker} ──────────────────────")
-    print(json.dumps(quote(ticker), indent=2))
+    print(f"\n── Spread Estimate: {ticker} ───────────")
+    print(json.dumps(spread_estimate(ticker), indent=2))
 
-    print(f"\n── Spread Analysis: {ticker} ──────────")
-    print(json.dumps(spread_analysis(ticker), indent=2))
-
-    print(f"\n── Volume Profile: {ticker} (20d) ─────")
+    print(f"\n── Volume Profile: {ticker} (20d) ──────")
     print(json.dumps(volume_profile(ticker), indent=2))
 
-    print(f"\n── VIX ─────────────────────────────────")
-    print(json.dumps(vix_current(), indent=2))
+    print(f"\n── Ticker Details: {ticker} ────────────")
+    print(json.dumps(ticker_details(ticker), indent=2))

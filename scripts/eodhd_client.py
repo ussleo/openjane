@@ -44,9 +44,11 @@ def historical_prices(ticker: str, exchange: str = "US", days: int = 252) -> lis
 
     Retorna lista de dicts: [{date, open, high, low, close, volume, adjusted_close}, ...]
     """
-    date_from = (datetime.utcnow() - timedelta(days=days)).strftime("%Y-%m-%d")
+    # Multiplicar por 1.5 para compensar fines de semana y feriados
+    date_from = (datetime.utcnow() - timedelta(days=int(days * 1.5))).strftime("%Y-%m-%d")
     symbol = f"{ticker.upper()}.{exchange}"
-    data = _get(f"/eod/{symbol}", {"from": date_from, "order": "a"})
+    # Pedimos 1.5x los días para compensar fines de semana y feriados
+    data = _get(f"/eod/{symbol}", {"from": date_from, "order": "a", "limit": days})
     return data if isinstance(data, list) else []
 
 
@@ -94,7 +96,8 @@ def historical_volatility(ticker: str, exchange: str = "US", window: int = 20) -
     """
     import math
 
-    prices = historical_prices(ticker, exchange, days=window + 10)
+    # Buffer generoso: window * 2 para garantizar suficientes días hábiles
+    prices = historical_prices(ticker, exchange, days=window * 2)
     if len(prices) < window + 1:
         return {"error": "Datos insuficientes"}
 
@@ -123,7 +126,7 @@ def yield_curve_spread() -> dict:
     Curva invertida (spread < 0) = señal histórica de recesión futura.
     """
     us10y = _get("/eod/US10Y.INDX", {"period": "d", "order": "d", "limit": 1})
-    us2y = _get("/eod/US02Y.INDX", {"period": "d", "order": "d", "limit": 1})
+    us2y = _get("/eod/US2Y.INDX", {"period": "d", "order": "d", "limit": 1})
 
     rate10 = float(us10y[0]["close"]) if us10y else None
     rate2 = float(us2y[0]["close"]) if us2y else None
