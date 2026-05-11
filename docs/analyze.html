@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpenJane · Live Analysis</title>
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --surface: #111;
+      --border: #222;
+      --green: #00ff88;
+      --yellow: #ffd700;
+      --red: #ff4466;
+      --blue: #4af;
+      --muted: #666;
+      --text: #ccc;
+      --font: 'Courier New', monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 13px;
+      min-height: 100vh;
+    }
+
+    /* ── nav ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--border);
+      background: #080808;
+    }
+    .nav-brand { color: var(--green); font-size: 15px; font-weight: bold; text-decoration: none; }
+    .nav-links a { color: var(--muted); text-decoration: none; margin-left: 20px; font-size: 12px; }
+    .nav-links a:hover { color: var(--green); }
+
+    /* ── layout ── */
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 20px;
+    }
+
+    h1 { color: var(--green); font-size: 18px; margin-bottom: 4px; }
+    .subtitle { color: var(--muted); font-size: 12px; margin-bottom: 32px; }
+
+    /* ── cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .card-title {
+      color: var(--yellow);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+    }
+
+    /* ── form ── */
+    .field { margin-bottom: 12px; }
+    label { display: block; color: var(--muted); font-size: 11px; margin-bottom: 4px; }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      background: #0d0d0d;
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 12px;
+      padding: 7px 10px;
+      border-radius: 3px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input:focus { border-color: var(--green); }
+
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 520px) { .row2 { grid-template-columns: 1fr; } }
+
+    /* ── tabs ── */
+    .tabs { display: flex; gap: 2px; margin-bottom: 20px; }
+    .tab {
+      flex: 1;
+      padding: 8px 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: var(--font);
+      font-size: 11px;
+      cursor: pointer;
+      text-align: center;
+      border-radius: 3px;
+      transition: all .15s;
+    }
+    .tab:hover { color: var(--text); border-color: #444; }
+    .tab.active { background: #1a2a1a; border-color: var(--green); color: var(--green); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── buttons ── */
+    .btn {
+      padding: 8px 20px;
+      border: 1px solid;
+      font-family: var(--font);
+      font-size: 12px;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: all .15s;
+    }
+    .btn-green { background: transparent; border-color: var(--green); color: var(--green); }
+    .btn-green:hover { background: var(--green); color: #000; }
+    .btn-green:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ── terminal output ── */
+    .terminal {
+      background: #050505;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 16px;
+      min-height: 120px;
+      font-size: 12px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-x: auto;
+    }
+    .terminal .prompt { color: var(--green); }
+    .terminal .info   { color: var(--blue); }
+    .terminal .warn   { color: var(--yellow); }
+    .terminal .error  { color: var(--red); }
+    .terminal .muted  { color: var(--muted); }
+    .terminal .val    { color: #fff; }
+    .terminal .good   { color: var(--green); }
+
+    /* ── result grid ── */
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .kv {
+      background: #0a0a0a;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 8px 10px;
+    }
+    .kv-label { color: var(--muted); font-size: 10px; text-transform: uppercase; margin-bottom: 2px; }
+    .kv-value { color: #fff; font-size: 13px; }
+    .kv-value.green { color: var(--green); }
+    .kv-value.yellow { color: var(--yellow); }
+    .kv-value.red { color: var(--red); }
+
+    /* ── signal badge ── */
+    .signal-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 2px;
+      font-size: 13px;
+      font-weight: bold;
+      margin-top: 12px;
+    }
+    .signal-LONG  { background: #0a2a1a; border: 1px solid var(--green); color: var(--green); }
+    .signal-SHORT { background: #2a0a0a; border: 1px solid var(--red);   color: var(--red); }
+    .signal-WATCH { background: #2a2a00; border: 1px solid var(--yellow); color: var(--yellow); }
+    .signal-NEUTRAL { background: #1a1a1a; border: 1px solid #555; color: #999; }
+
+    /* ── spinner ── */
+    .spinner { display: none; }
+    .spinner.active {
+      display: inline-block;
+      width: 10px; height: 10px;
+      border: 2px solid var(--border);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      vertical-align: middle;
+      margin-left: 8px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── disclaimer ── */
+    .disclaimer {
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.6;
+      margin-top: 32px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="/">[ OpenJane ]</a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/api-keys">API Keys</a>
+    <a href="/glossary">Glossary</a>
+  </div>
+</nav>
+
+<div class="container">
+  <h1>&gt; Live Analysis</h1>
+  <p class="subtitle">Enter your API keys and a ticker to run a real-time quant analysis. Keys never leave your browser — sent directly to the analysis server over HTTPS.</p>
+
+  <!-- API Keys card -->
+  <div class="card">
+    <div class="card-title">API Keys</div>
+    <div class="row2">
+      <div class="field">
+        <label>Massive.com API Key</label>
+        <input type="password" id="massiveKey" placeholder="pk_live_…" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label>EODHD API Key</label>
+        <input type="password" id="eodhdKey" placeholder="xxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
+      </div>
+    </div>
+    <p style="color:var(--muted);font-size:10px;margin-top:4px">Keys are used only for this request and never stored. <a href="/api-keys" style="color:var(--blue)">Get free keys →</a></p>
+  </div>
+
+  <!-- Analysis tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('regime')">Market Regime</button>
+    <button class="tab" onclick="switchTab('micro')">Microstructure</button>
+    <button class="tab" onclick="switchTab('statarb')">Stat-Arb</button>
+  </div>
+
+  <!-- Regime -->
+  <div id="tab-regime" class="tab-panel active">
+    <div class="card">
+      <div class="card-title">Market Regime — SPY</div>
+      <p style="color:var(--muted);font-size:11px;margin-bottom:14px">Scores the current macro environment using SPY MA50/MA200, historical volatility, and the US yield curve spread.</p>
+      <button class="btn btn-green" id="btn-regime" onclick="runRegime()">Run Analysis <span class="spinner" id="sp-regime"></span></button>
+    </div>
+    <div id="out-regime"></div>
+  </div>
+
+  <!-- Microstructure -->
+  <div id="tab-micro" class="tab-panel">
+    <div class="card">
+      <div class="card-title">Microstructure</div>
+      <div class="field" style="max-width:200px">
+        <label>Ticker</label>
+        <input type="text" id="microTicker" placeholder="ICE" maxlength="8" style="text-transform:uppercase" />
+      </div>
+      <button class="btn btn-green" id="btn-micro" onclick="runMicro()">Run Analysis <span class="spinner" id="sp-micro"></span></button>
+    </div>
+    <div id="out-micro"></div>
+  </div>
+
+  <!-- Stat-Arb -->
+  <div id="tab-statarb" class="tab-panel">
+    <div class="card">
+      <div class="card-title">Statistical Arbitrage</div>
+      <div class="row2" style="max-width:400px">
+        <div class="field">
+          <label>Ticker A (long)</label>
+          <input type="text" id="tickerA" placeholder="ICE" maxlength="8" style="text-transform:uppercase" />
+        </div>
+        <div class="field">
+          <label>Ticker B (short)</label>
+          <input type="text" id="tickerB" placeholder="CBOE" maxlength="8" style="text-transform:uppercase" />
+        </div>
+      </div>
+      <button class="btn btn-green" id="btn-statarb" onclick="runStatarb()">Run Analysis <span class="spinner" id="sp-statarb"></span></button>
+    </div>
+    <div id="out-statarb"></div>
+  </div>
+
+  <p class="disclaimer">
+    OpenJane is an educational tool. Data is End-of-Day (not real-time). This is not financial advice.<br>
+    All analysis is provided for informational purposes only. Past performance is not indicative of future results.<br>
+    The user is solely responsible for their own investment decisions.
+  </p>
+</div>
+
+<script>
+  const API = '';  // same origin (Fly.io serves both static and API)
+
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      const names = ['regime','micro','statarb'];
+      t.classList.toggle('active', names[i] === name);
+    });
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+  }
+
+  function keys() {
+    return {
+      massive_key: document.getElementById('massiveKey').value.trim(),
+      eodhd_key:   document.getElementById('eodhdKey').value.trim(),
+    };
+  }
+
+  function validate() {
+    const k = keys();
+    if (!k.massive_key || !k.eodhd_key) {
+      alert('Please enter both API keys first.');
+      return false;
+    }
+    return true;
+  }
+
+  function setLoading(id, on) {
+    document.getElementById('btn-' + id).disabled = on;
+    document.getElementById('sp-' + id).classList.toggle('active', on);
+  }
+
+  async function post(endpoint, body) {
+    const r = await fetch(API + endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({ detail: r.statusText }));
+      throw new Error(err.detail || r.statusText);
+    }
+    return r.json();
+  }
+
+  function kv(label, value, cls='') {
+    return `<div class="kv"><div class="kv-label">${label}</div><div class="kv-value ${cls}">${value}</div></div>`;
+  }
+
+  function signalClass(sig) {
+    if (!sig) return 'NEUTRAL';
+    if (sig.includes('LARGA') || sig.includes('LONG')) return 'LONG';
+    if (sig.includes('CORTA') || sig.includes('SHORT')) return 'SHORT';
+    if (sig.includes('MONITOR')) return 'WATCH';
+    return 'NEUTRAL';
+  }
+
+  // ── Regime ──────────────────────────────────────────────────────────────────
+  async function runRegime() {
+    if (!validate()) return;
+    setLoading('regime', true);
+    const el = document.getElementById('out-regime');
+    el.innerHTML = '<div class="terminal"><span class="prompt">$</span> Fetching market data<span class="info">…</span></div>';
+    try {
+      const d = await post('/api/regime', keys());
+      const scoreColor = d.score >= 3 ? 'green' : d.score === 2 ? 'yellow' : 'red';
+      const regimeLabel = d.regime || '—';
+
+      el.innerHTML = `
+        <div class="card">
+          <div class="card-title">Market Regime · SPY</div>
+          <div class="result-grid">
+            ${kv('Last Close',   '$' + d.spy?.last_close?.toFixed(2))}
+            ${kv('MA 50',        '$' + d.spy?.ma50?.toFixed(2))}
+            ${kv('MA 200',       '$' + d.spy?.ma200?.toFixed(2))}
+            ${kv('Trend',        d.spy?.trend?.toUpperCase(), d.spy?.trend === 'alcista' ? 'green' : 'red')}
+            ${kv('HV 20d',       d.hv_20d?.hv_annual_pct + '% ann.')}
+            ${kv('10Y Yield',    d.yield_curve?.us10y + '%')}
+            ${kv('2Y Yield',     d.yield_curve?.us2y + '%')}
+            ${kv('10Y–2Y Spread', (d.yield_curve?.spread_10y_2y > 0 ? '+' : '') + d.yield_curve?.spread_10y_2y?.toFixed(3) + '%',
+              d.yield_curve?.spread_10y_2y > 0 ? 'green' : 'red')}
+            ${kv('Score',        '+' + d.score + ' / +4', scoreColor)}
+          </div>
+          <div class="signal-badge signal-${scoreColor === 'green' ? 'LONG' : scoreColor === 'red' ? 'SHORT' : 'WATCH'}">${regimeLabel}</div>
+        </div>`;
+    } catch(e) {
+      el.innerHTML = `<div class="terminal"><span class="error">Error: ${e.message}</span></div>`;
+    }
+    setLoading('regime', false);
+  }
+
+  // ── Microstructure ───────────────────────────────────────────────────────────
+  async function runMicro() {
+    if (!validate()) return;
+    const ticker = document.getElementById('microTicker').value.trim().toUpperCase() || 'ICE';
+    setLoading('micro', true);
+    const el = document.getElementById('out-micro');
+    el.innerHTML = `<div class="terminal"><span class="prompt">$</span> Fetching data for <span class="info">${ticker}</span>…</div>`;
+    try {
+      const d = await post('/api/microstructure', { ...keys(), ticker });
+      const liqColor = d.liquidity === 'ALTA' ? 'green' : d.liquidity === 'NORMAL' ? 'yellow' : 'red';
+
+      el.innerHTML = `
+        <div class="card">
+          <div class="card-title">Microstructure · ${d.ticker}</div>
+          <div class="result-grid">
+            ${kv('Close',        '$' + d.price?.close?.toFixed(2))}
+            ${kv('Open',         '$' + d.price?.open?.toFixed(2))}
+            ${kv('High',         '$' + d.price?.high?.toFixed(2))}
+            ${kv('Low',          '$' + d.price?.low?.toFixed(2))}
+            ${kv('VWAP',         '$' + d.price?.vwap?.toFixed(2))}
+            ${kv('Intraday Range', d.intraday_range_pct + '%')}
+            ${kv('Liquidity',    d.liquidity, liqColor)}
+            ${kv('Trans. Cost',  '~' + d.transaction_cost_pct + '%')}
+            ${kv('ADV 20d',      d.volume?.adv?.toLocaleString())}
+            ${kv('Volume',       d.volume?.last_session_volume?.toLocaleString())}
+            ${kv('Vol / ADV',    d.volume?.volume_ratio + 'x', parseFloat(d.volume?.volume_ratio) > 1.5 ? 'yellow' : 'green')}
+            ${kv('Flow Signal',  d.volume?.flow_signal)}
+            ${kv('MA 50',        '$' + d.trend?.ma50?.toFixed(2))}
+            ${kv('MA 200',       '$' + d.trend?.ma200?.toFixed(2))}
+            ${kv('Trend',        d.trend?.trend?.toUpperCase(), d.trend?.trend === 'alcista' ? 'green' : 'red')}
+            ${kv('HV 20d',       d.hv_20d?.hv_annual_pct + '% ann.')}
+          </div>
+        </div>`;
+    } catch(e) {
+      el.innerHTML = `<div class="terminal"><span class="error">Error: ${e.message}</span></div>`;
+    }
+    setLoading('micro', false);
+  }
+
+  // ── Stat-Arb ─────────────────────────────────────────────────────────────────
+  async function runStatarb() {
+    if (!validate()) return;
+    const ta = document.getElementById('tickerA').value.trim().toUpperCase() || 'ICE';
+    const tb = document.getElementById('tickerB').value.trim().toUpperCase() || 'CBOE';
+    setLoading('statarb', true);
+    const el = document.getElementById('out-statarb');
+    el.innerHTML = `<div class="terminal"><span class="prompt">$</span> Computing pair <span class="info">${ta}/${tb}</span>…</div>`;
+    try {
+      const d = await post('/api/statarb', { ...keys(), ticker_a: ta, ticker_b: tb });
+      const sig = signalClass(d.signal);
+      const corrColor = d.correlation > 0.75 ? 'green' : d.correlation > 0.5 ? 'yellow' : 'red';
+      const zColor    = Math.abs(d.zscore) >= 2 ? (d.zscore < 0 ? 'green' : 'red') : Math.abs(d.zscore) >= 1.5 ? 'yellow' : '';
+
+      el.innerHTML = `
+        <div class="card">
+          <div class="card-title">Stat-Arb · ${d.pair}</div>
+          <div class="result-grid">
+            ${kv('Days',         d.n_days)}
+            ${kv('Correlation',  d.correlation, corrColor)}
+            ${kv('Beta (OLS)',   d.beta)}
+            ${kv('Spread Mean',  '$' + d.spread_mean?.toFixed(2))}
+            ${kv('Spread σ',     '$' + d.spread_std?.toFixed(2))}
+            ${kv('Z-score',      d.zscore, zColor)}
+            ${kv('Half-life',    d.halflife_days ? d.halflife_days + 'd' : 'non-stationary')}
+            ${kv('Entry Long',   'spread < $' + d.entry_long)}
+            ${kv('Entry Short',  'spread > $' + d.entry_short)}
+            ${kv('Exit Target',  'spread = $' + d.exit_target)}
+            ${kv('Stop',         '±$' + d.stop + ' from mean')}
+          </div>
+          <div class="signal-badge signal-${sig}">${d.signal}</div>
+        </div>`;
+    } catch(e) {
+      el.innerHTML = `<div class="terminal"><span class="error">Error: ${e.message}</span></div>`;
+    }
+    setLoading('statarb', false);
+  }
+
+  // uppercase inputs
+  ['microTicker','tickerA','tickerB'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => el.value = el.value.toUpperCase());
+  });
+</script>
+</body>
+</html>

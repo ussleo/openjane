@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: openjane
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: 8000
+    healthCheckPath: /api/health
