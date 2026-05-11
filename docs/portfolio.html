@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teatro de Operaciones · OpenJane</title>
+<style>
+  :root {
+    --bg:     #0a0e1a;
+    --panel:  #111827;
+    --border: #1e2d45;
+    --accent: #00d4ff;
+    --green:  #00ff88;
+    --red:    #ff4757;
+    --yellow: #ffd32a;
+    --muted:  #6b7280;
+    --text:   #e2e8f0;
+    --font:   'JetBrains Mono', 'Courier New', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font);
+         font-size: 0.875rem; min-height: 100vh; }
+
+  /* ── nav ── */
+  nav { display: flex; justify-content: space-between; align-items: center;
+        padding: 0.75rem 2rem; background: var(--panel);
+        border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
+  .nav-brand { font-weight: 700; color: var(--accent); font-size: 1rem; }
+  .nav-brand span { color: var(--muted); font-weight: 400; }
+  .nav-links { display: flex; gap: 1.2rem; align-items: center; }
+  .nav-links a { color: var(--muted); font-size: 0.8rem; text-decoration: none;
+                 transition: color 0.2s; }
+  .nav-links a:hover { color: var(--text); }
+  .nav-links a.active { color: var(--accent); }
+
+  /* ── layout ── */
+  .container { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  /* ── header ── */
+  .page-header { margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; }
+  .page-header .tag { font-size: 0.7rem; color: var(--accent); letter-spacing: 2px;
+                      text-transform: uppercase; margin-bottom: 0.5rem; }
+  .page-header h1 { font-size: 1.8rem; font-weight: 700; color: var(--text); }
+  .page-header p { color: var(--muted); margin-top: 0.5rem; line-height: 1.6; font-size: 0.85rem; }
+
+  /* ── cards ── */
+  .card { background: var(--panel); border: 1px solid var(--border);
+          border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
+  .card-title { font-size: 0.75rem; color: var(--accent); text-transform: uppercase;
+                letter-spacing: 1.5px; margin-bottom: 1rem; }
+
+  /* ── forms ── */
+  label { font-size: 0.75rem; color: var(--muted); display: block; margin-bottom: 0.3rem; }
+  input[type="text"], input[type="number"], input[type="password"] {
+    background: var(--bg); border: 1px solid var(--border); color: var(--text);
+    padding: 0.55rem 0.8rem; border-radius: 4px; font-family: var(--font);
+    font-size: 0.85rem; width: 100%; transition: border-color 0.2s; }
+  input:focus { outline: none; border-color: var(--accent); }
+  input.error { border-color: var(--red); }
+
+  .row { display: flex; gap: 0.75rem; align-items: flex-end; margin-bottom: 0.75rem; }
+  .row .flex1 { flex: 1; }
+  .row .w120 { width: 120px; }
+  .row .w80  { width: 80px; }
+
+  /* ── ticker row ── */
+  .ticker-row { display: grid;
+                grid-template-columns: 100px 1fr 110px 28px;
+                gap: 0.5rem; align-items: end; margin-bottom: 0.5rem; }
+  .ticker-row .ticker-num { color: var(--muted); font-size: 0.75rem;
+                             padding-bottom: 0.6rem; text-align: right; }
+  .ticker-row .remove-btn { background: none; border: 1px solid var(--border);
+                             color: var(--muted); cursor: pointer; border-radius: 4px;
+                             font-size: 0.85rem; padding: 0.45rem 0.4rem;
+                             transition: all 0.2s; }
+  .ticker-row .remove-btn:hover { border-color: var(--red); color: var(--red); }
+
+  /* ── buttons ── */
+  .btn { padding: 0.7rem 1.4rem; border-radius: 6px; font-family: var(--font);
+         font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none;
+         transition: all 0.2s; letter-spacing: 0.5px; }
+  .btn-primary { background: var(--accent); color: var(--bg); }
+  .btn-primary:hover { background: #00b8d9; }
+  .btn-primary:disabled { background: var(--muted); cursor: not-allowed; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border);
+               color: var(--text); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { background: transparent; border: 1px solid var(--red); color: var(--red); }
+  .btn-danger:hover { background: var(--red); color: var(--bg); }
+  .btn-green { background: var(--green); color: var(--bg); }
+  .btn-green:hover { background: #00e07a; }
+
+  .btn-row { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;
+             margin-top: 1rem; }
+
+  /* ── total bar ── */
+  .total-bar { display: flex; justify-content: space-between; align-items: center;
+               background: var(--bg); border: 1px solid var(--border);
+               border-radius: 6px; padding: 0.75rem 1rem; margin: 1rem 0; }
+  .total-bar .label { color: var(--muted); font-size: 0.8rem; }
+  .total-bar .amount { font-size: 1.1rem; font-weight: 700; }
+  .total-bar .amount.ok   { color: var(--green); }
+  .total-bar .amount.over { color: var(--red); }
+  .total-bar .amount.zero { color: var(--muted); }
+
+  /* ── hint ── */
+  .hint { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem;
+          line-height: 1.5; }
+  .hint a { color: var(--accent); }
+
+  /* ── table ── */
+  .results-table { width: 100%; border-collapse: collapse; }
+  .results-table th { text-align: left; font-size: 0.7rem; color: var(--muted);
+                      text-transform: uppercase; letter-spacing: 1px;
+                      padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); }
+  .results-table td { padding: 0.75rem 0.75rem; border-bottom: 1px solid var(--border);
+                      font-size: 0.85rem; }
+  .results-table tr:last-child td { border-bottom: none; }
+  .results-table .ticker-cell { font-weight: 700; color: var(--text); }
+  .results-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .results-table .pos { color: var(--green); }
+  .results-table .neg { color: var(--red); }
+  .results-table .neu { color: var(--muted); }
+  .results-table .total-row td { font-weight: 700; background: var(--bg); }
+
+  /* ── P&L summary ── */
+  .pnl-summary { display: grid; grid-template-columns: repeat(3, 1fr);
+                 gap: 1rem; margin-bottom: 1.5rem; }
+  .pnl-card { background: var(--bg); border: 1px solid var(--border);
+              border-radius: 6px; padding: 1rem; text-align: center; }
+  .pnl-card .pnl-label { font-size: 0.7rem; color: var(--muted);
+                          text-transform: uppercase; letter-spacing: 1px; }
+  .pnl-card .pnl-value { font-size: 1.6rem; font-weight: 700; margin-top: 0.3rem; }
+  .pnl-card.gain .pnl-value { color: var(--green); }
+  .pnl-card.loss .pnl-value { color: var(--red); }
+  .pnl-card.flat .pnl-value { color: var(--muted); }
+
+  /* ── status strip ── */
+  .status-strip { display: flex; align-items: center; gap: 0.75rem;
+                  background: rgba(0,212,255,0.07); border: 1px solid var(--accent);
+                  border-radius: 6px; padding: 0.75rem 1rem; margin-bottom: 1.5rem;
+                  font-size: 0.8rem; color: var(--accent); }
+  .status-strip .dot { width: 8px; height: 8px; background: var(--green);
+                       border-radius: 50%; animation: blink 1.5s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* ── jane comment ── */
+  .jane-comment { background: rgba(0,212,255,0.05); border-left: 3px solid var(--accent);
+                  padding: 1rem 1.25rem; border-radius: 0 6px 6px 0; margin-top: 1.5rem; }
+  .jane-comment .jane-tag { font-size: 0.7rem; color: var(--accent);
+                              text-transform: uppercase; letter-spacing: 1.5px;
+                              margin-bottom: 0.5rem; }
+  .jane-comment p { color: var(--text); line-height: 1.7; font-size: 0.85rem; }
+
+  /* ── warning ── */
+  .warning { background: rgba(255,215,0,0.07); border: 1px solid rgba(255,215,0,0.3);
+             border-radius: 6px; padding: 0.75rem 1rem; font-size: 0.78rem;
+             color: var(--yellow); margin-bottom: 1rem; line-height: 1.5; }
+
+  /* ── spinner ── */
+  .spinner { display: inline-block; width: 16px; height: 16px;
+             border: 2px solid var(--border); border-top-color: var(--accent);
+             border-radius: 50%; animation: spin 0.7s linear infinite;
+             vertical-align: middle; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── error ── */
+  .err-msg { color: var(--red); font-size: 0.8rem; margin-top: 0.5rem; }
+
+  /* ── history log ── */
+  .log { background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+         padding: 1rem; max-height: 200px; overflow-y: auto; }
+  .log-line { font-size: 0.75rem; color: var(--muted); border-bottom: 1px solid var(--border);
+              padding: 0.4rem 0; line-height: 1.4; }
+  .log-line:last-child { border-bottom: none; }
+  .log-line .ts { color: var(--border); margin-right: 0.5rem; }
+  .log-line .pos-tag { color: var(--green); }
+  .log-line .neg-tag { color: var(--red); }
+
+  /* ── responsive ── */
+  @media(max-width:640px){
+    .pnl-summary { grid-template-columns: 1fr; }
+    .ticker-row { grid-template-columns: 80px 1fr 90px 24px; }
+    nav .nav-links a:not(.active) { display: none; }
+  }
+
+  /* ── sections visibility ── */
+  #setupSection   { }
+  #activeSection  { display: none; }
+  #resultsSection { display: none; }
+
+  /* ── add ticker btn ── */
+  #addTickerBtn { background: none; border: 1px dashed var(--border); color: var(--muted);
+                  padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer;
+                  font-family: var(--font); font-size: 0.8rem; transition: all 0.2s; }
+  #addTickerBtn:hover { border-color: var(--accent); color: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="nav-brand">Open<span>Jane</span></div>
+  <div class="nav-links">
+    <a href="index.html">Inicio</a>
+    <a href="paper-trading-edu.html">Educación</a>
+    <a href="portfolio.html" class="active">🎯 Teatro</a>
+    <a href="analyze.html">Analizar</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <!-- ── HEADER ── -->
+  <div class="page-header">
+    <div class="tag">Teatro de Operaciones · Paper Trading</div>
+    <h1>¿Cuánto habrías ganado?</h1>
+    <p>
+      Asigna $100 virtuales a 4–5 tickers hoy. Regresa mañana (o en una semana).
+      Jane te dirá el resultado real con precios EOD de mercado. Sin riesgo. Aprendizaje real.
+    </p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       SETUP SECTION — visible cuando no hay posición abierta
+  ════════════════════════════════════════════════════ -->
+  <div id="setupSection">
+
+    <div class="warning">
+      ⚠️ <strong>Plataforma educativa.</strong> Esto es dinero virtual. No se ejecutan órdenes reales.
+      Los precios son EOD (cierre del día) de EODHD. El P&L refleja el cambio de precio entre el día
+      de entrada y el día de evaluación.
+    </div>
+
+    <!-- API key -->
+    <div class="card">
+      <div class="card-title">1 · Tu API Key de EODHD</div>
+      <label for="eodhdKeyInput">EODHD API Key (gratuita en eodhd.com)</label>
+      <input type="password" id="eodhdKeyInput" placeholder="xxxxxxxxxxxxxxxxxxxxxxxx"
+             autocomplete="off" spellcheck="false">
+      <p class="hint">
+        Sin cuenta aún → <a href="api-keys.html" target="_blank">obtén tu key gratuita aquí →</a>
+        Solo se usa para llamar a EODHD. No se almacena en el servidor.
+      </p>
+    </div>
+
+    <!-- Tickers -->
+    <div class="card">
+      <div class="card-title">2 · Arma tu cartera virtual</div>
+      <p class="hint" style="margin-bottom:1rem;">
+        Escribe el ticker y cuántos dólares virtuales asignas. Total máximo: $200.
+        Ejemplo: ICE $30 · CBOE $25 · VIRT $20 · SPY $25.
+      </p>
+
+      <div id="tickerRows">
+        <!-- filas generadas por JS -->
+      </div>
+
+      <button id="addTickerBtn" onclick="addTickerRow()">+ agregar ticker</button>
+
+      <div class="total-bar">
+        <span class="label">Total asignado</span>
+        <span class="amount zero" id="totalAmount">$0.00</span>
+      </div>
+
+      <div id="setupError" class="err-msg" style="display:none;"></div>
+    </div>
+
+    <!-- CTA -->
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="openPosition()" id="openBtn">
+        🎯 Abrir posición
+      </button>
+      <span id="openSpinner" style="display:none;">
+        <span class="spinner"></span> Obteniendo precios EOD…
+      </span>
+    </div>
+
+  </div><!-- /setupSection -->
+
+
+  <!-- ═══════════════════════════════════════════════════
+       ACTIVE SECTION — posición abierta, esperando evaluación
+  ════════════════════════════════════════════════════ -->
+  <div id="activeSection">
+
+    <div class="status-strip">
+      <span class="dot"></span>
+      <span id="statusText">Posición abierta · esperando cierre de mercado...</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Posición abierta</div>
+
+      <div class="pnl-summary" id="livePnlSummary">
+        <!-- filled by JS -->
+      </div>
+
+      <table class="results-table" id="activeTable">
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th class="num">Invertido</th>
+            <th class="num">Acciones</th>
+            <th class="num">Precio entrada</th>
+            <th class="num">Precio actual</th>
+            <th class="num">P&amp;L $</th>
+            <th class="num">P&amp;L %</th>
+          </tr>
+        </thead>
+        <tbody id="activeTableBody"></tbody>
+        <tfoot id="activeTableFoot"></tfoot>
+      </table>
+
+      <div id="janeComment" class="jane-comment" style="display:none;">
+        <div class="jane-tag">Jane analiza</div>
+        <p id="janeCommentText"></p>
+      </div>
+
+    </div>
+
+    <!-- Historial de evaluaciones -->
+    <div class="card" id="historyCard" style="display:none;">
+      <div class="card-title">Historial de evaluaciones</div>
+      <div class="log" id="historyLog"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-green" onclick="evaluatePnl()" id="evalBtn">
+        🔄 Evaluar P&amp;L ahora
+      </button>
+      <span id="evalSpinner" style="display:none;">
+        <span class="spinner"></span> Obteniendo precios actuales…
+      </span>
+      <button class="btn btn-ghost" onclick="copyShareText()">📋 Copiar resultado</button>
+      <button class="btn btn-danger" onclick="closePosition()">✕ Cerrar posición</button>
+    </div>
+
+    <p class="hint" style="margin-top:1rem;">
+      <strong>Nota:</strong> EODHD publica precios EOD al final de cada sesión bursátil (16:00–16:30 EST).
+      Si evaluás el mismo día que abriste, el precio puede ser igual (aún no cerró la sesión siguiente).
+      El teatro se vuelve más interesante 24–48h después de abrir.
+    </p>
+
+  </div><!-- /activeSection -->
+
+</div><!-- /container -->
+
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// ESTADO
+// ═══════════════════════════════════════════════════════════
+const LS_KEY = 'openjane_portfolio_v2';
+const API_BASE = (() => {
+  const h = location.hostname;
+  if (h === 'localhost' || h === '127.0.0.1') return 'http://localhost:8000';
+  if (h === 'ussleo.github.io') return 'https://openjane.onrender.com';
+  return '';
+})();
+
+let tickerCount = 0;
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  const saved = loadPortfolio();
+  if (saved) {
+    showActiveSection(saved);
+  } else {
+    showSetupSection();
+  }
+});
+
+function showSetupSection() {
+  document.getElementById('setupSection').style.display = '';
+  document.getElementById('activeSection').style.display = 'none';
+  // Seed 4 default rows
+  const defaults = [
+    {ticker:'ICE',  amount:30},
+    {ticker:'CBOE', amount:25},
+    {ticker:'VIRT', amount:20},
+    {ticker:'SPY',  amount:25},
+  ];
+  defaults.forEach(d => addTickerRow(d.ticker, d.amount));
+}
+
+function showActiveSection(portfolio) {
+  document.getElementById('setupSection').style.display = 'none';
+  document.getElementById('activeSection').style.display = '';
+  renderActiveTable(portfolio, null);
+  renderStatus(portfolio);
+}
+
+// ═══════════════════════════════════════════════════════════
+// TICKER ROWS (setup)
+// ═══════════════════════════════════════════════════════════
+function addTickerRow(ticker = '', amount = '') {
+  tickerCount++;
+  const id = tickerCount;
+  const div = document.createElement('div');
+  div.className = 'ticker-row';
+  div.id = `tr_${id}`;
+  div.innerHTML = `
+    <span class="ticker-num">#${id}</span>
+    <div>
+      <label>Ticker</label>
+      <input type="text" id="tk_${id}" value="${ticker}"
+             placeholder="ej. ICE" oninput="this.value=this.value.toUpperCase(); calcTotal()"
+             maxlength="12">
+    </div>
+    <div>
+      <label>USD virtuales</label>
+      <input type="number" id="am_${id}" value="${amount}"
+             placeholder="25" min="1" max="200" oninput="calcTotal()">
+    </div>
+    <button class="remove-btn" onclick="removeRow(${id})" title="Eliminar">✕</button>`;
+  document.getElementById('tickerRows').appendChild(div);
+  calcTotal();
+}
+
+function removeRow(id) {
+  const el = document.getElementById(`tr_${id}`);
+  if (el) el.remove();
+  calcTotal();
+}
+
+function calcTotal() {
+  let total = 0;
+  document.querySelectorAll('[id^="am_"]').forEach(inp => {
+    const v = parseFloat(inp.value) || 0;
+    total += v;
+  });
+  const el = document.getElementById('totalAmount');
+  el.textContent = `$${total.toFixed(2)}`;
+  el.className = 'amount ' + (total <= 0 ? 'zero' : total > 200 ? 'over' : 'ok');
+}
+
+function getRows() {
+  const rows = [];
+  document.querySelectorAll('[id^="am_"]').forEach(inp => {
+    const numId = inp.id.replace('am_', '');
+    const tk = (document.getElementById(`tk_${numId}`)?.value || '').trim().toUpperCase();
+    const am = parseFloat(inp.value) || 0;
+    if (tk && am > 0) rows.push({ticker: tk, amount: am});
+  });
+  return rows;
+}
+
+// ═══════════════════════════════════════════════════════════
+// OPEN POSITION
+// ═══════════════════════════════════════════════════════════
+async function openPosition() {
+  const key = document.getElementById('eodhdKeyInput').value.trim();
+  const rows = getRows();
+  const errEl = document.getElementById('setupError');
+  errEl.style.display = 'none';
+
+  if (!key || key.length < 8) {
+    errEl.textContent = '⚠ Ingresa tu EODHD API key (mínimo 8 caracteres).';
+    errEl.style.display = '';
+    return;
+  }
+  if (rows.length < 1) {
+    errEl.textContent = '⚠ Agrega al menos un ticker con monto.';
+    errEl.style.display = '';
+    return;
+  }
+  const total = rows.reduce((s, r) => s + r.amount, 0);
+  if (total > 200) {
+    errEl.textContent = `⚠ El total supera $200 (tienes $${total.toFixed(2)}).`;
+    errEl.style.display = '';
+    return;
+  }
+
+  // duplicates
+  const tickers = rows.map(r => r.ticker);
+  if (new Set(tickers).size !== tickers.length) {
+    errEl.textContent = '⚠ Hay tickers duplicados.';
+    errEl.style.display = '';
+    return;
+  }
+
+  setLoading('open', true);
+  try {
+    const snapshot = await fetchSnapshot(key, tickers);
+    const positions = [];
+    for (const row of rows) {
+      const priceData = snapshot.prices[row.ticker];
+      if (!priceData) {
+        errEl.textContent = `⚠ No se encontró precio para ${row.ticker}. Verifica el ticker.`;
+        errEl.style.display = '';
+        setLoading('open', false);
+        return;
+      }
+      const price = priceData.close;
+      positions.push({
+        ticker:      row.ticker,
+        invested:    row.amount,
+        entry_price: price,
+        entry_date:  priceData.date,
+        shares:      row.amount / price,
+      });
+    }
+    const portfolio = {
+      opened_at:       new Date().toISOString(),
+      eodhd_key:       key,
+      total_invested:  total,
+      positions,
+      evaluations:     [],
+    };
+    savePortfolio(portfolio);
+    showActiveSection(portfolio);
+  } catch(e) {
+    errEl.textContent = `⚠ Error al obtener precios: ${e.message}`;
+    errEl.style.display = '';
+  } finally {
+    setLoading('open', false);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// EVALUATE P&L
+// ═══════════════════════════════════════════════════════════
+async function evaluatePnl() {
+  const portfolio = loadPortfolio();
+  if (!portfolio) return;
+
+  setLoading('eval', true);
+  try {
+    const tickers = portfolio.positions.map(p => p.ticker);
+    const snapshot = await fetchSnapshot(portfolio.eodhd_key, tickers);
+
+    // Enrich positions with current price
+    const enriched = portfolio.positions.map(pos => {
+      const priceData = snapshot.prices[pos.ticker];
+      const current_price = priceData?.close ?? pos.entry_price;
+      const current_date  = priceData?.date  ?? pos.entry_date;
+      const current_value = pos.shares * current_price;
+      const pnl_usd  = current_value - pos.invested;
+      const pnl_pct  = (pnl_usd / pos.invested) * 100;
+      return { ...pos, current_price, current_date, current_value, pnl_usd, pnl_pct };
+    });
+
+    const totalCurrent = enriched.reduce((s, p) => s + p.current_value, 0);
+    const totalPnlUsd  = totalCurrent - portfolio.total_invested;
+    const totalPnlPct  = (totalPnlUsd / portfolio.total_invested) * 100;
+
+    // Save evaluation to history
+    portfolio.evaluations = portfolio.evaluations || [];
+    portfolio.evaluations.push({
+      evaluated_at: new Date().toISOString(),
+      total_pnl_usd: totalPnlUsd,
+      total_pnl_pct: totalPnlPct,
+      snapshot: enriched.map(p => ({
+        ticker: p.ticker,
+        current_price: p.current_price,
+        pnl_usd: p.pnl_usd,
+        pnl_pct: p.pnl_pct,
+      }))
+    });
+    savePortfolio(portfolio);
+
+    renderActiveTable(portfolio, enriched);
+    renderPnlSummary(portfolio.total_invested, totalCurrent, totalPnlUsd, totalPnlPct);
+    renderJaneComment(enriched, totalPnlUsd, totalPnlPct);
+    renderHistory(portfolio);
+    renderStatus(portfolio);
+
+  } catch(e) {
+    alert(`Error al evaluar: ${e.message}`);
+  } finally {
+    setLoading('eval', false);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════
+function renderStatus(portfolio) {
+  const opened = new Date(portfolio.opened_at);
+  const now    = new Date();
+  const diffH  = Math.floor((now - opened) / 36e5);
+  const diffM  = Math.floor(((now - opened) % 36e5) / 6e4);
+  const evals  = (portfolio.evaluations || []).length;
+  const lastEval = evals > 0
+    ? `· última evaluación: ${fmtDate(portfolio.evaluations[evals-1].evaluated_at)}`
+    : '· sin evaluaciones aún';
+  document.getElementById('statusText').textContent =
+    `Posición abierta hace ${diffH}h ${diffM}m ${lastEval}`;
+}
+
+function renderActiveTable(portfolio, enriched) {
+  const tbody = document.getElementById('activeTableBody');
+  const tfoot = document.getElementById('activeTableFoot');
+  tbody.innerHTML = '';
+
+  let totalInvested = 0, totalCurrent = 0;
+
+  for (const pos of portfolio.positions) {
+    const enr = enriched?.find(e => e.ticker === pos.ticker);
+    const cp  = enr?.current_price ?? pos.entry_price;
+    const cv  = enr?.current_value ?? pos.invested;
+    const pu  = enr?.pnl_usd ?? 0;
+    const pp  = enr?.pnl_pct ?? 0;
+    const cls = pu > 0.005 ? 'pos' : pu < -0.005 ? 'neg' : 'neu';
+
+    totalInvested += pos.invested;
+    totalCurrent  += cv;
+
+    tbody.innerHTML += `
+      <tr>
+        <td class="ticker-cell">${pos.ticker}</td>
+        <td class="num">$${pos.invested.toFixed(2)}</td>
+        <td class="num">${pos.shares.toFixed(4)}</td>
+        <td class="num">$${pos.entry_price.toFixed(2)}<br>
+            <span style="font-size:0.7rem;color:var(--muted)">${pos.entry_date}</span></td>
+        <td class="num">$${cp.toFixed(2)}<br>
+            <span style="font-size:0.7rem;color:var(--muted)">${enr?.current_date ?? '—'}</span></td>
+        <td class="num ${cls}">${pu >= 0 ? '+' : ''}$${pu.toFixed(2)}</td>
+        <td class="num ${cls}">${pp >= 0 ? '+' : ''}${pp.toFixed(2)}%</td>
+      </tr>`;
+  }
+
+  const totalPnlUsd = totalCurrent - totalInvested;
+  const totalPnlPct = (totalPnlUsd / totalInvested) * 100;
+  const tcls = totalPnlUsd > 0.005 ? 'pos' : totalPnlUsd < -0.005 ? 'neg' : 'neu';
+
+  tfoot.innerHTML = `
+    <tr class="total-row">
+      <td colspan="1"><strong>TOTAL</strong></td>
+      <td class="num">$${totalInvested.toFixed(2)}</td>
+      <td class="num" colspan="2">—</td>
+      <td class="num">$${totalCurrent.toFixed(2)}</td>
+      <td class="num ${tcls}">${totalPnlUsd >= 0 ? '+' : ''}$${totalPnlUsd.toFixed(2)}</td>
+      <td class="num ${tcls}">${totalPnlPct >= 0 ? '+' : ''}${totalPnlPct.toFixed(2)}%</td>
+    </tr>`;
+
+  if (enriched) renderPnlSummary(totalInvested, totalCurrent, totalPnlUsd, totalPnlPct);
+}
+
+function renderPnlSummary(invested, current, pnlUsd, pnlPct) {
+  const cls = pnlUsd > 0.005 ? 'gain' : pnlUsd < -0.005 ? 'loss' : 'flat';
+  const sign = pnlUsd >= 0 ? '+' : '';
+  document.getElementById('livePnlSummary').innerHTML = `
+    <div class="pnl-card flat">
+      <div class="pnl-label">Invertido</div>
+      <div class="pnl-value">$${invested.toFixed(2)}</div>
+    </div>
+    <div class="pnl-card flat">
+      <div class="pnl-label">Valor actual</div>
+      <div class="pnl-value">$${current.toFixed(2)}</div>
+    </div>
+    <div class="pnl-card ${cls}">
+      <div class="pnl-label">P&amp;L neto</div>
+      <div class="pnl-value">${sign}$${pnlUsd.toFixed(2)}<br>
+        <span style="font-size:1rem">${sign}${pnlPct.toFixed(2)}%</span>
+      </div>
+    </div>`;
+}
+
+function renderJaneComment(enriched, totalPnlUsd, totalPnlPct) {
+  const winners = enriched.filter(p => p.pnl_usd > 0).sort((a,b) => b.pnl_pct - a.pnl_pct);
+  const losers  = enriched.filter(p => p.pnl_usd < 0).sort((a,b) => a.pnl_pct - b.pnl_pct);
+  const best    = winners[0];
+  const worst   = losers[0];
+
+  let text = '';
+  if (Math.abs(totalPnlUsd) < 0.10) {
+    text = `La cartera está prácticamente flat (${totalPnlPct.toFixed(2)}%). El mercado no se movió lo suficiente para generar una diferencia visible. Esto es normal en ventanas cortas — Jane Street espera cientos de miles de transacciones para que los centavos se acumulen.`;
+  } else if (totalPnlUsd > 0) {
+    text = `La cartera subió <strong>+$${totalPnlUsd.toFixed(2)} (+${totalPnlPct.toFixed(2)}%)</strong>.`;
+    if (best) text += ` El mayor contribuyente fue <strong>${best.ticker}</strong> con +${best.pnl_pct.toFixed(2)}%.`;
+    if (worst) text += ` El único lastre fue <strong>${worst.ticker}</strong> con ${worst.pnl_pct.toFixed(2)}%.`;
+    text += ` Jane Street replica este tipo de movimiento en <em>miles de posiciones simultáneas</em> — cada centavo de ventaja, multiplicado por escala industrial.`;
+  } else {
+    text = `La cartera bajó <strong>${totalPnlPct.toFixed(2)}%</strong> en este período.`;
+    if (worst) text += ` El mayor detractor fue <strong>${worst.ticker}</strong> con ${worst.pnl_pct.toFixed(2)}%.`;
+    text += ` En paper trading esto es solo aprendizaje. En la vida real, una pérdida así exigiría revisar el régimen de mercado, los stops y el sizing. Jane Street usa el análisis de régimen exactamente para evitar estos escenarios.`;
+  }
+
+  const commentEl = document.getElementById('janeComment');
+  document.getElementById('janeCommentText').innerHTML = text;
+  commentEl.style.display = '';
+}
+
+function renderHistory(portfolio) {
+  const evals = portfolio.evaluations || [];
+  if (evals.length === 0) return;
+  const card = document.getElementById('historyCard');
+  const log  = document.getElementById('historyLog');
+  card.style.display = '';
+  log.innerHTML = evals.slice().reverse().map(ev => {
+    const sign = ev.total_pnl_usd >= 0 ? '+' : '';
+    const tag  = ev.total_pnl_usd > 0 ? 'pos-tag' : ev.total_pnl_usd < 0 ? 'neg-tag' : '';
+    return `<div class="log-line">
+      <span class="ts">${fmtDate(ev.evaluated_at)}</span>
+      P&L total: <span class="${tag}">${sign}$${ev.total_pnl_usd.toFixed(2)} (${sign}${ev.total_pnl_pct.toFixed(2)}%)</span>
+      · ${ev.snapshot.map(s => {
+        const sp = s.pnl_usd >= 0 ? '+' : '';
+        return `${s.ticker} ${sp}${s.pnl_pct.toFixed(2)}%`;
+      }).join(' · ')}
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// API
+// ═══════════════════════════════════════════════════════════
+async function fetchSnapshot(eodhd_key, tickers) {
+  const res = await fetch(`${API_BASE}/api/portfolio-snapshot`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({eodhd_key, tickers}),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+// ═══════════════════════════════════════════════════════════
+// LOCALSTORAGE
+// ═══════════════════════════════════════════════════════════
+function savePortfolio(p) {
+  localStorage.setItem(LS_KEY, JSON.stringify(p));
+}
+function loadPortfolio() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY)); }
+  catch { return null; }
+}
+function closePosition() {
+  if (!confirm('¿Cerrar posición? Se borrarán todos los datos de esta cartera del navegador.')) return;
+  localStorage.removeItem(LS_KEY);
+  tickerCount = 0;
+  document.getElementById('tickerRows').innerHTML = '';
+  showSetupSection();
+}
+
+// ═══════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════
+function fmtDate(iso) {
+  try {
+    return new Date(iso).toLocaleString('es-AR', {
+      month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'
+    });
+  } catch { return iso; }
+}
+
+function setLoading(which, on) {
+  if (which === 'open') {
+    document.getElementById('openBtn').disabled = on;
+    document.getElementById('openSpinner').style.display = on ? '' : 'none';
+  } else {
+    document.getElementById('evalBtn').disabled = on;
+    document.getElementById('evalSpinner').style.display = on ? '' : 'none';
+  }
+}
+
+async function copyShareText() {
+  const portfolio = loadPortfolio();
+  if (!portfolio) return;
+  const evals = portfolio.evaluations || [];
+  const last  = evals[evals.length - 1];
+  if (!last) { alert('Primero evalúa el P&L.'); return; }
+  const sign = last.total_pnl_usd >= 0 ? '+' : '';
+  const lines = [
+    `🎯 OpenJane · Teatro de Operaciones`,
+    `Cartera: ${portfolio.positions.map(p => p.ticker).join(' / ')}`,
+    `Invertido: $${portfolio.total_invested.toFixed(2)} virtuales`,
+    `P&L: ${sign}$${last.total_pnl_usd.toFixed(2)} (${sign}${last.total_pnl_pct.toFixed(2)}%)`,
+    ``,
+    last.snapshot.map(s => {
+      const sp = s.pnl_usd >= 0 ? '+' : '';
+      return `  ${s.ticker}: ${sp}${s.pnl_pct.toFixed(2)}%`;
+    }).join('\n'),
+    ``,
+    `Aprende más → https://ussleo.github.io/openjane/paper-trading-edu.html`,
+  ];
+  try {
+    await navigator.clipboard.writeText(lines.join('\n'));
+    alert('¡Resultado copiado al portapapeles!');
+  } catch {
+    prompt('Copia este texto:', lines.join('\n'));
+  }
+}
+</script>
+</body>
+</html>

@@ -268,6 +268,31 @@ class PairRequest(KeysBase):
             raise ValueError(f"Ticker inválido: '{v}'")
         return t
 
+class PortfolioSnapshotReq(BaseModel):
+    eodhd_key: str
+    tickers: list[str]
+
+    @field_validator("eodhd_key")
+    @classmethod
+    def key_ok(cls, v):
+        v = v.strip()
+        if not v or len(v) < 8 or len(v) > 200:
+            raise ValueError("EODHD API key inválida")
+        return v
+
+    @field_validator("tickers")
+    @classmethod
+    def tickers_ok(cls, v):
+        if not v or len(v) > 10:
+            raise ValueError("Envía entre 1 y 10 tickers")
+        cleaned = []
+        for t in v:
+            t2 = t.strip().upper()[:12]
+            if not TICKER_RE.match(t2):
+                raise ValueError(f"Ticker inválido: '{t}'")
+            cleaned.append(t2)
+        return cleaned
+
 # ── endpoints ─────────────────────────────────────────────────────────────────
 @app.get("/api/health")
 def health():
@@ -346,6 +371,38 @@ def statarb(req: PairRequest, request: Request):
     except Exception as e:
         raise HTTPException(500, str(e)[:200])
 
+@app.post("/api/portfolio-snapshot")
+def portfolio_snapshot(req: PortfolioSnapshotReq, request: Request):
+    """
+    Devuelve el último precio de cierre EOD para cada ticker.
+    Usado por el Teatro de Operaciones para abrir y evaluar posiciones.
+    Solo necesita EODHD key (no Massive).
+    """
+    check_rate(_real_ip(request))
+    prices = {}
+    errors = {}
+    for ticker in req.tickers:
+        try:
+            eod = _eodhd_get(req.eodhd_key, f"/eod/{ticker}", {"order": "d", "limit": 1})
+            if isinstance(eod, list) and eod:
+                row = eod[0]
+                prices[ticker] = {
+                    "date":           row.get("date", ""),
+                    "close":          row.get("adjusted_close") or row.get("close"),
+                    "adjusted_close": row.get("adjusted_close"),
+                }
+            else:
+                errors[ticker] = "Sin datos EOD"
+        except HTTPException as e:
+            errors[ticker] = f"Error {e.status_code}"
+        except Exception as e:
+            errors[ticker] = str(e)[:80]
+    return {
+        "prices":    prices,
+        "errors":    errors,
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+    }
+
 # ── archivos estáticos ────────────────────────────────────────────────────────
 if DOCS.exists():
     if (DOCS / "screenshots").exists():
@@ -372,6 +429,10 @@ def claude_setup(): return FileResponse(str(DOCS/"claude-setup.html"))
 @app.get("/paper-trading-edu")
 @app.get("/paper-trading-edu.html")
 def paper_trading_edu(): return FileResponse(str(DOCS/"paper-trading-edu.html"))
+
+@app.get("/portfolio")
+@app.get("/portfolio.html")
+def portfolio_page(): return FileResponse(str(DOCS/"portfolio.html"))
 
 @app.get("/")
 @app.get("/index.html")
