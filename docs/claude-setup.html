@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpenJane · Usar en Claude.ai gratis</title>
+  <meta name="description" content="Configura OpenJane como agente en Claude.ai en 4 pasos. Sin API keys, sin instalar nada, sin tarjeta de crédito.">
+  <style>
+    :root {
+      --bg: #0a0e14;
+      --surface: #111820;
+      --surface2: #18222e;
+      --border: #1e2d3d;
+      --accent: #00d4ff;
+      --green: #00c896;
+      --red: #ff4d6d;
+      --yellow: #f59e0b;
+      --purple: #7c3aed;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --font: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.6; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── nav ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,14,20,0.95); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 56px;
+    }
+    .nav-brand { font-family: var(--font); font-size: 1.1rem; font-weight: 700; color: var(--accent); }
+    .nav-brand span { color: var(--muted); font-weight: 400; }
+    .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+    .nav-links a { color: var(--muted); font-size: 0.9rem; transition: color .2s; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .btn { display: inline-flex; align-items: center; gap: .4rem; padding: .45rem 1.1rem; border-radius: 6px; font-size: .85rem; font-weight: 600; transition: all .2s; cursor: pointer; border: none; text-decoration: none; }
+    .btn-primary { background: var(--accent); color: #000; }
+    .btn-primary:hover { background: #00b8e0; text-decoration: none; }
+    .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+    .btn-green { background: var(--green); color: #000; }
+    .btn-green:hover { background: #00b07e; text-decoration: none; }
+
+    /* ── lang ── */
+    .lang-switcher { display: flex; gap: 2px; }
+    .lang-btn { padding: 3px 8px; border-radius: 4px; font-size: .72rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: var(--font); transition: all .15s; }
+    .lang-btn.active { background: rgba(0,212,255,.1); border-color: var(--accent); color: var(--accent); }
+
+    /* ── hero ── */
+    .hero { max-width: 800px; margin: 0 auto; padding: 5rem 2rem 3rem; text-align: center; }
+    .hero-badge { display: inline-flex; align-items: center; gap: .5rem; background: rgba(0,200,150,.08); border: 1px solid rgba(0,200,150,.25); color: var(--green); font-size: .78rem; font-family: var(--font); padding: .3rem .9rem; border-radius: 20px; margin-bottom: 1.2rem; }
+    .hero h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; line-height: 1.15; letter-spacing: -.03em; margin-bottom: 1rem; }
+    .hero h1 em { color: var(--green); font-style: normal; }
+    .hero p { color: var(--muted); font-size: 1.05rem; line-height: 1.7; max-width: 580px; margin: 0 auto 2rem; }
+    .vs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 620px; margin: 0 auto 2.5rem; text-align: left; }
+    @media (max-width: 560px) { .vs-grid { grid-template-columns: 1fr; } }
+    .vs-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.2rem; }
+    .vs-card.highlight { border-color: var(--green); background: rgba(0,200,150,.04); }
+    .vs-title { font-size: .8rem; font-weight: 700; margin-bottom: .6rem; display: flex; align-items: center; gap: .4rem; }
+    .vs-item { font-size: .8rem; color: var(--muted); padding: .2rem 0; display: flex; align-items: center; gap: .4rem; }
+    .vs-item .ok { color: var(--green); }
+    .vs-item .no { color: var(--red); }
+
+    /* ── steps ── */
+    .steps-section { max-width: 760px; margin: 0 auto; padding: 0 2rem 5rem; }
+    .section-label { font-family: var(--font); font-size: .75rem; color: var(--accent); letter-spacing: .1em; text-transform: uppercase; margin-bottom: .6rem; }
+    .section-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 2rem; }
+    .step-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem 1.8rem; margin-bottom: 1.2rem; display: flex; gap: 1.4rem; align-items: flex-start; transition: border-color .2s; }
+    .step-card:hover { border-color: var(--accent); }
+    .step-num { flex-shrink: 0; width: 38px; height: 38px; border-radius: 50%; background: rgba(0,212,255,.1); border: 1px solid rgba(0,212,255,.3); color: var(--accent); font-family: var(--font); font-weight: 700; font-size: 1rem; display: flex; align-items: center; justify-content: center; }
+    .step-num.done { background: rgba(0,200,150,.15); border-color: var(--green); color: var(--green); }
+    .step-body { flex: 1; }
+    .step-title { font-weight: 700; font-size: 1rem; margin-bottom: .4rem; }
+    .step-desc { color: var(--muted); font-size: .88rem; line-height: 1.65; }
+    .step-desc a { color: var(--accent); }
+    .step-action { margin-top: 1rem; }
+
+    /* ── prompt box ── */
+    .prompt-box { background: #050a0f; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-top: 1rem; }
+    .prompt-header { background: var(--surface2); padding: .5rem 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+    .prompt-label { font-family: var(--font); font-size: .72rem; color: var(--muted); }
+    .copy-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); font-family: var(--font); font-size: .72rem; padding: .2rem .7rem; border-radius: 3px; cursor: pointer; transition: all .15s; }
+    .copy-btn:hover { border-color: var(--green); color: var(--green); }
+    .copy-btn.copied { border-color: var(--green); color: var(--green); }
+    .prompt-body { padding: 1.2rem 1.4rem; font-family: var(--font); font-size: .78rem; line-height: 1.7; color: #8ab4d4; white-space: pre-wrap; word-break: break-word; max-height: 320px; overflow-y: auto; cursor: text; user-select: all; }
+    .prompt-body .kw { color: var(--yellow); }
+    .prompt-body .val { color: var(--green); }
+    .prompt-body .cm { color: var(--muted); }
+
+    /* ── commands ── */
+    .cmd-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: .8rem; margin-top: 1.2rem; }
+    .cmd-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: .8rem 1rem; }
+    .cmd-name { font-family: var(--font); font-size: .82rem; color: var(--accent); margin-bottom: .3rem; }
+    .cmd-desc { font-size: .78rem; color: var(--muted); line-height: 1.5; }
+
+    /* ── try box ── */
+    .try-box { background: var(--surface); border: 1px solid var(--green); border-radius: 10px; padding: 2rem; text-align: center; margin-top: 2rem; }
+    .try-box h3 { font-size: 1.1rem; margin-bottom: .6rem; }
+    .try-box p { color: var(--muted); font-size: .88rem; margin-bottom: 1.4rem; line-height: 1.6; }
+    .try-examples { display: flex; flex-direction: column; gap: .5rem; margin-bottom: 1.4rem; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto; }
+    .try-example { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: .5rem .9rem; font-family: var(--font); font-size: .8rem; color: var(--accent); cursor: pointer; transition: all .15s; }
+    .try-example:hover { border-color: var(--accent); }
+    .try-example span { color: var(--muted); font-size: .72rem; display: block; margin-top: .1rem; }
+
+    /* ── faq ── */
+    .faq { max-width: 760px; margin: 0 auto; padding: 0 2rem 5rem; }
+    .faq-item { border-bottom: 1px solid var(--border); padding: 1.1rem 0; }
+    .faq-q { font-weight: 700; font-size: .95rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+    .faq-q::after { content: '+'; color: var(--accent); font-size: 1.2rem; transition: transform .2s; }
+    .faq-item.open .faq-q::after { transform: rotate(45deg); }
+    .faq-a { color: var(--muted); font-size: .87rem; line-height: 1.7; max-height: 0; overflow: hidden; transition: max-height .3s ease; }
+    .faq-item.open .faq-a { max-height: 400px; padding-top: .7rem; }
+    .faq-a a { color: var(--accent); }
+
+    footer { background: var(--surface2); border-top: 1px solid var(--border); padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    .footer-brand { font-family: var(--font); font-size: .9rem; color: var(--muted); }
+    .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+    .footer-links a { color: var(--muted); font-size: .83rem; }
+    .footer-links a:hover { color: var(--text); }
+    @media (max-width: 600px) { nav .nav-links { display: none; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">Open<span>Jane</span> <span style="font-size:.7rem;margin-left:4px;color:var(--accent)">by Claude</span></div>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="https://openjane.onrender.com/analyze" target="_blank" id="nav-live">Análisis en vivo</a>
+    <a href="/api-keys" id="nav-keys">API Keys</a>
+    <a href="/glossary" id="nav-gloss">Glosario</a>
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="setLang('es')">ES</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" onclick="setLang('pt')">PT</button>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge" id="h-badge">● Sin API keys · Sin instalar · Gratis</div>
+  <h1 id="h-title">Usa <em>Jane</em> en Claude.ai<br>sin configurar nada</h1>
+  <p id="h-sub">Claude.ai te permite crear un agente personalizado con instrucciones fijas. En 4 pasos tienes a Jane funcionando en tu cuenta — sin API keys propias, sin código, sin riesgo.</p>
+
+  <!-- VS comparison -->
+  <div class="vs-grid">
+    <div class="vs-card highlight">
+      <div class="vs-title"><span style="color:var(--green)">🧠</span> <span id="vs-claude-title">Vía Claude.ai</span></div>
+      <div class="vs-item"><span class="ok">✓</span> <span id="vs-c1">Sin API keys propias</span></div>
+      <div class="vs-item"><span class="ok">✓</span> <span id="vs-c2">Sin instalar nada</span></div>
+      <div class="vs-item"><span class="ok">✓</span> <span id="vs-c3">Sin formularios ni servers</span></div>
+      <div class="vs-item"><span class="ok">✓</span> <span id="vs-c4">Gratis con cuenta Claude</span></div>
+      <div class="vs-item"><span class="no">✗</span> <span id="vs-c5">Sin datos de mercado en vivo</span></div>
+    </div>
+    <div class="vs-card">
+      <div class="vs-title"><span style="color:var(--accent)">⚡</span> <span id="vs-render-title">Vía Render (live)</span></div>
+      <div class="vs-item"><span class="ok">✓</span> <span id="vs-r1">Datos reales (EOD)</span></div>
+      <div class="vs-item"><span class="ok">✓</span> <span id="vs-r2">Análisis automático</span></div>
+      <div class="vs-item"><span class="no">✗</span> <span id="vs-r3">Requiere 2 API keys</span></div>
+      <div class="vs-item"><span class="no">✗</span> <span id="vs-r4">Cold start ~30s</span></div>
+      <div class="vs-item"><span class="ok">✓</span> <span id="vs-r5">También gratis</span></div>
+    </div>
+  </div>
+
+  <a href="https://claude.ai/new" target="_blank" class="btn btn-green" id="h-cta1" style="font-size:1rem;padding:.7rem 1.8rem;">🧠 Ir a Claude.ai</a>
+</div>
+
+<hr style="border:none;border-top:1px solid var(--border)">
+
+<!-- STEPS -->
+<div class="steps-section">
+  <div class="section-label" id="steps-label">Configuración</div>
+  <div class="section-title" id="steps-title">4 pasos. 5 minutos. Para siempre.</div>
+
+  <!-- STEP 1 -->
+  <div class="step-card">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <div class="step-title" id="s1-title">Crea una cuenta gratuita en Claude.ai</div>
+      <div class="step-desc" id="s1-desc">Ve a <a href="https://claude.ai" target="_blank">claude.ai</a> y regístrate con tu email. La cuenta gratuita incluye conversaciones diarias con Claude — suficiente para usar Jane regularmente. No necesitas Claude Pro.</div>
+      <div class="step-action">
+        <a href="https://claude.ai" target="_blank" class="btn btn-ghost" style="font-size:.82rem" id="s1-btn">Crear cuenta gratis →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step-card">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <div class="step-title" id="s2-title">Crea un nuevo Project</div>
+      <div class="step-desc" id="s2-desc">En la barra lateral izquierda de Claude.ai, haz clic en <strong>"Projects"</strong> → <strong>"New Project"</strong>. Dale un nombre como <code style="background:var(--surface2);padding:.1em .4em;border-radius:3px;font-family:var(--font);font-size:.82em">OpenJane</code>. Los Projects permiten dar instrucciones fijas al agente que se aplican en todas las conversaciones.</div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step-card" style="flex-direction:column">
+    <div style="display:flex;gap:1.4rem;align-items:flex-start">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title" id="s3-title">Copia el system prompt de Jane</div>
+        <div class="step-desc" id="s3-desc">Este es el prompt completo que convierte a Claude en Jane. Cópialo con el botón y pégalo en el campo <strong>"Project Instructions"</strong> de tu nuevo Project.</div>
+      </div>
+    </div>
+
+    <div class="prompt-box" style="margin-top:1.2rem">
+      <div class="prompt-header">
+        <span class="prompt-label" id="prompt-label">System Prompt — OpenJane · quant-analyst</span>
+        <button class="copy-btn" id="copyBtn" onclick="copyPrompt()">📋 Copiar</button>
+      </div>
+      <div class="prompt-body" id="promptText">Eres <span class="kw">OpenJane</span>, un analista cuantitativo que aplica los principios de las firmas más sofisticadas del mundo — Jane Street, Citadel Securities, Hudson River Trading — para producir análisis de mercado accesible para cualquier persona.
+
+<span class="kw">## Tu identidad</span>
+No predices el futuro. Analizas estructura, relaciones y contexto de mercado usando los mismos marcos conceptuales que usan las firmas quant líderes. Hablas en el idioma del usuario — español, inglés o portugués. Cuando usas términos técnicos, los explicas de forma clara.
+
+<span class="kw">## Disclaimer obligatorio</span>
+Siempre tienes presente:
+<span class="val">- Este análisis es para información y educación, NO asesoramiento financiero</span>
+<span class="val">- No recomiendas compras o ventas específicas</span>
+<span class="val">- El usuario es responsable de sus propias decisiones de inversión</span>
+<span class="val">- Sin acceso a APIs, trabajas con tu conocimiento general hasta la fecha de corte</span>
+Incluyes este recordatorio al final de cada análisis.
+
+<span class="kw">## Capacidades de análisis</span>
+Aplicas automáticamente el análisis correcto según la pregunta:
+
+<span class="val">1. RÉGIMEN DE MERCADO</span> — Siempre es el primer paso. Clasifica el estado macro (alcista fuerte / alcista moderado / mixto / bajista / crisis) usando: precio SPY vs MA50/MA200, curva de rendimientos 10Y-2Y, volatilidad histórica. Sin datos live, razonas con el contexto más reciente que conoces y lo indicas explícitamente.
+
+<span class="val">2. MICROESTRUCTURA</span> — Cuando el usuario pregunta por un ticker específico. Analiza: spread bid-ask estimado, liquidez relativa (ADV), rango intraday, señal de flujo, tendencia (precio vs MA200). Sin datos live, das rangos típicos del sector y explicas qué buscar.
+
+<span class="val">3. STAT-ARB</span> — Cuando el usuario menciona dos tickers o pide comparar activos. Explicas: correlación histórica típica entre el par, beta de regresión, lógica del spread, zonas de entrada/salida con Z-score, half-life estimado de reversión.
+
+<span class="val">4. VOLATILIDAD</span> — Cuando el usuario pregunta por opciones, IV, HV, skew o riesgo de cola. Explicas: IV vs HV histórica, prima de volatilidad típica del activo, estructura temporal, interpretación del skew.
+
+<span class="kw">## Formato de respuesta</span>
+Para análisis completos usas esta estructura:
+
+📊 ANÁLISIS QUANT — [TICKER] — [fecha si la conoces]
+
+🌍 RÉGIMEN DE MERCADO
+[clasificación + razonamiento + score orientativo]
+
+🔬 MICROESTRUCTURA (si aplica)
+[liquidez, spread estimado, tendencia, señal de flujo]
+
+🔗 RELACIONES (si hay dos activos)
+[correlación típica, beta, Z-score actual si lo conoces, veredicto]
+
+📋 VEREDICTO INTEGRADO
+[síntesis en 3-4 oraciones en lenguaje claro]
+
+⚠️ Límites: [qué no puedes saber sin datos live]
+⚠️ Análisis educativo. No es asesoramiento financiero.
+
+<span class="kw">## Comandos que entiendes</span>
+<span class="val">/regime</span>              → Clasificación del régimen de mercado actual
+<span class="val">/spread-analysis [T]</span> → Microestructura completa de un ticker
+<span class="val">/stat-arb [A] [B]</span>   → Análisis de par estadístico
+<span class="val">/vol-surface [T]</span>    → Análisis de volatilidad implícita vs histórica
+<span class="val">/help</span>               → Muestra este menú de comandos
+
+También respondes consultas en lenguaje natural sin necesidad de comandos.
+
+<span class="kw">## Lo que nunca haces</span>
+<span class="val">- Predecir precios futuros con confianza</span>
+<span class="val">- Decir "compra" o "vende" de forma directa</span>
+<span class="val">- Inventar datos que no tienes (lo dices claramente)</span>
+<span class="val">- Ignorar los límites de tu conocimiento</span>
+<span class="val">- Usar jerga sin explicarla</span>
+
+<span class="kw">## Nota sobre datos</span>
+En esta configuración (Claude.ai sin APIs externas), trabajas con tu conocimiento general de los mercados hasta tu fecha de corte. Cuando el usuario te pregunte por precios o datos actuales, le explicas que para datos en tiempo real puede usar <span class="val">openjane.onrender.com/analyze</span> con sus propias API keys gratuitas de Massive.com y EODHD. No inventas precios ni datos que no conoces.</div>
+    </div>
+
+    <div style="margin-top:.8rem;font-size:.8rem;color:var(--muted)" id="s3-note">💡 El prompt está diseñado para funcionar <strong style="color:var(--text)">sin APIs externas</strong> — Jane razona con su conocimiento general y aclara siempre cuándo no tiene datos en vivo.</div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step-card">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <div class="step-title" id="s4-title">Pega y guarda en Project Instructions</div>
+      <div class="step-desc" id="s4-desc">En tu nuevo Project, busca el campo <strong>"Project Instructions"</strong> (o "Custom Instructions"). Pega el prompt copiado, haz clic en <strong>Save</strong>. Desde ahora, toda conversación dentro de ese Project tendrá a Jane como agente. Puedes iniciar tantas conversaciones como quieras.</div>
+      <div class="step-action">
+        <a href="https://claude.ai/new" target="_blank" class="btn btn-green" id="s4-btn">Ir a Claude.ai y crear Project →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRY IT -->
+  <div class="try-box">
+    <h3 id="try-title">¿Qué puedes preguntarle a Jane?</h3>
+    <p id="try-sub">Dentro de tu Project en Claude.ai, prueba estas preguntas de ejemplo. Jane responderá con el formato quant completo.</p>
+    <div class="try-examples">
+      <div class="try-example"><code>/regime</code><span id="try-e1">¿Cómo está el mercado ahora mismo?</span></div>
+      <div class="try-example"><code>/spread-analysis AAPL</code><span id="try-e2">¿Es buen momento para operar Apple?</span></div>
+      <div class="try-example"><code>/stat-arb ICE CBOE</code><span id="try-e3">¿Hay divergencia entre estas dos bolsas?</span></div>
+      <div class="try-example"><code>/vol-surface SPY</code><span id="try-e4">¿Están caras o baratas las opciones del S&P?</span></div>
+    </div>
+    <a href="https://claude.ai/new" target="_blank" class="btn btn-green" id="try-cta">🧠 Abrir Claude.ai y empezar</a>
+  </div>
+
+  <!-- COMMANDS REFERENCE -->
+  <div style="margin-top:3rem">
+    <div class="section-label" id="cmd-label">Referencia rápida</div>
+    <div class="section-title" id="cmd-title" style="font-size:1.2rem">Comandos de Jane</div>
+    <div class="cmd-grid">
+      <div class="cmd-card"><div class="cmd-name">/regime</div><div class="cmd-desc" id="cmd-c1">Régimen de mercado global. Siempre el primer paso antes de cualquier análisis.</div></div>
+      <div class="cmd-card"><div class="cmd-name">/spread-analysis [TICKER]</div><div class="cmd-desc" id="cmd-c2">Microestructura completa: liquidez, spread, tendencia, señal de flujo.</div></div>
+      <div class="cmd-card"><div class="cmd-name">/stat-arb [A] [B]</div><div class="cmd-desc" id="cmd-c3">Par estadístico: correlación, Z-score, half-life, zonas de entrada y stop.</div></div>
+      <div class="cmd-card"><div class="cmd-name">/vol-surface [TICKER]</div><div class="cmd-desc" id="cmd-c4">Volatilidad implícita vs histórica, skew, estructura temporal, prima de vol.</div></div>
+      <div class="cmd-card"><div class="cmd-name">/help</div><div class="cmd-desc" id="cmd-c5">Muestra todos los comandos disponibles y ejemplos de uso.</div></div>
+      <div class="cmd-card" style="border-color:var(--border);background:var(--surface2)">
+        <div class="cmd-name" style="color:var(--muted)" id="cmd-nl-title">Lenguaje natural</div>
+        <div class="cmd-desc" id="cmd-nl-desc">También puedes escribir libremente: "analiza Tesla", "¿hay spread entre ICE y CBOE?", "explícame el VIX de hoy".</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr style="border:none;border-top:1px solid var(--border)">
+
+<!-- FAQ -->
+<div class="faq">
+  <div class="section-label" id="faq-label">Preguntas frecuentes</div>
+  <div class="section-title" id="faq-title" style="font-size:1.3rem;margin-bottom:1.2rem">Lo que suelen preguntar</div>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q" id="faq-q1">¿Jane tiene datos de mercado en tiempo real dentro de Claude.ai?</div>
+    <div class="faq-a" id="faq-a1">No. En la versión Claude.ai, Jane trabaja con el conocimiento general de Claude hasta su fecha de corte. Puede analizar, razonar y explicar conceptos con precisión, pero no tiene acceso a precios actuales. Para datos en vivo (EOD), usa <a href="https://openjane.onrender.com/analyze" target="_blank">openjane.onrender.com/analyze</a> con tus API keys gratuitas.</div>
+  </div>
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q" id="faq-q2">¿Necesito Claude Pro para usar Jane?</div>
+    <div class="faq-a" id="faq-a2">No. La cuenta gratuita de Claude.ai incluye conversaciones diarias con Claude suficientes para usar Jane regularmente. Claude Pro solo añade más conversaciones por día y acceso prioritario — no cambia las capacidades de Jane.</div>
+  </div>
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q" id="faq-q3">¿Anthropic guarda mis conversaciones con Jane?</div>
+    <div class="faq-a" id="faq-a3">Anthropic gestiona los datos de conversaciones según su <a href="https://www.anthropic.com/privacy" target="_blank">política de privacidad</a>. OpenJane no tiene acceso a ninguna conversación que tengas en Claude.ai — esas conversaciones son entre tú y Anthropic exclusivamente.</div>
+  </div>
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q" id="faq-q4">¿Puedo tener varias versiones de Jane en diferentes Projects?</div>
+    <div class="faq-a" id="faq-a4">Sí. Puedes crear un Project "Jane ES" en español, uno "Jane EN" en inglés, uno enfocado en opciones, otro en stat-arb. Cada Project tiene su propio prompt y sus propias conversaciones.</div>
+  </div>
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q" id="faq-q5">¿Cuándo vale la pena pasar a la versión con API keys?</div>
+    <div class="faq-a" id="faq-a5">Cuando quieras precios y volúmenes reales del día anterior, medias móviles calculadas con datos actuales, yield curve live y señales de stat-arb con Z-score real. Las API keys de Massive.com y EODHD son gratuitas — <a href="/api-keys">guía para obtenerlas</a>.</div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-brand">OpenJane · by Claude · Apache 2.0</div>
+  <div class="footer-links">
+    <a href="/">Home</a>
+    <a href="https://openjane.onrender.com/analyze" target="_blank" id="f-live">Análisis en vivo</a>
+    <a href="/api-keys" id="f-keys">API Keys</a>
+    <a href="/glossary" id="f-gloss">Glosario</a>
+    <a href="https://github.com/ussleo/openjane" target="_blank">GitHub</a>
+    <a href="https://claude.ai" target="_blank">Claude.ai</a>
+  </div>
+</footer>
+
+<script>
+// ── i18n ─────────────────────────────────────────────────────────────────────
+const T = {
+  es: {
+    'nav-live':'Análisis en vivo','nav-keys':'API Keys','nav-gloss':'Glosario',
+    'h-badge':'● Sin API keys · Sin instalar · Gratis',
+    'h-title':'Usa <em>Jane</em> en Claude.ai<br>sin configurar nada',
+    'h-sub':'Claude.ai te permite crear un agente personalizado con instrucciones fijas. En 4 pasos tienes a Jane funcionando en tu cuenta — sin API keys propias, sin código, sin riesgo.',
+    'vs-claude-title':'Vía Claude.ai','vs-render-title':'Vía Render (live)',
+    'vs-c1':'Sin API keys propias','vs-c2':'Sin instalar nada','vs-c3':'Sin formularios ni servers','vs-c4':'Gratis con cuenta Claude','vs-c5':'Sin datos de mercado en vivo',
+    'vs-r1':'Datos reales (EOD)','vs-r2':'Análisis automático','vs-r3':'Requiere 2 API keys','vs-r4':'Cold start ~30s','vs-r5':'También gratis',
+    'h-cta1':'🧠 Ir a Claude.ai',
+    'steps-label':'Configuración','steps-title':'4 pasos. 5 minutos. Para siempre.',
+    's1-title':'Crea una cuenta gratuita en Claude.ai',
+    's1-desc':'Ve a <a href="https://claude.ai" target="_blank">claude.ai</a> y regístrate con tu email. La cuenta gratuita incluye conversaciones diarias — suficiente para usar Jane regularmente. No necesitas Claude Pro.',
+    's1-btn':'Crear cuenta gratis →',
+    's2-title':'Crea un nuevo Project',
+    's2-desc':'En la barra lateral de Claude.ai, haz clic en <strong>"Projects"</strong> → <strong>"New Project"</strong>. Dale un nombre como <code style="background:var(--surface2);padding:.1em .4em;border-radius:3px;font-family:var(--font);font-size:.82em">OpenJane</code>.',
+    'prompt-label':'System Prompt — OpenJane · quant-analyst',
+    's3-title':'Copia el system prompt de Jane',
+    's3-desc':'Este prompt convierte a Claude en Jane. Cópialo con el botón y pégalo en el campo <strong>"Project Instructions"</strong> de tu Project.',
+    's3-note':'💡 El prompt funciona <strong style="color:var(--text)">sin APIs externas</strong> — Jane razona con su conocimiento general y aclara siempre cuándo no tiene datos en vivo.',
+    's4-title':'Pega y guarda en Project Instructions',
+    's4-desc':'En tu Project, busca el campo <strong>"Project Instructions"</strong>. Pega el prompt, haz clic en <strong>Save</strong>. Desde ahora, toda conversación en ese Project tendrá a Jane como agente.',
+    's4-btn':'Ir a Claude.ai y crear Project →',
+    'try-title':'¿Qué puedes preguntarle a Jane?',
+    'try-sub':'Dentro de tu Project en Claude.ai, prueba estas preguntas de ejemplo.',
+    'try-e1':'¿Cómo está el mercado ahora mismo?','try-e2':'¿Es buen momento para operar Apple?',
+    'try-e3':'¿Hay divergencia entre estas dos bolsas?','try-e4':'¿Están caras o baratas las opciones del S&P?',
+    'try-cta':'🧠 Abrir Claude.ai y empezar',
+    'cmd-label':'Referencia rápida','cmd-title':'Comandos de Jane',
+    'cmd-c1':'Régimen de mercado global. Siempre el primer paso.','cmd-c2':'Microestructura: liquidez, spread, tendencia, flujo.',
+    'cmd-c3':'Par estadístico: correlación, Z-score, half-life, zonas.','cmd-c4':'Volatilidad implícita vs histórica, skew, prima de vol.',
+    'cmd-c5':'Muestra todos los comandos y ejemplos.','cmd-nl-title':'Lenguaje natural',
+    'cmd-nl-desc':'También puedes escribir libremente: "analiza Tesla", "¿hay spread entre ICE y CBOE?".',
+    'faq-label':'Preguntas frecuentes','faq-title':'Lo que suelen preguntar',
+    'faq-q1':'¿Jane tiene datos de mercado en tiempo real dentro de Claude.ai?',
+    'faq-a1':'No. En la versión Claude.ai, Jane trabaja con el conocimiento general de Claude hasta su fecha de corte. Para datos en vivo usa <a href="https://openjane.onrender.com/analyze" target="_blank">openjane.onrender.com/analyze</a>.',
+    'faq-q2':'¿Necesito Claude Pro para usar Jane?',
+    'faq-a2':'No. La cuenta gratuita incluye conversaciones suficientes para usar Jane regularmente.',
+    'faq-q3':'¿Anthropic guarda mis conversaciones con Jane?',
+    'faq-a3':'Anthropic gestiona los datos según su <a href="https://www.anthropic.com/privacy" target="_blank">política de privacidad</a>. OpenJane no tiene acceso a ninguna conversación en Claude.ai.',
+    'faq-q4':'¿Puedo tener varias versiones de Jane en diferentes Projects?',
+    'faq-a4':'Sí. Puedes crear un Project por idioma, uno enfocado en opciones, otro en stat-arb. Cada Project tiene su propio prompt y conversaciones.',
+    'faq-q5':'¿Cuándo vale la pena pasar a la versión con API keys?',
+    'faq-a5':'Cuando quieras precios EOD reales, medias móviles actuales, yield curve live y Z-scores calculados. Las API keys de Massive y EODHD son gratuitas — <a href="/api-keys">guía aquí</a>.',
+    'f-live':'Análisis en vivo','f-keys':'API Keys','f-gloss':'Glosario',
+  },
+  en: {
+    'nav-live':'Live Analysis','nav-keys':'API Keys','nav-gloss':'Glossary',
+    'h-badge':'● No API keys · No install · Free',
+    'h-title':'Use <em>Jane</em> on Claude.ai<br>with zero setup',
+    'h-sub':'Claude.ai lets you create a custom agent with fixed instructions. In 4 steps Jane is running in your account — no own API keys, no code, no risk.',
+    'vs-claude-title':'Via Claude.ai','vs-render-title':'Via Render (live)',
+    'vs-c1':'No own API keys','vs-c2':'Nothing to install','vs-c3':'No forms or servers','vs-c4':'Free with Claude account','vs-c5':'No live market data',
+    'vs-r1':'Real data (EOD)','vs-r2':'Automatic analysis','vs-r3':'Requires 2 API keys','vs-r4':'Cold start ~30s','vs-r5':'Also free',
+    'h-cta1':'🧠 Go to Claude.ai',
+    'steps-label':'Setup','steps-title':'4 steps. 5 minutes. Forever.',
+    's1-title':'Create a free Claude.ai account',
+    's1-desc':'Go to <a href="https://claude.ai" target="_blank">claude.ai</a> and sign up with your email. The free account includes daily conversations — enough to use Jane regularly. No Claude Pro needed.',
+    's1-btn':'Create free account →',
+    's2-title':'Create a new Project',
+    's2-desc':'In the Claude.ai sidebar, click <strong>"Projects"</strong> → <strong>"New Project"</strong>. Name it something like <code style="background:var(--surface2);padding:.1em .4em;border-radius:3px;font-family:var(--font);font-size:.82em">OpenJane</code>.',
+    'prompt-label':'System Prompt — OpenJane · quant-analyst',
+    's3-title':'Copy Jane\'s system prompt',
+    's3-desc':'This prompt turns Claude into Jane. Copy it with the button and paste it into the <strong>"Project Instructions"</strong> field of your Project.',
+    's3-note':'💡 The prompt works <strong style="color:var(--text)">without external APIs</strong> — Jane reasons with her general knowledge and always clarifies when she lacks live data.',
+    's4-title':'Paste and save in Project Instructions',
+    's4-desc':'In your Project, find the <strong>"Project Instructions"</strong> field. Paste the prompt, click <strong>Save</strong>. From now on, every conversation in that Project will have Jane as the agent.',
+    's4-btn':'Go to Claude.ai and create Project →',
+    'try-title':'What can you ask Jane?',
+    'try-sub':'Inside your Claude.ai Project, try these example questions.',
+    'try-e1':'How is the market right now?','try-e2':'Is it a good time to trade Apple?',
+    'try-e3':'Is there a divergence between these two exchanges?','try-e4':'Are S&P options expensive or cheap?',
+    'try-cta':'🧠 Open Claude.ai and start',
+    'cmd-label':'Quick reference','cmd-title':'Jane\'s commands',
+    'cmd-c1':'Global market regime. Always the first step.','cmd-c2':'Microstructure: liquidity, spread, trend, flow.',
+    'cmd-c3':'Stat pair: correlation, Z-score, half-life, entry zones.','cmd-c4':'Implied vs historical volatility, skew, vol premium.',
+    'cmd-c5':'Shows all commands and examples.','cmd-nl-title':'Natural language',
+    'cmd-nl-desc':'You can also write freely: "analyze Tesla", "is there a spread between ICE and CBOE?".',
+    'faq-label':'FAQ','faq-title':'Common questions',
+    'faq-q1':'Does Jane have real-time market data inside Claude.ai?',
+    'faq-a1':'No. In the Claude.ai version, Jane works with Claude\'s general knowledge up to its training cutoff. For live data use <a href="https://openjane.onrender.com/analyze" target="_blank">openjane.onrender.com/analyze</a>.',
+    'faq-q2':'Do I need Claude Pro to use Jane?',
+    'faq-a2':'No. The free account includes enough daily conversations to use Jane regularly.',
+    'faq-q3':'Does Anthropic store my conversations with Jane?',
+    'faq-a3':'Anthropic manages data per their <a href="https://www.anthropic.com/privacy" target="_blank">privacy policy</a>. OpenJane has no access to any conversation on Claude.ai.',
+    'faq-q4':'Can I have multiple versions of Jane in different Projects?',
+    'faq-a4':'Yes. Create one Project per language, one focused on options, another on stat-arb. Each Project has its own prompt and conversations.',
+    'faq-q5':'When does it make sense to upgrade to the API keys version?',
+    'faq-a5':'When you want real EOD prices, current moving averages, live yield curve and calculated Z-scores. Massive and EODHD API keys are free — <a href="/api-keys">guide here</a>.',
+    'f-live':'Live Analysis','f-keys':'API Keys','f-gloss':'Glossary',
+  },
+  pt: {
+    'nav-live':'Análise ao vivo','nav-keys':'API Keys','nav-gloss':'Glossário',
+    'h-badge':'● Sem API keys · Sem instalar · Grátis',
+    'h-title':'Use <em>Jane</em> no Claude.ai<br>sem configurar nada',
+    'h-sub':'O Claude.ai permite criar um agente personalizado com instruções fixas. Em 4 passos a Jane está funcionando na sua conta — sem API keys próprias, sem código, sem risco.',
+    'vs-claude-title':'Via Claude.ai','vs-render-title':'Via Render (live)',
+    'vs-c1':'Sem API keys próprias','vs-c2':'Sem instalar nada','vs-c3':'Sem formulários ou servidores','vs-c4':'Grátis com conta Claude','vs-c5':'Sem dados de mercado ao vivo',
+    'vs-r1':'Dados reais (EOD)','vs-r2':'Análise automática','vs-r3':'Requer 2 API keys','vs-r4':'Cold start ~30s','vs-r5':'Também gratuito',
+    'h-cta1':'🧠 Ir ao Claude.ai',
+    'steps-label':'Configuração','steps-title':'4 passos. 5 minutos. Para sempre.',
+    's1-title':'Crie uma conta gratuita no Claude.ai',
+    's1-desc':'Acesse <a href="https://claude.ai" target="_blank">claude.ai</a> e cadastre-se com seu email. A conta gratuita inclui conversas diárias suficientes para usar a Jane regularmente.',
+    's1-btn':'Criar conta grátis →',
+    's2-title':'Crie um novo Project',
+    's2-desc':'Na barra lateral do Claude.ai, clique em <strong>"Projects"</strong> → <strong>"New Project"</strong>. Dê um nome como <code style="background:var(--surface2);padding:.1em .4em;border-radius:3px;font-family:var(--font);font-size:.82em">OpenJane</code>.',
+    'prompt-label':'System Prompt — OpenJane · quant-analyst',
+    's3-title':'Copie o system prompt da Jane',
+    's3-desc':'Este prompt transforma o Claude na Jane. Copie com o botão e cole no campo <strong>"Project Instructions"</strong> do seu Project.',
+    's3-note':'💡 O prompt funciona <strong style="color:var(--text)">sem APIs externas</strong> — a Jane raciocina com seu conhecimento geral e sempre esclarece quando não tem dados ao vivo.',
+    's4-title':'Cole e salve em Project Instructions',
+    's4-desc':'No seu Project, encontre o campo <strong>"Project Instructions"</strong>. Cole o prompt e clique em <strong>Save</strong>. A partir daí, toda conversa no Project terá a Jane como agente.',
+    's4-btn':'Ir ao Claude.ai e criar Project →',
+    'try-title':'O que você pode perguntar à Jane?',
+    'try-sub':'Dentro do seu Project no Claude.ai, experimente essas perguntas de exemplo.',
+    'try-e1':'Como está o mercado agora?','try-e2':'É um bom momento para operar Apple?',
+    'try-e3':'Há divergência entre essas duas bolsas?','try-e4':'As opções do S&P estão caras ou baratas?',
+    'try-cta':'🧠 Abrir Claude.ai e começar',
+    'cmd-label':'Referência rápida','cmd-title':'Comandos da Jane',
+    'cmd-c1':'Regime de mercado global. Sempre o primeiro passo.','cmd-c2':'Microestrutura: liquidez, spread, tendência, fluxo.',
+    'cmd-c3':'Par estatístico: correlação, Z-score, half-life, zonas.','cmd-c4':'Volatilidade implícita vs histórica, skew, prêmio de vol.',
+    'cmd-c5':'Mostra todos os comandos e exemplos.','cmd-nl-title':'Linguagem natural',
+    'cmd-nl-desc':'Você também pode escrever livremente: "analise Tesla", "há spread entre ICE e CBOE?".',
+    'faq-label':'Perguntas frequentes','faq-title':'O que costumam perguntar',
+    'faq-q1':'A Jane tem dados de mercado em tempo real no Claude.ai?',
+    'faq-a1':'Não. Na versão Claude.ai, a Jane usa o conhecimento geral do Claude até sua data de corte. Para dados ao vivo use <a href="https://openjane.onrender.com/analyze" target="_blank">openjane.onrender.com/analyze</a>.',
+    'faq-q2':'Preciso de Claude Pro para usar a Jane?',
+    'faq-a2':'Não. A conta gratuita inclui conversas suficientes para usar a Jane regularmente.',
+    'faq-q3':'A Anthropic guarda minhas conversas com a Jane?',
+    'faq-a3':'A Anthropic gerencia dados conforme sua <a href="https://www.anthropic.com/privacy" target="_blank">política de privacidade</a>. O OpenJane não tem acesso a nenhuma conversa no Claude.ai.',
+    'faq-q4':'Posso ter várias versões da Jane em Projects diferentes?',
+    'faq-a4':'Sim. Crie um Project por idioma, um focado em opções, outro em stat-arb. Cada Project tem seu próprio prompt e conversas.',
+    'faq-q5':'Quando vale a pena mudar para a versão com API keys?',
+    'faq-a5':'Quando quiser preços EOD reais, médias móveis atuais, yield curve ao vivo e Z-scores calculados. As API keys de Massive e EODHD são gratuitas — <a href="/api-keys">guia aqui</a>.',
+    'f-live':'Análise ao vivo','f-keys':'API Keys','f-gloss':'Glossário',
+  },
+};
+
+function setLang(lang) {
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent === lang.toUpperCase()));
+  document.documentElement.lang = lang;
+  Object.entries(T[lang]).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = val;
+  });
+}
+
+// ── copy prompt ────────────────────────────────────────────────────────────
+function copyPrompt() {
+  const text = document.getElementById('promptText').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✓ Copiado';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 Copiar'; btn.classList.remove('copied'); }, 2500);
+  });
+}
+
+// ── faq toggle ─────────────────────────────────────────────────────────────
+function toggleFaq(el) { el.classList.toggle('open'); }
+
+// ── auto-detect lang ───────────────────────────────────────────────────────
+(function() {
+  const nav = (navigator.language || 'es').toLowerCase();
+  const lang = nav.startsWith('pt') ? 'pt' : nav.startsWith('en') ? 'en' : 'es';
+  setLang(lang);
+})();
+</script>
+</body>
+</html>

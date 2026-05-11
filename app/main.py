@@ -212,6 +212,11 @@ def api_keys():
 def analyze_page():
     return FileResponse(str(DOCS / "analyze.html"))
 
+@app.get("/claude-setup")
+@app.get("/claude-setup.html")
+def claude_setup():
+    return FileResponse(str(DOCS / "claude-setup.html"))
+
 @app.get("/")
 @app.get("/index.html")
 def index():
