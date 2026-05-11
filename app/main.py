@@ -293,6 +293,58 @@ class PortfolioSnapshotReq(BaseModel):
             cleaned.append(t2)
         return cleaned
 
+class BacktestPosition(BaseModel):
+    ticker:   str
+    invested: float
+
+    @field_validator("ticker")
+    @classmethod
+    def ticker_ok(cls, v):
+        t = v.strip().upper()[:12]
+        if not TICKER_RE.match(t):
+            raise ValueError(f"Ticker inválido: '{v}'")
+        return t
+
+    @field_validator("invested")
+    @classmethod
+    def invested_ok(cls, v):
+        if v <= 0 or v > 1_000_000:
+            raise ValueError("Monto fuera de rango")
+        return round(v, 2)
+
+class BacktestReq(BaseModel):
+    eodhd_key:   str
+    positions:   list[BacktestPosition]
+    date_from:   str   # YYYY-MM-DD
+    date_to:     str   # YYYY-MM-DD
+
+    @field_validator("eodhd_key")
+    @classmethod
+    def key_ok(cls, v):
+        v = v.strip()
+        if not v or len(v) < 8 or len(v) > 200:
+            raise ValueError("EODHD API key inválida")
+        return v
+
+    @field_validator("date_from", "date_to")
+    @classmethod
+    def date_ok(cls, v):
+        try:
+            datetime.strptime(v, "%Y-%m-%d")
+        except ValueError:
+            raise ValueError(f"Fecha inválida: '{v}'. Usar YYYY-MM-DD")
+        return v
+
+    @field_validator("positions")
+    @classmethod
+    def positions_ok(cls, v):
+        if not v or len(v) > 10:
+            raise ValueError("Entre 1 y 10 posiciones")
+        tickers = [p.ticker for p in v]
+        if len(set(tickers)) != len(tickers):
+            raise ValueError("Tickers duplicados")
+        return v
+
 # ── endpoints ─────────────────────────────────────────────────────────────────
 @app.get("/api/health")
 def health():
@@ -371,6 +423,115 @@ def statarb(req: PairRequest, request: Request):
     except Exception as e:
         raise HTTPException(500, str(e)[:200])
 
+@app.post("/api/backtest")
+def backtest(req: BacktestReq, request: Request):
+    """
+    Backtesting histórico con ventana fija.
+    Calcula P&L real entre date_from y date_to usando precios EOD de EODHD.
+    Devuelve resultado por ticker + serie diaria para gráfico + CSV data.
+    """
+    check_rate(_real_ip(request))
+    try:
+        d_from = datetime.strptime(req.date_from, "%Y-%m-%d")
+        d_to   = datetime.strptime(req.date_to,   "%Y-%m-%d")
+        if d_from >= d_to:
+            raise HTTPException(422, "date_from debe ser anterior a date_to")
+        delta_days = (d_to - d_from).days
+        if delta_days > 1825:  # 5 años máximo
+            raise HTTPException(422, "Ventana máxima: 5 años")
+        if delta_days < 2:
+            raise HTTPException(422, "Ventana mínima: 2 días")
+
+        results   = []
+        all_dates = set()
+
+        for pos in req.positions:
+            raw = _eodhd_get(req.eodhd_key, f"/eod/{pos.ticker}", {
+                "order": "a",
+                "from":  req.date_from,
+                "to":    req.date_to,
+            })
+            if not isinstance(raw, list) or len(raw) < 2:
+                results.append({
+                    "ticker":  pos.ticker,
+                    "error":   f"Datos insuficientes ({len(raw) if isinstance(raw,list) else 0} días)",
+                    "invested": pos.invested,
+                })
+                continue
+
+            entry_price = raw[0]["adjusted_close"]
+            exit_price  = raw[-1]["adjusted_close"]
+            shares      = pos.invested / entry_price if entry_price else 0
+            entry_date  = raw[0]["date"]
+            exit_date   = raw[-1]["date"]
+            n_days      = len(raw)
+
+            # Serie diaria para gráfico
+            daily = []
+            for row in raw:
+                p   = row["adjusted_close"]
+                val = shares * p
+                pnl = val - pos.invested
+                daily.append({
+                    "date":          row["date"],
+                    "price":         round(p, 4),
+                    "value":         round(val, 2),
+                    "pnl_usd":       round(pnl, 2),
+                    "pnl_pct":       round((pnl / pos.invested) * 100, 3),
+                })
+                all_dates.add(row["date"])
+
+            # Drawdown máximo
+            values  = [d["value"] for d in daily]
+            peak    = values[0]
+            max_dd  = 0.0
+            for v in values:
+                peak   = max(peak, v)
+                dd     = (peak - v) / peak if peak else 0
+                max_dd = max(max_dd, dd)
+
+            final_value = shares * exit_price
+            pnl_usd     = final_value - pos.invested
+            pnl_pct     = (pnl_usd / pos.invested) * 100 if pos.invested else 0
+
+            results.append({
+                "ticker":       pos.ticker,
+                "invested":     pos.invested,
+                "shares":       round(shares, 6),
+                "entry_date":   entry_date,
+                "entry_price":  round(entry_price, 4),
+                "exit_date":    exit_date,
+                "exit_price":   round(exit_price, 4),
+                "final_value":  round(final_value, 2),
+                "pnl_usd":      round(pnl_usd, 2),
+                "pnl_pct":      round(pnl_pct, 3),
+                "max_drawdown_pct": round(max_dd * 100, 2),
+                "n_days":       n_days,
+                "daily":        daily,
+            })
+
+        # Totales
+        ok = [r for r in results if "error" not in r]
+        total_invested = sum(r["invested"]    for r in ok)
+        total_final    = sum(r["final_value"] for r in ok)
+        total_pnl_usd  = total_final - total_invested
+        total_pnl_pct  = (total_pnl_usd / total_invested * 100) if total_invested else 0
+
+        return {
+            "date_from":       req.date_from,
+            "date_to":         req.date_to,
+            "trading_days":    len(all_dates),
+            "total_invested":  round(total_invested, 2),
+            "total_final":     round(total_final, 2),
+            "total_pnl_usd":   round(total_pnl_usd, 2),
+            "total_pnl_pct":   round(total_pnl_pct, 3),
+            "positions":       results,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, str(e)[:200])
+
 @app.post("/api/portfolio-snapshot")
 def portfolio_snapshot(req: PortfolioSnapshotReq, request: Request):
     """
@@ -433,6 +594,10 @@ def paper_trading_edu(): return FileResponse(str(DOCS/"paper-trading-edu.html"))
 @app.get("/portfolio")
 @app.get("/portfolio.html")
 def portfolio_page(): return FileResponse(str(DOCS/"portfolio.html"))
+
+@app.get("/backtester")
+@app.get("/backtester.html")
+def backtester_page(): return FileResponse(str(DOCS/"backtester.html"))
 
 @app.get("/")
 @app.get("/index.html")

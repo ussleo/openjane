@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backtester Histórico · OpenJane</title>
+<style>
+  :root {
+    --bg:#0a0e1a; --panel:#111827; --border:#1e2d45; --accent:#00d4ff;
+    --green:#00ff88; --red:#ff4757; --yellow:#ffd32a; --muted:#6b7280;
+    --text:#e2e8f0; --font:'JetBrains Mono','Courier New',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:.875rem;min-height:100vh}
+  nav{display:flex;justify-content:space-between;align-items:center;padding:.75rem 2rem;
+      background:var(--panel);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+  .nav-brand{font-weight:700;color:var(--accent);font-size:1rem}
+  .nav-brand span{color:var(--muted);font-weight:400}
+  .nav-links{display:flex;gap:1.2rem;align-items:center}
+  .nav-links a{color:var(--muted);font-size:.8rem;text-decoration:none;transition:color .2s}
+  .nav-links a:hover{color:var(--text)} .nav-links a.active{color:var(--accent)}
+  .container{max-width:1000px;margin:0 auto;padding:2rem 1.5rem}
+  .page-header{margin-bottom:2rem;border-bottom:1px solid var(--border);padding-bottom:1.5rem}
+  .tag{font-size:.7rem;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:.5rem}
+  h1{font-size:1.8rem;font-weight:700}
+  .sub{color:var(--muted);margin-top:.5rem;line-height:1.6;font-size:.85rem}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:1.5rem;margin-bottom:1.5rem}
+  .card-title{font-size:.75rem;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:1rem}
+  label{font-size:.75rem;color:var(--muted);display:block;margin-bottom:.3rem}
+  input[type=text],input[type=number],input[type=password],input[type=date]{
+    background:var(--bg);border:1px solid var(--border);color:var(--text);
+    padding:.55rem .8rem;border-radius:4px;font-family:var(--font);font-size:.85rem;
+    width:100%;transition:border-color .2s}
+  input:focus{outline:none;border-color:var(--accent)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem}
+  .ticker-row{display:grid;grid-template-columns:90px 1fr 110px 28px;gap:.5rem;align-items:end;margin-bottom:.5rem}
+  .remove-btn{background:none;border:1px solid var(--border);color:var(--muted);cursor:pointer;
+              border-radius:4px;font-size:.85rem;padding:.45rem .4rem;transition:all .2s}
+  .remove-btn:hover{border-color:var(--red);color:var(--red)}
+  .btn{padding:.7rem 1.4rem;border-radius:6px;font-family:var(--font);font-size:.85rem;
+       font-weight:600;cursor:pointer;border:none;transition:all .2s;letter-spacing:.5px}
+  .btn-primary{background:var(--accent);color:var(--bg)}
+  .btn-primary:hover{background:#00b8d9}
+  .btn-primary:disabled{background:var(--muted);cursor:not-allowed}
+  .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+  .btn-row{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;margin-top:1rem}
+  #addTickerBtn{background:none;border:1px dashed var(--border);color:var(--muted);
+                padding:.4rem .8rem;border-radius:4px;cursor:pointer;
+                font-family:var(--font);font-size:.8rem;transition:all .2s;margin-top:.5rem}
+  #addTickerBtn:hover{border-color:var(--accent);color:var(--accent)}
+  .total-bar{display:flex;justify-content:space-between;align-items:center;
+             background:var(--bg);border:1px solid var(--border);border-radius:6px;
+             padding:.75rem 1rem;margin:1rem 0}
+  .total-bar .lbl{color:var(--muted);font-size:.8rem}
+  .total-bar .amt{font-size:1.1rem;font-weight:700}
+  .amt.ok{color:var(--green)} .amt.zero{color:var(--muted)} .amt.over{color:var(--red)}
+  .hint{font-size:.75rem;color:var(--muted);margin-top:.3rem;line-height:1.5}
+  .hint a{color:var(--accent)}
+  .spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);
+           border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;
+           vertical-align:middle;margin-right:6px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .err-msg{color:var(--red);font-size:.8rem;margin-top:.5rem}
+  /* ── resultados ── */
+  .pnl-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+  .pnl-card{background:var(--bg);border:1px solid var(--border);border-radius:6px;
+            padding:1rem;text-align:center}
+  .pnl-card .pl{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+  .pnl-card .pv{font-size:1.4rem;font-weight:700;margin-top:.3rem}
+  .pnl-card.gain .pv{color:var(--green)} .pnl-card.loss .pv{color:var(--red)}
+  .pnl-card.flat .pv{color:var(--muted)}
+  .results-table{width:100%;border-collapse:collapse}
+  .results-table th{text-align:left;font-size:.7rem;color:var(--muted);text-transform:uppercase;
+                    letter-spacing:1px;padding:.5rem .75rem;border-bottom:1px solid var(--border)}
+  .results-table td{padding:.7rem .75rem;border-bottom:1px solid var(--border);font-size:.83rem}
+  .results-table tr:last-child td{border-bottom:none}
+  .num{text-align:right;font-variant-numeric:tabular-nums}
+  .pos{color:var(--green)} .neg{color:var(--red)} .neu{color:var(--muted)}
+  .ticker-lbl{font-weight:700}
+  .total-row td{font-weight:700;background:var(--bg)}
+  /* ── chart placeholder ── */
+  .chart-wrap{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:1rem}
+  canvas{width:100%!important}
+  /* ── badge ── */
+  .badge{display:inline-block;padding:.15rem .5rem;border-radius:4px;font-size:.7rem;font-weight:700}
+  .badge-win{background:rgba(0,255,136,.1);color:var(--green);border:1px solid var(--green)}
+  .badge-loss{background:rgba(255,71,87,.1);color:var(--red);border:1px solid var(--red)}
+  .badge-flat{background:rgba(107,114,128,.1);color:var(--muted);border:1px solid var(--border)}
+  /* ── responsive ── */
+  @media(max-width:640px){.pnl-grid{grid-template-columns:1fr 1fr}.grid2,.grid3{grid-template-columns:1fr}}
+  #resultsSection{display:none}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">Open<span>Jane</span></div>
+  <div class="nav-links">
+    <a href="index.html">Inicio</a>
+    <a href="paper-trading-edu.html">Educación</a>
+    <a href="portfolio.html">🎯 Teatro</a>
+    <a href="backtester.html" class="active">📊 Backtester</a>
+    <a href="analyze.html">Analizar</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="page-header">
+    <div class="tag">Backtester Histórico · EODHD</div>
+    <h1>¿Qué habría pasado?</h1>
+    <p class="sub">
+      Elegí tickers, fechas y montos virtuales. Jane calcula el resultado real al instante
+      usando precios históricos EOD. Sin esperar. Sin riesgo. Exportá el CSV y estudiá la serie completa.
+    </p>
+  </div>
+
+  <!-- ── SETUP ── -->
+  <div id="setupSection">
+
+    <!-- API Key -->
+    <div class="card">
+      <div class="card-title">1 · EODHD API Key</div>
+      <input type="password" id="eodhdKey" placeholder="tu EODHD API key"
+             autocomplete="off" spellcheck="false">
+      <p class="hint">Gratis en <a href="api-keys.html" target="_blank">eodhd.com →</a>
+         No se almacena en el servidor.</p>
+    </div>
+
+    <!-- Ventana de tiempo -->
+    <div class="card">
+      <div class="card-title">2 · Ventana de tiempo</div>
+      <div class="grid2">
+        <div>
+          <label>Fecha de entrada</label>
+          <input type="date" id="dateFrom" value="2025-01-02">
+        </div>
+        <div>
+          <label>Fecha de salida</label>
+          <input type="date" id="dateTo" value="2025-04-30">
+        </div>
+      </div>
+      <p class="hint" style="margin-top:.75rem">
+        Usamos precios de cierre ajustados (EOD). Máximo 5 años de historia.
+        Los resultados reflejan lo que habrías ganado/perdido sin costos de transacción.
+      </p>
+      <div class="btn-row" style="margin-top:.75rem;flex-wrap:wrap;gap:.4rem">
+        <button class="btn btn-ghost" style="font-size:.75rem;padding:.4rem .8rem"
+                onclick="setWindow(30)">30 días</button>
+        <button class="btn btn-ghost" style="font-size:.75rem;padding:.4rem .8rem"
+                onclick="setWindow(90)">3 meses</button>
+        <button class="btn btn-ghost" style="font-size:.75rem;padding:.4rem .8rem"
+                onclick="setWindow(180)">6 meses</button>
+        <button class="btn btn-ghost" style="font-size:.75rem;padding:.4rem .8rem"
+                onclick="setWindow(365)">1 año</button>
+        <button class="btn btn-ghost" style="font-size:.75rem;padding:.4rem .8rem"
+                onclick="setWindow(730)">2 años</button>
+      </div>
+    </div>
+
+    <!-- Tickers -->
+    <div class="card">
+      <div class="card-title">3 · Cartera virtual</div>
+      <p class="hint" style="margin-bottom:.75rem">
+        Escribí el ticker y cuántos dólares virtuales asignás. Distribución igual automática disponible abajo.
+      </p>
+      <div id="tickerRows"></div>
+      <button id="addTickerBtn" onclick="addRow()">+ agregar ticker</button>
+      <div class="total-bar">
+        <span class="lbl">Total a invertir</span>
+        <span class="amt zero" id="totalAmt">$0.00</span>
+      </div>
+      <div class="btn-row" style="margin-top:.5rem">
+        <button class="btn btn-ghost" style="font-size:.75rem;padding:.4rem .8rem"
+                onclick="distributeEqual(100)">Distribuir $100 en partes iguales</button>
+        <button class="btn btn-ghost" style="font-size:.75rem;padding:.4rem .8rem"
+                onclick="distributeEqual(1000)">Distribuir $1000</button>
+      </div>
+      <div id="setupErr" class="err-msg" style="display:none"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="runBtn" onclick="runBacktest()">
+        📊 Correr backtesting
+      </button>
+      <span id="loadingMsg" style="display:none">
+        <span class="spinner"></span> Consultando EODHD…
+      </span>
+    </div>
+  </div><!-- /setupSection -->
+
+  <!-- ── RESULTADOS ── -->
+  <div id="resultsSection">
+
+    <div class="card">
+      <div class="card-title" id="resultTitle">Resultado del backtesting</div>
+
+      <div class="pnl-grid" id="pnlGrid"></div>
+
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th>Ticker</th>
+            <th class="num">Invertido</th>
+            <th class="num">Entrada</th>
+            <th class="num">Salida</th>
+            <th class="num">Valor final</th>
+            <th class="num">P&amp;L $</th>
+            <th class="num">P&amp;L %</th>
+            <th class="num">Max DD</th>
+            <th class="num">Días</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+        <tfoot id="resultsFoot"></tfoot>
+      </table>
+    </div>
+
+    <!-- Gráfico -->
+    <div class="card">
+      <div class="card-title">Evolución del valor ($) · día a día</div>
+      <div class="chart-wrap">
+        <canvas id="chart" height="280"></canvas>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="downloadCSV()">⬇ Descargar CSV</button>
+      <button class="btn btn-ghost" onclick="resetForm()">← Nueva simulación</button>
+    </div>
+
+  </div><!-- /resultsSection -->
+
+</div><!-- /container -->
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+// ═══════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════
+const API_BASE = (() => {
+  const h = location.hostname;
+  if (h === 'localhost' || h === '127.0.0.1') return 'http://localhost:8000';
+  if (h === 'ussleo.github.io') return 'https://openjane.onrender.com';
+  return '';
+})();
+
+const DEFAULTS = [
+  {ticker:'ICE',  amt:25},
+  {ticker:'CBOE', amt:25},
+  {ticker:'VIRT', amt:25},
+  {ticker:'SPY',  amt:25},
+];
+
+let rowCount = 0;
+let chartInst = null;
+let lastResult = null;
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  DEFAULTS.forEach(d => addRow(d.ticker, d.amt));
+});
+
+// ═══════════════════════════════════════════════
+// DATE HELPERS
+// ═══════════════════════════════════════════════
+function setWindow(days) {
+  const to   = new Date();
+  const from = new Date(to - days * 864e5);
+  document.getElementById('dateTo').value   = to.toISOString().slice(0,10);
+  document.getElementById('dateFrom').value = from.toISOString().slice(0,10);
+}
+
+// ═══════════════════════════════════════════════
+// TICKER ROWS
+// ═══════════════════════════════════════════════
+function addRow(ticker='', amt='') {
+  rowCount++;
+  const id = rowCount;
+  const d  = document.createElement('div');
+  d.className = 'ticker-row';
+  d.id = `row_${id}`;
+  d.innerHTML = `
+    <div><label>Ticker</label>
+      <input type="text" id="tk_${id}" value="${ticker}"
+             placeholder="ICE" oninput="this.value=this.value.toUpperCase();calcTotal()"
+             maxlength="12"></div>
+    <div style="grid-column:2"><label>Nombre (opcional)</label>
+      <input type="text" id="nm_${id}" placeholder="ej. Intercontinental Exchange"></div>
+    <div><label>USD virtuales</label>
+      <input type="number" id="am_${id}" value="${amt}"
+             placeholder="25" min="1" oninput="calcTotal()"></div>
+    <button class="remove-btn" onclick="removeRow(${id})">✕</button>`;
+  document.getElementById('tickerRows').appendChild(d);
+  calcTotal();
+}
+
+function removeRow(id) {
+  document.getElementById(`row_${id}`)?.remove();
+  calcTotal();
+}
+
+function calcTotal() {
+  let t = 0;
+  document.querySelectorAll('[id^="am_"]').forEach(i => t += parseFloat(i.value)||0);
+  const el = document.getElementById('totalAmt');
+  el.textContent = `$${t.toFixed(2)}`;
+  el.className = 'amt ' + (t <= 0 ? 'zero' : 'ok');
+}
+
+function distributeEqual(total) {
+  const inputs = [...document.querySelectorAll('[id^="am_"]')];
+  if (!inputs.length) return;
+  const each = (total / inputs.length).toFixed(2);
+  inputs.forEach(i => i.value = each);
+  calcTotal();
+}
+
+function getPositions() {
+  const rows = [];
+  document.querySelectorAll('[id^="am_"]').forEach(inp => {
+    const n  = inp.id.replace('am_','');
+    const tk = (document.getElementById(`tk_${n}`)?.value||'').trim().toUpperCase();
+    const am = parseFloat(inp.value)||0;
+    if (tk && am > 0) rows.push({ticker:tk, invested:am});
+  });
+  return rows;
+}
+
+// ═══════════════════════════════════════════════
+// RUN BACKTEST
+// ═══════════════════════════════════════════════
+async function runBacktest() {
+  const key  = document.getElementById('eodhdKey').value.trim();
+  const from = document.getElementById('dateFrom').value;
+  const to   = document.getElementById('dateTo').value;
+  const pos  = getPositions();
+  const errEl = document.getElementById('setupErr');
+  errEl.style.display = 'none';
+
+  if (!key || key.length < 8) {
+    errEl.textContent = '⚠ Ingresá tu EODHD API key.';
+    errEl.style.display = ''; return;
+  }
+  if (!from || !to) {
+    errEl.textContent = '⚠ Seleccioná fechas de entrada y salida.';
+    errEl.style.display = ''; return;
+  }
+  if (from >= to) {
+    errEl.textContent = '⚠ La fecha de entrada debe ser anterior a la de salida.';
+    errEl.style.display = ''; return;
+  }
+  if (!pos.length) {
+    errEl.textContent = '⚠ Agregá al menos un ticker con monto.';
+    errEl.style.display = ''; return;
+  }
+
+  document.getElementById('runBtn').disabled = true;
+  document.getElementById('loadingMsg').style.display = '';
+
+  try {
+    const res = await fetch(`${API_BASE}/api/backtest`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({eodhd_key:key, positions:pos, date_from:from, date_to:to}),
+    });
+    if (!res.ok) {
+      const e = await res.json().catch(()=>({}));
+      throw new Error(e.detail || `HTTP ${res.status}`);
+    }
+    lastResult = await res.json();
+    renderResults(lastResult);
+  } catch(e) {
+    errEl.textContent = `⚠ Error: ${e.message}`;
+    errEl.style.display = '';
+  } finally {
+    document.getElementById('runBtn').disabled = false;
+    document.getElementById('loadingMsg').style.display = 'none';
+  }
+}
+
+// ═══════════════════════════════════════════════
+// RENDER RESULTS
+// ═══════════════════════════════════════════════
+function renderResults(r) {
+  document.getElementById('setupSection').style.display = 'none';
+  document.getElementById('resultsSection').style.display = '';
+
+  // Título
+  document.getElementById('resultTitle').textContent =
+    `Resultado · ${r.date_from} → ${r.date_to} · ${r.trading_days} días hábiles`;
+
+  // KPI cards
+  const cls = r.total_pnl_usd > 0.01 ? 'gain' : r.total_pnl_usd < -0.01 ? 'loss' : 'flat';
+  const sign = r.total_pnl_usd >= 0 ? '+' : '';
+  document.getElementById('pnlGrid').innerHTML = `
+    <div class="pnl-card flat">
+      <div class="pl">Invertido</div>
+      <div class="pv">$${r.total_invested.toFixed(2)}</div>
+    </div>
+    <div class="pnl-card flat">
+      <div class="pl">Valor final</div>
+      <div class="pv">$${r.total_final.toFixed(2)}</div>
+    </div>
+    <div class="pnl-card ${cls}">
+      <div class="pl">P&L neto</div>
+      <div class="pv">${sign}$${r.total_pnl_usd.toFixed(2)}</div>
+    </div>
+    <div class="pnl-card ${cls}">
+      <div class="pl">Retorno</div>
+      <div class="pv">${sign}${r.total_pnl_pct.toFixed(2)}%</div>
+    </div>`;
+
+  // Tabla
+  const tbody = document.getElementById('resultsBody');
+  tbody.innerHTML = '';
+  for (const p of r.positions) {
+    if (p.error) {
+      tbody.innerHTML += `<tr>
+        <td class="ticker-lbl">${p.ticker}</td>
+        <td class="num">$${p.invested.toFixed(2)}</td>
+        <td colspan="7" class="neg">${p.error}</td></tr>`;
+      continue;
+    }
+    const pc  = p.pnl_usd >= 0.01 ? 'pos' : p.pnl_usd <= -0.01 ? 'neg' : 'neu';
+    const sgn = p.pnl_usd >= 0 ? '+' : '';
+    const badge = p.pnl_pct >= 1 ? 'badge-win' : p.pnl_pct <= -1 ? 'badge-loss' : 'badge-flat';
+    const bl    = p.pnl_pct >= 1 ? '▲' : p.pnl_pct <= -1 ? '▼' : '—';
+    tbody.innerHTML += `<tr>
+      <td><span class="ticker-lbl">${p.ticker}</span>
+          &nbsp;<span class="badge ${badge}">${bl}</span></td>
+      <td class="num">$${p.invested.toFixed(2)}</td>
+      <td class="num">$${p.entry_price.toFixed(2)}<br>
+          <span style="font-size:.7rem;color:var(--muted)">${p.entry_date}</span></td>
+      <td class="num">$${p.exit_price.toFixed(2)}<br>
+          <span style="font-size:.7rem;color:var(--muted)">${p.exit_date}</span></td>
+      <td class="num">$${p.final_value.toFixed(2)}</td>
+      <td class="num ${pc}">${sgn}$${p.pnl_usd.toFixed(2)}</td>
+      <td class="num ${pc}">${sgn}${p.pnl_pct.toFixed(2)}%</td>
+      <td class="num neg">-${p.max_drawdown_pct.toFixed(1)}%</td>
+      <td class="num">${p.n_days}</td></tr>`;
+  }
+
+  // Total row
+  const tc = r.total_pnl_usd >= 0.01 ? 'pos' : r.total_pnl_usd <= -0.01 ? 'neg' : 'neu';
+  const ts = r.total_pnl_usd >= 0 ? '+' : '';
+  document.getElementById('resultsFoot').innerHTML = `<tr class="total-row">
+    <td>TOTAL</td>
+    <td class="num">$${r.total_invested.toFixed(2)}</td>
+    <td class="num" colspan="2">—</td>
+    <td class="num">$${r.total_final.toFixed(2)}</td>
+    <td class="num ${tc}">${ts}$${r.total_pnl_usd.toFixed(2)}</td>
+    <td class="num ${tc}">${ts}${r.total_pnl_pct.toFixed(2)}%</td>
+    <td class="num" colspan="2">—</td></tr>`;
+
+  renderChart(r);
+}
+
+// ═══════════════════════════════════════════════
+// CHART
+// ═══════════════════════════════════════════════
+const COLORS = ['#00d4ff','#00ff88','#ffd32a','#ff4757','#a78bfa','#fb923c','#34d399','#f472b6'];
+
+function renderChart(r) {
+  if (chartInst) { chartInst.destroy(); chartInst = null; }
+
+  const ok = r.positions.filter(p => !p.error && p.daily?.length);
+  if (!ok.length) return;
+
+  const labels   = ok[0].daily.map(d => d.date);
+  const datasets = ok.map((p, i) => ({
+    label: p.ticker,
+    data:  p.daily.map(d => d.value),
+    borderColor: COLORS[i % COLORS.length],
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    pointRadius: 0,
+    tension: 0.3,
+  }));
+
+  const ctx = document.getElementById('chart').getContext('2d');
+  chartInst = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      interaction: { mode:'index', intersect:false },
+      plugins: {
+        legend: { labels:{ color:'#e2e8f0', font:{family:'JetBrains Mono'} } },
+        tooltip: {
+          backgroundColor:'#111827',
+          borderColor:'#1e2d45',
+          borderWidth:1,
+          titleColor:'#00d4ff',
+          bodyColor:'#e2e8f0',
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: $${ctx.parsed.y.toFixed(2)}`
+          }
+        }
+      },
+      scales: {
+        x: { ticks:{color:'#6b7280',maxTicksLimit:8,font:{size:11}}, grid:{color:'#1e2d45'} },
+        y: {
+          ticks:{color:'#6b7280',font:{size:11},
+                 callback: v => `$${v.toFixed(0)}`},
+          grid:{color:'#1e2d45'}
+        }
+      }
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════
+// CSV EXPORT
+// ═══════════════════════════════════════════════
+function downloadCSV() {
+  if (!lastResult) return;
+  const r = lastResult;
+  const rows = ['date,' + r.positions.filter(p=>!p.error).map(p=>
+    `${p.ticker}_price,${p.ticker}_value,${p.ticker}_pnl_usd,${p.ticker}_pnl_pct`
+  ).join(',')];
+
+  const ok = r.positions.filter(p => !p.error && p.daily?.length);
+  if (!ok.length) return;
+  const dates = ok[0].daily.map(d => d.date);
+  dates.forEach((date, i) => {
+    const cols = [date];
+    ok.forEach(p => {
+      const d = p.daily[i];
+      cols.push(d?.price??'', d?.value??'', d?.pnl_usd??'', d?.pnl_pct??'');
+    });
+    rows.push(cols.join(','));
+  });
+
+  const blob = new Blob([rows.join('\n')], {type:'text/csv'});
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `openjane-backtest-${r.date_from}-${r.date_to}.csv`;
+  a.click();
+}
+
+// ═══════════════════════════════════════════════
+// RESET
+// ═══════════════════════════════════════════════
+function resetForm() {
+  document.getElementById('resultsSection').style.display = 'none';
+  document.getElementById('setupSection').style.display = '';
+  if (chartInst) { chartInst.destroy(); chartInst = null; }
+  lastResult = null;
+}
+</script>
+</body>
+</html>
