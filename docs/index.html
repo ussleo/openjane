@@ -59,7 +59,7 @@
   .btn-ghost:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
 
   /* ── LANG SWITCHER ── */
-  .lang-switcher { display: flex; gap: 2px; }
+  .lang-switcher { display: flex; gap: 2px; align-items: center; }
   .lang-btn {
     padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600;
     cursor: pointer; border: 1px solid var(--border); background: transparent;
@@ -67,6 +67,23 @@
   }
   .lang-btn:hover { color: var(--text); border-color: #444; }
   .lang-btn.active { background: rgba(0,212,255,0.1); border-color: var(--accent); color: var(--accent); }
+
+  /* ── globe button ── */
+  .globe-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 50%;
+    font-size: 1.1rem; cursor: pointer; border: 2px solid transparent;
+    background: transparent; transition: all .3s; position: relative;
+    animation: globePulse 3s ease-in-out infinite;
+  }
+  .globe-btn:hover { transform: scale(1.15); }
+  .globe-btn.lang-es { border-color: #f59e0b; box-shadow: 0 0 10px rgba(245,158,11,0.5); }
+  .globe-btn.lang-en { border-color: #00d4ff; box-shadow: 0 0 10px rgba(0,212,255,0.5); }
+  .globe-btn.lang-pt { border-color: #00c896; box-shadow: 0 0 10px rgba(0,200,150,0.5); }
+  @keyframes globePulse {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+  }
 
   /* ── HERO ── */
   .hero {
@@ -290,16 +307,17 @@
 <nav>
   <div class="nav-brand">Open<span>Jane</span> <span style="font-size:0.7rem;margin-left:4px;color:var(--accent)">by Claude</span></div>
   <div class="nav-links">
-    <a href="#demo" data-i18n="nav.demo">Demo</a>
+    <a href="https://openjane.onrender.com/analyze" target="_blank" data-i18n="nav.demo">Demo</a>
     <a href="#glosario" data-i18n="nav.glossary">Glosario</a>
     <a href="#como-usar" data-i18n="nav.howto">Cómo usar</a>
     <a href="#datos" data-i18n="nav.data">Datos</a>
     <a href="https://github.com/ussleo/openjane" target="_blank">GitHub</a>
     <a href="api-keys.html" data-i18n="nav.apikeys">API Keys</a>
     <div class="lang-switcher">
-      <button class="lang-btn active" onclick="setLang('es')">ES</button>
-      <button class="lang-btn" onclick="setLang('en')">EN</button>
-      <button class="lang-btn" onclick="setLang('pt')">PT</button>
+      <button class="globe-btn lang-es" id="globeBtn" onclick="cycleLang()" title="ES / EN / PT">🌍</button>
+      <button class="lang-btn active" id="lb-es" onclick="setLang('es')">ES</button>
+      <button class="lang-btn" id="lb-en" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" id="lb-pt" onclick="setLang('pt')">PT</button>
     </div>
     <a href="https://openjane.onrender.com/analyze" target="_blank" class="btn btn-primary" data-i18n="nav.cta">Usar Jane ↗</a>
   </div>
@@ -785,17 +803,39 @@ const T = {
 };
 
 let currentLang = 'es';
+const LANGS = ['es','en','pt'];
+const GLOBE_COLOR = { es:'lang-es', en:'lang-en', pt:'lang-pt' };
 
 function setLang(lang) {
   currentLang = lang;
-  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent === lang.toUpperCase()));
+  // texto
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     const val = T[lang][key];
     if (val !== undefined) el.innerHTML = val;
   });
   document.documentElement.lang = lang;
+  // botones de texto
+  ['es','en','pt'].forEach(l => document.getElementById('lb-'+l)?.classList.toggle('active', l===lang));
+  // globo
+  const g = document.getElementById('globeBtn');
+  if (g) { g.className = 'globe-btn ' + GLOBE_COLOR[lang]; }
+  // re-render datos con nuevo idioma
+  if (document.getElementById('macroGrid')?.innerHTML) loadSnapshot();
 }
+
+function cycleLang() {
+  const next = LANGS[(LANGS.indexOf(currentLang)+1) % LANGS.length];
+  setLang(next);
+}
+
+// auto-detect idioma del navegador
+(function detectLang() {
+  const nav = (navigator.language || navigator.userLanguage || 'es').toLowerCase();
+  if (nav.startsWith('pt')) return setLang('pt');
+  if (nav.startsWith('en')) return setLang('en');
+  setLang('es'); // español por defecto
+})();
 
 // ── snapshot data ───────────────────────────────────────────────────────────
 const TREND_LABEL = {

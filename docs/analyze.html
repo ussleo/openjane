@@ -190,6 +190,46 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* ── onboarding banner ── */
+    .onboarding {
+      background: #0a1a0a;
+      border: 1px solid var(--green);
+      border-radius: 4px;
+      padding: 20px 24px;
+      margin-bottom: 28px;
+      position: relative;
+    }
+    .onboarding.dismissed { display: none; }
+    .ob-title { color: var(--green); font-size: 14px; font-weight: bold; margin-bottom: 10px; }
+    .ob-steps { display: flex; flex-direction: column; gap: 10px; margin: 12px 0; }
+    .ob-step { display: flex; gap: 12px; align-items: flex-start; }
+    .ob-num {
+      flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
+      background: var(--green); color: #000; font-weight: bold;
+      font-size: 11px; display: flex; align-items: center; justify-content: center;
+    }
+    .ob-text { font-size: 12px; line-height: 1.6; color: #aaa; }
+    .ob-text a { color: var(--green); }
+    .ob-text strong { color: #fff; }
+    .ob-warning {
+      margin-top: 12px; padding: 8px 12px;
+      background: #1a1000; border: 1px solid var(--yellow);
+      border-radius: 3px; font-size: 11px; color: var(--yellow);
+      line-height: 1.5;
+    }
+    .ob-lang { display: flex; gap: 6px; margin-bottom: 10px; }
+    .ob-lang-btn {
+      padding: 2px 8px; border-radius: 3px; font-size: 10px; font-weight: bold;
+      cursor: pointer; border: 1px solid #333; background: transparent; color: #666; font-family: var(--font);
+    }
+    .ob-lang-btn.active { border-color: var(--green); color: var(--green); background: #0a1a0a; }
+    .ob-close {
+      position: absolute; top: 12px; right: 14px;
+      background: transparent; border: none; color: var(--muted);
+      font-size: 16px; cursor: pointer; line-height: 1;
+    }
+    .ob-close:hover { color: var(--green); }
+
     /* ── disclaimer ── */
     .disclaimer {
       color: var(--muted);
@@ -213,8 +253,40 @@
 </nav>
 
 <div class="container">
-  <h1>&gt; Live Analysis</h1>
-  <p class="subtitle">Enter your API keys and a ticker to run a real-time quant analysis. Keys never leave your browser — sent directly to the analysis server over HTTPS.</p>
+
+  <!-- ONBOARDING BANNER -->
+  <div class="onboarding" id="onboarding">
+    <button class="ob-close" onclick="dismissOnboarding()" title="Cerrar / Close / Fechar">✕</button>
+    <div class="ob-lang">
+      <button class="ob-lang-btn active" onclick="obLang('es')">ES</button>
+      <button class="ob-lang-btn" onclick="obLang('en')">EN</button>
+      <button class="ob-lang-btn" onclick="obLang('pt')">PT</button>
+    </div>
+
+    <div class="ob-title" id="ob-title">[ OpenJane ] — Antes de empezar</div>
+
+    <div class="ob-steps" id="ob-steps">
+      <div class="ob-step">
+        <div class="ob-num">1</div>
+        <div class="ob-text"><strong>Obtén tus API keys gratuitas.</strong> Necesitas dos: <a href="https://massive.com" target="_blank">Massive.com</a> (datos de precio y volumen) y <a href="https://eodhd.com" target="_blank">EODHD</a> (medias móviles, yield curve). Ambas son gratis, sin tarjeta de crédito. <a href="/api-keys" target="_blank">Guía paso a paso →</a></div>
+      </div>
+      <div class="ob-step">
+        <div class="ob-num">2</div>
+        <div class="ob-text"><strong>Ingresa las keys en el formulario de abajo.</strong> Se envían directamente al servidor por HTTPS y nunca se almacenan. Cada análisis requiere ambas keys.</div>
+      </div>
+      <div class="ob-step">
+        <div class="ob-num">3</div>
+        <div class="ob-text"><strong>Elige un análisis y corre.</strong> Régimen de mercado (SPY global), Microestructura (cualquier ticker) o Stat-Arb (par de tickers). El primer resultado puede tardar ~30s si el servidor estaba inactivo.</div>
+      </div>
+    </div>
+
+    <div class="ob-warning" id="ob-warning">
+      ⚠ <strong>Sin API keys el sistema no funciona.</strong> Los datos de precio y macroeconómicos provienen de APIs externas — OpenJane no almacena ni cachea datos de mercado. Tiempo estimado para obtener tus keys: 3 minutos.
+    </div>
+  </div>
+
+  <h1 id="ob-h1">&gt; Live Analysis</h1>
+  <p class="subtitle" id="ob-sub">Enter your API keys and a ticker to run a real-time quant analysis. Keys never leave your browser — sent directly to the analysis server over HTTPS.</p>
 
   <!-- API Keys card -->
   <div class="card">
@@ -462,6 +534,75 @@
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', () => el.value = el.value.toUpperCase());
   });
+
+  // ── onboarding i18n ─────────────────────────────────────────────────────────
+  const OB = {
+    es: {
+      title: '[ OpenJane ] — Antes de empezar',
+      steps: [
+        ['Obtén tus API keys gratuitas.', 'Necesitas dos: <a href="https://massive.com" target="_blank">Massive.com</a> (precio/volumen) y <a href="https://eodhd.com" target="_blank">EODHD</a> (MA50/MA200, yield curve). Ambas son gratis, sin tarjeta. <a href="/api-keys" target="_blank">Guía paso a paso →</a>'],
+        ['Ingresa las keys en el formulario.', 'Se envían por HTTPS y nunca se almacenan. Cada análisis requiere ambas keys.'],
+        ['Elige un análisis y corre.', 'Régimen (SPY global), Microestructura (un ticker) o Stat-Arb (par de tickers). El primer resultado puede tardar ~30s si el servidor estaba inactivo.'],
+      ],
+      warning: '⚠ <strong>Sin API keys el sistema no funciona.</strong> OpenJane no almacena datos de mercado — consulta las APIs externas en cada análisis. Tiempo estimado para obtener tus keys: 3 minutos.',
+      h1: '> Análisis en vivo',
+      sub: 'Ingresa tus API keys y un ticker para correr un análisis cuantitativo en tiempo real. Las keys nunca se almacenan — se envían directo al servidor por HTTPS.',
+    },
+    en: {
+      title: '[ OpenJane ] — Before you start',
+      steps: [
+        ['Get your free API keys.', 'You need two: <a href="https://massive.com" target="_blank">Massive.com</a> (price/volume) and <a href="https://eodhd.com" target="_blank">EODHD</a> (MA50/MA200, yield curve). Both are free, no credit card. <a href="/api-keys" target="_blank">Step-by-step guide →</a>'],
+        ['Enter the keys in the form below.', 'They are sent over HTTPS and never stored. Every analysis requires both keys.'],
+        ['Pick an analysis and run.', 'Market Regime (SPY global), Microstructure (one ticker) or Stat-Arb (ticker pair). First result may take ~30s if the server was sleeping.'],
+      ],
+      warning: '⚠ <strong>Without API keys nothing works.</strong> OpenJane does not store market data — it queries external APIs on each request. Estimated time to get your keys: 3 minutes.',
+      h1: '> Live Analysis',
+      sub: 'Enter your API keys and a ticker to run a real-time quant analysis. Keys never leave your browser — sent directly to the analysis server over HTTPS.',
+    },
+    pt: {
+      title: '[ OpenJane ] — Antes de começar',
+      steps: [
+        ['Obtenha suas API keys gratuitas.', 'Você precisa de duas: <a href="https://massive.com" target="_blank">Massive.com</a> (preço/volume) e <a href="https://eodhd.com" target="_blank">EODHD</a> (MA50/MA200, curva de juros). Ambas são gratuitas, sem cartão. <a href="/api-keys" target="_blank">Guia passo a passo →</a>'],
+        ['Insira as keys no formulário abaixo.', 'São enviadas por HTTPS e nunca armazenadas. Cada análise requer ambas as keys.'],
+        ['Escolha uma análise e execute.', 'Regime de mercado (SPY global), Microestrutura (um ticker) ou Stat-Arb (par de tickers). O primeiro resultado pode levar ~30s se o servidor estava inativo.'],
+      ],
+      warning: '⚠ <strong>Sem API keys o sistema não funciona.</strong> O OpenJane não armazena dados de mercado — consulta as APIs externas em cada análise. Tempo estimado para obter as keys: 3 minutos.',
+      h1: '> Análise ao vivo',
+      sub: 'Insira suas API keys e um ticker para executar uma análise quantitativa em tempo real. As keys nunca são armazenadas — enviadas diretamente ao servidor por HTTPS.',
+    },
+  };
+
+  let obCurrentLang = 'es';
+
+  function obLang(lang) {
+    obCurrentLang = lang;
+    document.querySelectorAll('.ob-lang-btn').forEach(b => b.classList.toggle('active', b.textContent === lang.toUpperCase()));
+    const d = OB[lang];
+    document.getElementById('ob-title').textContent   = d.title;
+    document.getElementById('ob-warning').innerHTML   = d.warning;
+    document.getElementById('ob-h1').textContent      = d.h1;
+    document.getElementById('ob-sub').textContent     = d.sub;
+    document.getElementById('ob-steps').innerHTML     = d.steps.map(([bold, rest]) =>
+      `<div class="ob-step"><div class="ob-num">${d.steps.indexOf([bold,rest])+1}</div><div class="ob-text"><strong>${bold}</strong> ${rest}</div></div>`
+    ).join('');
+    // re-render steps with correct index
+    document.getElementById('ob-steps').innerHTML = d.steps.map(([bold, rest], i) =>
+      `<div class="ob-step"><div class="ob-num">${i+1}</div><div class="ob-text"><strong>${bold}</strong> ${rest}</div></div>`
+    ).join('');
+  }
+
+  function dismissOnboarding() {
+    document.getElementById('onboarding').classList.add('dismissed');
+    sessionStorage.setItem('ob-dismissed','1');
+  }
+
+  // auto-detect idioma
+  (function() {
+    const nav = (navigator.language || 'es').toLowerCase();
+    const lang = nav.startsWith('pt') ? 'pt' : nav.startsWith('en') ? 'en' : 'es';
+    obLang(lang);
+    if (sessionStorage.getItem('ob-dismissed')) dismissOnboarding();
+  })();
 </script>
 </body>
 </html>
