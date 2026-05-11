@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API Keys · OpenJane</title>
+<meta name="description" content="Guía completa para obtener las API keys de Massive.com, EODHD y Anthropic. Qué es gratis, qué cuesta, y qué desbloquea cada nivel en OpenJane.">
+<style>
+  :root {
+    --bg: #0a0e14; --surface: #111820; --surface2: #18222e; --border: #1e2d3d;
+    --accent: #00d4ff; --green: #00c896; --red: #ff4d6d; --yellow: #f59e0b;
+    --purple: #a78bfa; --text: #e2e8f0; --muted: #64748b;
+    --font: 'SF Mono','Fira Code','Cascadia Code',monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.6; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { font-family: var(--font); font-size: 0.85em; background: var(--surface2); padding: 0.1em 0.4em; border-radius: 3px; color: var(--green); }
+
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,14,20,0.92); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 56px;
+  }
+  .nav-brand { font-family: var(--font); font-size: 1rem; font-weight: 700; color: var(--accent); }
+  .nav-brand span { color: var(--muted); font-weight: 400; }
+  .nav-right { display: flex; gap: 1rem; align-items: center; }
+  .nav-right a { color: var(--muted); font-size: 0.85rem; transition: color 0.2s; }
+  .nav-right a:hover { color: var(--text); text-decoration: none; }
+  .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.82rem; font-weight: 600; transition: all 0.2s; border: 1px solid var(--border); color: var(--text); background: transparent; }
+  .btn:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+  .btn-primary { background: var(--accent); color: #000; border-color: var(--accent); }
+  .btn-primary:hover { background: #00b8e0; color: #000; }
+
+  .page-header { max-width: 960px; margin: 0 auto; padding: 4rem 2rem 2rem; }
+  .page-label { font-family: var(--font); font-size: 0.72rem; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.6rem; }
+  .page-title { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.8rem; }
+  .page-sub { color: var(--muted); max-width: 600px; line-height: 1.7; font-size: 1rem; }
+
+  /* ── PROVIDER TABS ── */
+  .tabs { max-width: 960px; margin: 0 auto; padding: 1rem 2rem 0; display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border); }
+  .tab {
+    padding: 0.6rem 1.2rem; font-size: 0.88rem; font-weight: 600;
+    border-radius: 8px 8px 0 0; cursor: pointer; transition: all 0.2s;
+    border: 1px solid transparent; border-bottom: none;
+    color: var(--muted); background: transparent;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { background: var(--surface); border-color: var(--border); border-bottom-color: var(--surface); color: var(--text); margin-bottom: -1px; }
+  .tab-massive.active { color: var(--green); }
+  .tab-eodhd.active { color: var(--yellow); }
+  .tab-anthropic.active { color: var(--purple); }
+
+  /* ── CONTENT ── */
+  .content { max-width: 960px; margin: 0 auto; padding: 0 2rem 4rem; }
+  .provider-panel { display: none; padding-top: 2rem; }
+  .provider-panel.active { display: block; }
+
+  /* ── PROVIDER HEADER ── */
+  .provider-header {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.5rem 2rem; margin-bottom: 2rem;
+    display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.5rem;
+  }
+  .ph-left h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.3rem; }
+  .ph-left p { color: var(--muted); font-size: 0.88rem; max-width: 480px; line-height: 1.6; }
+  .ph-badges { display: flex; gap: 0.5rem; margin-top: 0.8rem; flex-wrap: wrap; }
+  .badge { font-family: var(--font); font-size: 0.7rem; padding: 0.25rem 0.6rem; border-radius: 4px; }
+  .badge-green { background: rgba(0,200,150,0.12); color: var(--green); border: 1px solid rgba(0,200,150,0.25); }
+  .badge-yellow { background: rgba(245,158,11,0.12); color: var(--yellow); border: 1px solid rgba(245,158,11,0.25); }
+  .badge-red { background: rgba(255,77,109,0.12); color: var(--red); border: 1px solid rgba(255,77,109,0.25); }
+  .badge-purple { background: rgba(167,139,250,0.12); color: var(--purple); border: 1px solid rgba(167,139,250,0.25); }
+  .badge-blue { background: rgba(0,212,255,0.12); color: var(--accent); border: 1px solid rgba(0,212,255,0.25); }
+
+  /* ── LIMITS TABLE ── */
+  .section-title { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+  .section-title::before { content: ''; display: block; width: 3px; height: 16px; background: var(--accent); border-radius: 2px; }
+  .limits-table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; }
+  .limits-table th {
+    text-align: left; font-family: var(--font); font-size: 0.72rem;
+    color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;
+    padding: 0.6rem 1rem; border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .limits-table th:first-child { border-radius: 8px 0 0 0; }
+  .limits-table th:last-child { border-radius: 0 8px 0 0; }
+  .limits-table td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.87rem; vertical-align: top; }
+  .limits-table tr:last-child td { border-bottom: none; }
+  .limits-table tr:hover td { background: var(--surface2); }
+  .limits-table td:first-child { font-weight: 600; color: var(--text); }
+  .check { color: var(--green); }
+  .cross { color: var(--red); }
+  .partial { color: var(--yellow); }
+
+  /* ── HOW TO ── */
+  .howto { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 2rem; }
+  .howto-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); background: var(--surface2); display: flex; align-items: center; justify-content: space-between; }
+  .howto-header h3 { font-size: 0.95rem; font-weight: 700; }
+  .howto-steps { padding: 1.5rem; display: flex; flex-direction: column; gap: 0; }
+  .howto-step { display: flex; gap: 1.2rem; padding-bottom: 1.5rem; position: relative; }
+  .howto-step:last-child { padding-bottom: 0; }
+  .howto-step:not(:last-child)::before {
+    content: ''; position: absolute; left: 15px; top: 32px; bottom: 0;
+    width: 1px; background: var(--border);
+  }
+  .step-num {
+    flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--accent); font-family: var(--font); font-size: 0.82rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .step-body { flex: 1; padding-top: 0.3rem; }
+  .step-title { font-weight: 700; font-size: 0.92rem; margin-bottom: 0.3rem; }
+  .step-desc { color: var(--muted); font-size: 0.85rem; line-height: 1.6; }
+  .step-desc a { color: var(--accent); }
+  .step-note {
+    margin-top: 0.6rem; padding: 0.6rem 0.9rem;
+    background: var(--surface2); border-left: 2px solid var(--accent);
+    border-radius: 0 4px 4px 0; font-size: 0.82rem; color: var(--muted); line-height: 1.5;
+  }
+  .step-note strong { color: var(--text); }
+  .step-img {
+    margin-top: 0.6rem; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 0.8rem 1rem;
+    font-family: var(--font); font-size: 0.78rem; color: var(--green); line-height: 1.8;
+  }
+
+  /* ── JANE LEVELS ── */
+  .levels { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .level-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 1.3rem; position: relative; overflow: hidden;
+  }
+  .level-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .level-free::before { background: var(--green); }
+  .level-mid::before { background: var(--yellow); }
+  .level-full::before { background: var(--purple); }
+  .level-name { font-family: var(--font); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.6rem; }
+  .level-free .level-name { color: var(--green); }
+  .level-mid .level-name { color: var(--yellow); }
+  .level-full .level-name { color: var(--purple); }
+  .level-desc { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.8rem; line-height: 1.5; }
+  .level-features { display: flex; flex-direction: column; gap: 0.3rem; }
+  .level-feature { font-size: 0.82rem; display: flex; align-items: flex-start; gap: 0.4rem; }
+  .level-cost { margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px solid var(--border); font-family: var(--font); font-size: 0.78rem; }
+
+  /* ── ENV FILE ── */
+  .env-block {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden; margin-bottom: 2rem;
+  }
+  .env-header { background: var(--surface2); padding: 0.6rem 1rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+  .env-filename { font-family: var(--font); font-size: 0.78rem; color: var(--muted); }
+  .copy-btn { font-family: var(--font); font-size: 0.72rem; color: var(--accent); background: none; border: 1px solid rgba(0,212,255,0.3); padding: 0.2rem 0.6rem; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
+  .copy-btn:hover { background: rgba(0,212,255,0.1); }
+  .env-body { padding: 1.2rem 1.4rem; font-family: var(--font); font-size: 0.82rem; line-height: 2; }
+  .env-comment { color: var(--muted); }
+  .env-key { color: var(--yellow); }
+  .env-val { color: var(--green); }
+
+  /* ── WARN BOX ── */
+  .warn-box {
+    border-radius: 8px; padding: 1rem 1.2rem; margin-bottom: 1.5rem;
+    display: flex; gap: 0.8rem; align-items: flex-start;
+    border: 1px solid rgba(245,158,11,0.3); background: rgba(245,158,11,0.06);
+  }
+  .warn-icon { font-size: 1rem; flex-shrink: 0; padding-top: 0.1rem; }
+  .warn-text { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+  .warn-text strong { color: var(--text); }
+  .info-box {
+    border-radius: 8px; padding: 1rem 1.2rem; margin-bottom: 1.5rem;
+    display: flex; gap: 0.8rem; align-items: flex-start;
+    border: 1px solid rgba(0,212,255,0.25); background: rgba(0,212,255,0.05);
+  }
+  .info-text { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+  .info-text strong { color: var(--text); }
+
+  footer { background: var(--surface2); border-top: 1px solid var(--border); padding: 1.2rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem; }
+  .footer-brand { font-family: var(--font); font-size: 0.85rem; color: var(--muted); }
+  .footer-links { display: flex; gap: 1.5rem; }
+  .footer-links a { color: var(--muted); font-size: 0.8rem; }
+  .footer-links a:hover { color: var(--text); text-decoration: none; }
+
+  @media (max-width: 600px) {
+    .tabs { gap: 0.25rem; overflow-x: auto; }
+    .tab { white-space: nowrap; }
+    nav .nav-right a:not(.btn) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand"><a href="index.html" style="color:inherit;text-decoration:none">Open<span>Jane</span></a> · <span>API Keys</span></div>
+  <div class="nav-right">
+    <a href="index.html">← Inicio</a>
+    <a href="glossary.html">Glosario</a>
+    <a href="https://github.com/ussleo/openjane" target="_blank">GitHub</a>
+    <a href="https://claude.ai" target="_blank" class="btn btn-primary">Usar Jane ↗</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="page-label">Configuración · Sin sorpresas</div>
+  <div class="page-title">API Keys — qué son, cómo obtenerlas y qué cambia con cada nivel</div>
+  <p class="page-sub">OpenJane funciona completamente gratis con tres API keys gratuitas. Esta guía te lleva de cero a funcionando en menos de 10 minutos — sin tarjeta de crédito.</p>
+</div>
+
+<!-- JANE LEVELS — visible siempre -->
+<div class="content" style="padding-top:2rem;padding-bottom:0;">
+  <div class="section-title">Qué puede hacer Jane según tu nivel de acceso</div>
+  <div class="levels">
+    <div class="level-card level-free">
+      <div class="level-name">⬡ Nivel gratuito</div>
+      <div class="level-desc">Las tres API keys en su plan gratuito. Costo total: $0/mes. Sin tarjeta de crédito en ninguno de los tres proveedores.</div>
+      <div class="level-features">
+        <div class="level-feature"><span class="check">✓</span> Análisis de régimen (MA50/MA200, yield curve)</div>
+        <div class="level-feature"><span class="check">✓</span> Volatilidad histórica (HV 20d/60d)</div>
+        <div class="level-feature"><span class="check">✓</span> Tendencia alcista/bajista confirmada</div>
+        <div class="level-feature"><span class="check">✓</span> Volumen ADV y señal de flujo</div>
+        <div class="level-feature"><span class="check">✓</span> Stat-arb con datos históricos</div>
+        <div class="level-feature"><span class="check">✓</span> Fundamentales básicos (P/E, sector)</div>
+        <div class="level-feature"><span class="cross">✗</span> Precios en tiempo real</div>
+        <div class="level-feature"><span class="cross">✗</span> Volatilidad implícita (IV) live</div>
+      </div>
+      <div class="level-cost" style="color:var(--green)">$0 / mes · Todo incluido</div>
+    </div>
+    <div class="level-card level-mid">
+      <div class="level-name">◈ Nivel intermedio</div>
+      <div class="level-desc">Massive.com en plan de pago + EODHD y Claude gratuitos. Datos en tiempo real para microestructura y opciones básicas.</div>
+      <div class="level-features">
+        <div class="level-feature"><span class="check">✓</span> Todo lo del nivel gratuito</div>
+        <div class="level-feature"><span class="check">✓</span> Precios en tiempo real (delay &lt;1min)</div>
+        <div class="level-feature"><span class="check">✓</span> Spread bid-ask live</div>
+        <div class="level-feature"><span class="check">✓</span> Volatilidad implícita (IV) ATM</div>
+        <div class="level-feature"><span class="check">✓</span> Put/call ratio en tiempo real</div>
+        <div class="level-feature"><span class="partial">~</span> Skew de opciones (parcial)</div>
+        <div class="level-feature"><span class="cross">✗</span> Superficie completa de vol</div>
+        <div class="level-feature"><span class="cross">✗</span> Order book nivel 2</div>
+      </div>
+      <div class="level-cost" style="color:var(--yellow)">~$29/mes · Solo Massive</div>
+    </div>
+    <div class="level-card level-full">
+      <div class="level-name">◉ Nivel completo</div>
+      <div class="level-desc">Las tres APIs en planes de pago. Jane opera con la misma calidad de datos que usan los fondos de inversión institucionales.</div>
+      <div class="level-features">
+        <div class="level-feature"><span class="check">✓</span> Todo lo del nivel intermedio</div>
+        <div class="level-feature"><span class="check">✓</span> Superficie de volatilidad completa</div>
+        <div class="level-feature"><span class="check">✓</span> Order book nivel 2 (L2)</div>
+        <div class="level-feature"><span class="check">✓</span> Fundamentales completos y detallados</div>
+        <div class="level-feature"><span class="check">✓</span> Datos globales sin límite de llamadas</div>
+        <div class="level-feature"><span class="check">✓</span> Claude Pro sin límite de mensajes</div>
+        <div class="level-feature"><span class="check">✓</span> Streaming de datos en tiempo real</div>
+      </div>
+      <div class="level-cost" style="color:var(--purple)">~$80–150/mes · Los tres proveedores</div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <span>💡</span>
+    <div class="info-text"><strong>Nota importante:</strong> no necesitas cambiar ninguna línea de código al subir de nivel. Los scripts de OpenJane detectan automáticamente qué endpoints tiene disponibles tu API key y usan los mejores. Cambia la key en tu <code>.env</code> y Jane escala sola.</div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab tab-massive active" onclick="showTab('massive')">
+    <span>🟢</span> Massive.com
+  </div>
+  <div class="tab tab-eodhd" onclick="showTab('eodhd')">
+    <span>🟡</span> EODHD
+  </div>
+  <div class="tab tab-anthropic" onclick="showTab('anthropic')">
+    <span>🟣</span> Anthropic (Claude)
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       MASSIVE.COM
+  ══════════════════════════════════════════════════════════════════════ -->
+  <div id="panel-massive" class="provider-panel active">
+
+    <div class="provider-header">
+      <div class="ph-left">
+        <h2 style="color:var(--green)">Massive.com</h2>
+        <p>Antes conocido como Polygon.io. Proveedor de datos de mercado USA: acciones, opciones, forex, crypto, índices. API REST + WebSocket. Utilizada por OpenJane para precios, volumen y microestructura.</p>
+        <div class="ph-badges">
+          <span class="badge badge-green">Free tier disponible</span>
+          <span class="badge badge-green">Sin tarjeta de crédito</span>
+          <span class="badge badge-blue">REST API</span>
+          <span class="badge badge-blue">WebSocket</span>
+          <span class="badge badge-yellow">Mercados USA únicamente</span>
+        </div>
+      </div>
+      <a href="https://massive.com" target="_blank" class="btn" style="flex-shrink:0">Ir a massive.com ↗</a>
+    </div>
+
+    <!-- LIMITS -->
+    <div class="section-title">Límites por plan</div>
+    <table class="limits-table">
+      <thead>
+        <tr>
+          <th>Característica</th>
+          <th>Free</th>
+          <th>Starter (~$29/mes)</th>
+          <th>Developer (~$79/mes)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Precios históricos EOD</td>
+          <td><span class="check">✓ Ilimitados</span></td>
+          <td><span class="check">✓ Ilimitados</span></td>
+          <td><span class="check">✓ Ilimitados</span></td>
+        </tr>
+        <tr>
+          <td>Cierre del día anterior</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>Detalles del ticker (sector, etc.)</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>Precios en tiempo real</td>
+          <td><span class="cross">✗ No disponible</span></td>
+          <td><span class="partial">~ 15min delay</span></td>
+          <td><span class="check">✓ Real-time</span></td>
+        </tr>
+        <tr>
+          <td>Spread bid-ask live</td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="partial">~ Delay</span></td>
+          <td><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>Opciones — cadena completa</td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>Volatilidad implícita (IV)</td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>Order book (nivel 2)</td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>WebSocket streaming</td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="partial">~ Limitado</span></td>
+          <td><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>Llamadas por minuto</td>
+          <td><span class="partial">~5/min</span></td>
+          <td><span class="check">100/min</span></td>
+          <td><span class="check">Ilimitadas</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- HOW TO -->
+    <div class="section-title">Cómo obtener tu API key — paso a paso</div>
+    <div class="howto">
+      <div class="howto-header">
+        <h3>Massive.com · Registro gratuito</h3>
+        <span class="badge badge-green">~3 minutos</span>
+      </div>
+      <div class="howto-steps">
+        <div class="howto-step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Ve a massive.com y crea tu cuenta</div>
+            <div class="step-desc">Abre <a href="https://massive.com" target="_blank">massive.com</a> y haz clic en <strong>Sign Up</strong> (esquina superior derecha). Ingresa tu email y crea una contraseña.</div>
+            <div class="step-note"><strong>Sin tarjeta de crédito.</strong> El formulario de registro no pide datos de pago.</div>
+          </div>
+        </div>
+        <div class="howto-step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Confirma tu email</div>
+            <div class="step-desc">Recibirás un email de verificación. Haz clic en el enlace de confirmación. Sin esto, la key no funcionará.</div>
+          </div>
+        </div>
+        <div class="howto-step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Accede al Dashboard y copia tu API key</div>
+            <div class="step-desc">Una vez dentro, ve a <strong>Dashboard → API Keys</strong>. Verás tu key generada automáticamente. Empieza con <code>pk_</code> o similar. Cópiala.</div>
+            <div class="step-img">
+              Dashboard → API Keys<br>
+              ┌─────────────────────────────────────┐<br>
+              │ Your API Key                        │<br>
+              │ pk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx │<br>
+              │                          [Copy] 📋 │<br>
+              └─────────────────────────────────────┘
+            </div>
+          </div>
+        </div>
+        <div class="howto-step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <div class="step-title">Añádela a tu archivo .env</div>
+            <div class="step-desc">En la carpeta raíz de OpenJane, abre (o crea) el archivo <code>.env</code> y añade la línea:</div>
+            <div class="step-img">MASSIVE_API_KEY=pk_tu_key_aqui</div>
+            <div class="step-note"><strong>Nunca subas el archivo .env a GitHub.</strong> Ya está incluido en el <code>.gitignore</code> de OpenJane — está protegido.</div>
+          </div>
+        </div>
+        <div class="howto-step">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <div class="step-title">Verifica que funciona</div>
+            <div class="step-desc">Corre este comando desde la carpeta del proyecto:</div>
+            <div class="step-img">python scripts/massive_client.py AAPL</div>
+            <div class="step-desc" style="margin-top:0.5rem">Deberías ver el precio de cierre anterior de AAPL, su volumen ADV y detalles del ticker. Si ves un error, revisa que copiaste la key completa.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="warn-box">
+      <span class="warn-icon">⚠</span>
+      <div class="warn-text"><strong>Rate limit en free tier:</strong> Massive limita a ~5 llamadas por minuto en el plan gratuito. Si el script devuelve error 429 (Too Many Requests), espera 60 segundos y vuelve a intentarlo. El script <code>generate_snapshot.py</code> ya incluye pausas automáticas entre llamadas.</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       EODHD
+  ══════════════════════════════════════════════════════════════════════ -->
+  <div id="panel-eodhd" class="provider-panel">
+
+    <div class="provider-header">
+      <div class="ph-left">
+        <h2 style="color:var(--yellow)">EODHD</h2>
+        <p>End-of-Day Historical Data. Proveedor especializado en datos globales: históricos EOD de 150+ mercados, fundamentales, forex, índices macroeconómicos. Utilizado por OpenJane para medias móviles, volatilidad histórica y yield curve.</p>
+        <div class="ph-badges">
+          <span class="badge badge-green">Free tier disponible</span>
+          <span class="badge badge-green">Sin tarjeta de crédito</span>
+          <span class="badge badge-yellow">20 llamadas/día en free</span>
+          <span class="badge badge-blue">150+ mercados globales</span>
+        </div>
+      </div>
+      <a href="https://eodhd.com" target="_blank" class="btn" style="flex-shrink:0">Ir a eodhd.com ↗</a>
+    </div>
+
+    <!-- LIMITS -->
+    <div class="section-title">Límites por plan</div>
+    <table class="limits-table">
+      <thead>
+        <tr>
+          <th>Característica</th>
+          <th>Free (20 calls/día)</th>
+          <th>Basic (~$19/mes)</th>
+          <th>All-World (~$49/mes)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Históricos EOD (acciones USA)</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>Medias móviles MA50/MA200</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>Volatilidad histórica (HV)</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>Yield curve (10Y-2Y)</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>Fundamentales básicos (P/E, sector)</td>
+          <td><span class="partial">~ Limitados</span></td>
+          <td><span class="check">✓ Completos</span></td>
+          <td><span class="check">✓ Completos</span></td>
+        </tr>
+        <tr>
+          <td>Mercados globales (Europa, Asia)</td>
+          <td><span class="partial">~ Solo USA</span></td>
+          <td><span class="partial">~ Parcial</span></td>
+          <td><span class="check">✓ 150+ mercados</span></td>
+        </tr>
+        <tr>
+          <td>Datos intraday (1min, 5min)</td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>Screener / búsqueda masiva</td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>Llamadas por día</td>
+          <td><span class="partial">20 llamadas</span></td>
+          <td><span class="check">~1,000/día</span></td>
+          <td><span class="check">Ilimitadas</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="warn-box">
+      <span class="warn-icon">⚠</span>
+      <div class="warn-text"><strong>El límite más importante:</strong> EODHD free tier permite solo <strong>20 llamadas por día</strong> (no por minuto — por día). OpenJane usa aproximadamente 6-8 llamadas para generar el snapshot completo de 4 tickers. Te quedan 12-14 llamadas para análisis manuales. Planifica bien tu cuota diaria.</div>
+    </div>
+
+    <!-- HOW TO -->
+    <div class="section-title">Cómo obtener tu API key — paso a paso</div>
+    <div class="howto">
+      <div class="howto-header">
+        <h3>EODHD · Registro gratuito</h3>
+        <span class="badge badge-green">~3 minutos</span>
+      </div>
+      <div class="howto-steps">
+        <div class="howto-step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Ve a eodhd.com y regístrate</div>
+            <div class="step-desc">Abre <a href="https://eodhd.com" target="_blank">eodhd.com</a> y haz clic en <strong>Register</strong>. Introduce tu nombre, email y contraseña.</div>
+            <div class="step-note"><strong>Sin tarjeta de crédito</strong> para el free tier. El formulario no la solicita.</div>
+          </div>
+        </div>
+        <div class="howto-step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Confirma tu email</div>
+            <div class="step-desc">Revisa tu bandeja de entrada. Haz clic en el link de verificación. Sin esto no podrás hacer llamadas a la API.</div>
+          </div>
+        </div>
+        <div class="howto-step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Copia tu API key del Dashboard</div>
+            <div class="step-desc">Inicia sesión y ve a <strong>My Account → API Token</strong>. Verás tu key directamente en pantalla.</div>
+            <div class="step-img">
+              My Account → API Token<br>
+              ┌──────────────────────────────────────┐<br>
+              │ Your API Token:                      │<br>
+              │ demo (for testing)                   │<br>
+              │ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx     │<br>
+              │                           [Copy] 📋 │<br>
+              └──────────────────────────────────────┘
+            </div>
+            <div class="step-note"><strong>Nota:</strong> EODHD también ofrece el token <code>demo</code> para pruebas — funciona con datos limitados sin registro. Para OpenJane, usa siempre tu token personal para tener las 20 llamadas/día disponibles.</div>
+          </div>
+        </div>
+        <div class="howto-step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <div class="step-title">Añádela a tu archivo .env</div>
+            <div class="step-desc">Abre el archivo <code>.env</code> en la carpeta de OpenJane y añade:</div>
+            <div class="step-img">EODHD_API_KEY=tu_token_aqui</div>
+          </div>
+        </div>
+        <div class="howto-step">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <div class="step-title">Verifica que funciona</div>
+            <div class="step-desc">Corre este comando:</div>
+            <div class="step-img">python scripts/eodhd_client.py SPY</div>
+            <div class="step-desc" style="margin-top:0.5rem">Deberías ver MA50/MA200 de SPY, la volatilidad histórica a 20 días y el spread de la yield curve. Si ves error 403, tu token no está confirmado aún.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       ANTHROPIC
+  ══════════════════════════════════════════════════════════════════════ -->
+  <div id="panel-anthropic" class="provider-panel">
+
+    <div class="provider-header">
+      <div class="ph-left">
+        <h2 style="color:var(--purple)">Anthropic · Claude</h2>
+        <p>El modelo de lenguaje que da vida a Jane. Anthropic ofrece acceso gratuito vía claude.ai (con límite diario de mensajes) y acceso programático vía API. Para OpenJane en Claude Code, la API key es opcional — solo necesaria si quieres deploy propio.</p>
+        <div class="ph-badges">
+          <span class="badge badge-green">Gratis en claude.ai</span>
+          <span class="badge badge-purple">API key solo para deploy propio</span>
+          <span class="badge badge-blue">Claude Sonnet · Haiku · Opus</span>
+        </div>
+      </div>
+      <a href="https://claude.ai" target="_blank" class="btn" style="flex-shrink:0">Ir a claude.ai ↗</a>
+    </div>
+
+    <div class="info-box">
+      <span>💡</span>
+      <div class="info-text"><strong>Para la mayoría de usuarios, no necesitas la API key de Anthropic.</strong> Si usas OpenJane dentro de Claude Code o claude.ai, el acceso a Claude ya está incluido en tu cuenta. La API key solo es necesaria si construyes un deploy propio (servidor, Docker, aplicación web).</div>
+    </div>
+
+    <!-- LIMITS -->
+    <div class="section-title">Opciones de acceso</div>
+    <table class="limits-table">
+      <thead>
+        <tr>
+          <th>Acceso</th>
+          <th>Free (claude.ai)</th>
+          <th>Pro ($20/mes)</th>
+          <th>API (pay-per-use)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Usar Jane via claude.ai</td>
+          <td><span class="check">✓ Con límite diario</span></td>
+          <td><span class="check">✓ Sin límite</span></td>
+          <td><span class="check">✓ Sin límite</span></td>
+        </tr>
+        <tr>
+          <td>Claude Code CLI</td>
+          <td><span class="check">✓ Incluido</span></td>
+          <td><span class="check">✓ Incluido</span></td>
+          <td><span class="check">✓ Incluido</span></td>
+        </tr>
+        <tr>
+          <td>Mensajes por día</td>
+          <td><span class="partial">Límite variable (~20-40)</span></td>
+          <td><span class="check">Sin límite práctico</span></td>
+          <td><span class="check">Sin límite</span></td>
+        </tr>
+        <tr>
+          <td>Modelos disponibles</td>
+          <td><span class="partial">Sonnet (últimas versiones)</span></td>
+          <td><span class="check">Sonnet + Opus</span></td>
+          <td><span class="check">Todos los modelos</span></td>
+        </tr>
+        <tr>
+          <td>Projects con instrucciones custom</td>
+          <td><span class="check">✓</span></td>
+          <td><span class="check">✓ Más contexto</span></td>
+          <td><span class="partial">Via system prompt</span></td>
+        </tr>
+        <tr>
+          <td>Deploy propio (API key necesaria)</td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="cross">✗</span></td>
+          <td><span class="check">✓</span></td>
+        </tr>
+        <tr>
+          <td>Costo</td>
+          <td><span class="check">$0</span></td>
+          <td><span class="partial">$20/mes</span></td>
+          <td><span class="partial">~$3-15 por millón de tokens</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- HOW TO — opción A: claude.ai -->
+    <div class="section-title">Opción A — Usar Jane en claude.ai (recomendado para empezar)</div>
+    <div class="howto">
+      <div class="howto-header">
+        <h3>Claude.ai · Cuenta gratuita con Project personalizado</h3>
+        <span class="badge badge-green">~5 minutos · Sin API key</span>
+      </div>
+      <div class="howto-steps">
+        <div class="howto-step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Crea tu cuenta en claude.ai</div>
+            <div class="step-desc">Ve a <a href="https://claude.ai" target="_blank">claude.ai</a> y regístrate con tu email. Es completamente gratuito.</div>
+          </div>
+        </div>
+        <div class="howto-step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Crea un nuevo Project</div>
+            <div class="step-desc">En el panel izquierdo, haz clic en <strong>Projects → New Project</strong>. Dale el nombre <strong>OpenJane</strong>.</div>
+          </div>
+        </div>
+        <div class="howto-step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Añade las instrucciones del agente</div>
+            <div class="step-desc">En <strong>Project Instructions</strong>, pega el contenido completo del archivo <code>plugins/agent-plugins/quant-analyst/agents/quant-analyst.md</code> del repositorio.</div>
+            <div class="step-note"><strong>Eso es todo.</strong> Claude usará esas instrucciones como contexto permanente para todas las conversaciones dentro del Project. Jane está activa.</div>
+          </div>
+        </div>
+        <div class="howto-step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <div class="step-title">Empieza a usar Jane</div>
+            <div class="step-desc">Dentro del Project, escribe tu primera pregunta en lenguaje natural. Por ejemplo:</div>
+            <div class="step-img">
+              ¿En qué régimen está el mercado hoy?<br>
+              /spread-analysis AAPL<br>
+              Compara ICE y CBOE como par de stat-arb
+            </div>
+            <div class="step-note"><strong>Limitación en free tier:</strong> Jane en claude.ai no tiene acceso a datos de mercado en tiempo real — analiza conceptualmente y puede trabajar con datos que tú le proporciones. Para datos reales, usa Claude Code.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOW TO — opción B: API key -->
+    <div class="section-title">Opción B — API key para deploy propio (avanzado)</div>
+    <div class="howto">
+      <div class="howto-header">
+        <h3>Anthropic API · Para desarrollo y deploy</h3>
+        <span class="badge badge-purple">Solo si construyes tu propio servidor</span>
+      </div>
+      <div class="howto-steps">
+        <div class="howto-step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Crea cuenta en console.anthropic.com</div>
+            <div class="step-desc">Ve a <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>. Regístrate con tu email (diferente a claude.ai — esta es la consola de desarrolladores).</div>
+          </div>
+        </div>
+        <div class="howto-step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Añade un método de pago</div>
+            <div class="step-desc">La API de Anthropic es pay-per-use — pagas solo lo que usas. Ve a <strong>Billing → Add payment method</strong>. Sin esto no puedes generar una API key funcional.</div>
+            <div class="step-note"><strong>Costo estimado para uso personal:</strong> ~$1-5/mes en uso normal. Cada análisis de Jane consume aproximadamente 1,000-3,000 tokens (~$0.003-0.009).</div>
+          </div>
+        </div>
+        <div class="howto-step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Genera tu API key</div>
+            <div class="step-desc">Ve a <strong>API Keys → Create Key</strong>. Dale un nombre descriptivo (ej: "openjane-local"). Copia la key inmediatamente — solo se muestra una vez.</div>
+            <div class="step-img">
+              API Keys → Create Key<br>
+              ┌────────────────────────────────────────────┐<br>
+              │ sk-ant-api03-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx │<br>
+              │                                 [Copy] 📋  │<br>
+              │  ⚠ Esta key no se mostrará de nuevo        │<br>
+              └────────────────────────────────────────────┘
+            </div>
+          </div>
+        </div>
+        <div class="howto-step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <div class="step-title">Añádela a tu .env</div>
+            <div class="step-desc">En el archivo <code>.env</code> de OpenJane, descomenta y añade:</div>
+            <div class="step-img">ANTHROPIC_API_KEY=sk-ant-api03-tu_key_aqui</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="warn-box">
+      <span class="warn-icon">⚠</span>
+      <div class="warn-text"><strong>Seguridad crítica:</strong> Las API keys de Anthropic dan acceso directo a tu cuenta de facturación. <strong>Nunca las incluyas en código público, nunca las subas a GitHub, nunca las compartas.</strong> Si sospechas que una key fue expuesta, ve inmediatamente a console.anthropic.com y revócala.</div>
+    </div>
+  </div>
+
+  <!-- ENV FILE FINAL -->
+  <div style="margin-top:3rem;">
+    <div class="section-title">El archivo .env completo</div>
+    <p style="color:var(--muted);font-size:0.87rem;margin-bottom:1rem;">Una vez tengas las tres keys, tu archivo <code>.env</code> debe quedar así. Copia el ejemplo y reemplaza los valores:</p>
+    <div class="env-block">
+      <div class="env-header">
+        <span class="env-filename">.env</span>
+        <button class="copy-btn" onclick="copyEnv()">Copiar</button>
+      </div>
+      <div class="env-body" id="envContent">
+        <div><span class="env-comment"># OpenJane — Variables de entorno</span></div>
+        <div><span class="env-comment"># Nunca subas este archivo a GitHub (está en .gitignore)</span></div>
+        <div>&nbsp;</div>
+        <div><span class="env-comment"># Massive.com — gratis en https://massive.com</span></div>
+        <div><span class="env-key">MASSIVE_API_KEY</span>=<span class="env-val">pk_tu_key_aqui</span></div>
+        <div>&nbsp;</div>
+        <div><span class="env-comment"># EODHD — gratis en https://eodhd.com (20 llamadas/día)</span></div>
+        <div><span class="env-key">EODHD_API_KEY</span>=<span class="env-val">tu_token_aqui</span></div>
+        <div>&nbsp;</div>
+        <div><span class="env-comment"># Anthropic — solo para deploy propio (opcional)</span></div>
+        <div><span class="env-comment"># Sin esta key, usa Jane en claude.ai gratis</span></div>
+        <div><span class="env-comment"># ANTHROPIC_API_KEY=sk-ant-api03-tu_key_aqui</span></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<footer>
+  <div class="footer-brand">OpenJane · by Claude · Apache 2.0</div>
+  <div class="footer-links">
+    <a href="index.html">Inicio</a>
+    <a href="glossary.html">Glosario</a>
+    <a href="https://github.com/ussleo/openjane" target="_blank">GitHub</a>
+    <a href="https://claude.ai" target="_blank">Claude.ai</a>
+  </div>
+</footer>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.provider-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  document.querySelector('.tab-' + id).classList.add('active');
+  window.scrollTo({ top: document.querySelector('.tabs').offsetTop - 70, behavior: 'smooth' });
+}
+
+function copyEnv() {
+  const text = `# OpenJane — Variables de entorno
+# Nunca subas este archivo a GitHub (está en .gitignore)
+
+# Massive.com — gratis en https://massive.com
+MASSIVE_API_KEY=pk_tu_key_aqui
+
+# EODHD — gratis en https://eodhd.com (20 llamadas/día)
+EODHD_API_KEY=tu_token_aqui
+
+# Anthropic — solo para deploy propio (opcional)
+# ANTHROPIC_API_KEY=sk-ant-api03-tu_key_aqui`;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = '✓ Copiado';
+    setTimeout(() => btn.textContent = 'Copiar', 2000);
+  });
+}
+</script>
+</body>
+</html>
