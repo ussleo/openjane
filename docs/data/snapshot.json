@@ -1,0 +1,157 @@
+{
+  "tickers": {
+    "SPY": {
+      "prev_close": {
+        "symbol": "SPY",
+        "close": 737.62,
+        "open": 734.93,
+        "high": 738.08,
+        "low": 734.57,
+        "volume": 47227085,
+        "vwap": 736.5439,
+        "date": "2026-05-08",
+        "source": "Massive.com (free tier \u2014 datos EOD)"
+      },
+      "volume": {
+        "symbol": "SPY",
+        "adv_days": 20,
+        "adv": 50621575,
+        "last_session_volume": 47227085,
+        "volume_ratio": 0.93,
+        "flow_signal": "Neutral",
+        "date": "2026-05-08",
+        "source": "Massive.com (free tier)"
+      },
+      "trend": {
+        "symbol": "SPY",
+        "last_close": 737.62,
+        "ma50": 683.7292,
+        "ma200": 670.5566,
+        "trend": "alcista",
+        "data_points": 250
+      },
+      "hv": {
+        "symbol": "SPY",
+        "hv_window_days": 20,
+        "hv_annual_pct": 10.41,
+        "hv_daily_pct": 0.6557
+      },
+      "details": {
+        "symbol": "SPY",
+        "name": "State Street SPDR S&P 500 ETF Trust",
+        "market": "stocks",
+        "locale": "us",
+        "primary_exchange": "ARCX",
+        "type": "ETF",
+        "active": true,
+        "currency": "usd",
+        "description": "",
+        "homepage": null,
+        "employees": null,
+        "list_date": "1993-01-22",
+        "source": "Massive.com (free tier)"
+      }
+    },
+    "AAPL": {
+      "prev_close": {
+        "symbol": "AAPL",
+        "close": 293.32,
+        "open": 290.01,
+        "high": 294.76,
+        "low": 290,
+        "volume": 52692761,
+        "vwap": 293.1208,
+        "date": "2026-05-08",
+        "source": "Massive.com (free tier \u2014 datos EOD)"
+      },
+      "volume": {
+        "symbol": "AAPL",
+        "adv_days": 20,
+        "adv": 48820731,
+        "last_session_volume": 52692761,
+        "volume_ratio": 1.08,
+        "flow_signal": "Neutral",
+        "date": "2026-05-08",
+        "source": "Massive.com (free tier)"
+      },
+      "trend": {
+        "symbol": "AAPL",
+        "last_close": 293.05,
+        "ma50": 262.5607,
+        "ma200": 256.5164,
+        "trend": "alcista",
+        "data_points": 250
+      },
+      "hv": {
+        "symbol": "AAPL",
+        "hv_window_days": 20,
+        "hv_annual_pct": 26.17,
+        "hv_daily_pct": 1.6487
+      },
+      "details": {
+        "symbol": "AAPL",
+        "name": "Apple Inc.",
+        "market": "stocks",
+        "locale": "us",
+        "primary_exchange": "XNAS",
+        "type": "CS",
+        "active": true,
+        "currency": "usd",
+        "description": "Apple is among the largest companies in the world, with a broad portfolio of hardware and software products targeted at consumers and businesses. Apple's iPhone makes up a majority of the firm sales, and Apple's other products like Mac, iPad, and Watch are designed around the iPhone as the focal poi",
+        "homepage": "https://www.apple.com",
+        "employees": 166000,
+        "list_date": "1980-12-12",
+        "source": "Massive.com (free tier)"
+      }
+    },
+    "ICE": {
+      "prev_close": {
+        "symbol": "ICE",
+        "note": "Rate limit Massive - usar EODHD"
+      },
+      "trend": {
+        "symbol": "ICE",
+        "last_close": 155.82,
+        "ma50": 159.7519,
+        "ma200": 163.3215,
+        "trend": "bajista",
+        "data_points": 250
+      },
+      "hv": {
+        "symbol": "ICE",
+        "hv_window_days": 20,
+        "hv_annual_pct": 19.74,
+        "hv_daily_pct": 1.2435
+      }
+    },
+    "CBOE": {
+      "prev_close": {
+        "symbol": "CBOE",
+        "note": "Rate limit Massive - usar EODHD"
+      },
+      "trend": {
+        "symbol": "CBOE",
+        "last_close": 348.56,
+        "ma50": 299.3536,
+        "ma200": 263.3005,
+        "trend": "alcista",
+        "data_points": 250
+      },
+      "hv": {
+        "symbol": "CBOE",
+        "hv_window_days": 20,
+        "hv_annual_pct": 40.21,
+        "hv_daily_pct": 2.533
+      }
+    }
+  },
+  "macro": {
+    "yield_curve": {
+      "us10y": 4.383,
+      "us2y": 3.92,
+      "spread_10y_2y": 0.463,
+      "yield_curve_label": "Curva plana \u2014 transici\u00f3n, se\u00f1al de alerta"
+    }
+  },
+  "generated": "2026-05-11"
+}

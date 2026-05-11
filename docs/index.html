@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenJane · Análisis cuantitativo accesible para todos</title>
+<meta name="description" content="Jane Street no gana prediciendo el futuro. Gana optimizando fricción, liquidez y ejecución. OpenJane traduce esa lógica al alcance de cualquier persona.">
+<style>
+  :root {
+    --bg: #0a0e14;
+    --surface: #111820;
+    --surface2: #18222e;
+    --border: #1e2d3d;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --green: #00c896;
+    --red: #ff4d6d;
+    --yellow: #f59e0b;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --font: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code, .mono { font-family: var(--font); font-size: 0.85em; }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,14,20,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 56px;
+  }
+  .nav-brand { font-family: var(--font); font-size: 1.1rem; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; }
+  .nav-brand span { color: var(--muted); font-weight: 400; }
+  .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+  .nav-links a { color: var(--muted); font-size: 0.9rem; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--text); text-decoration: none; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.45rem 1.1rem; border-radius: 6px; font-size: 0.85rem;
+    font-weight: 600; transition: all 0.2s; cursor: pointer; border: none;
+  }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { background: #00b8e0; text-decoration: none; }
+  .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+
+  /* ── HERO ── */
+  .hero {
+    max-width: 1100px; margin: 0 auto;
+    padding: 6rem 2rem 4rem;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
+  }
+  @media (max-width: 768px) { .hero { grid-template-columns: 1fr; padding: 3rem 1.5rem 2rem; } }
+  .hero-label {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.2);
+    color: var(--accent); font-size: 0.78rem; font-family: var(--font);
+    padding: 0.3rem 0.8rem; border-radius: 20px; margin-bottom: 1.2rem;
+  }
+  .hero h1 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 800; line-height: 1.15;
+    letter-spacing: -0.03em; margin-bottom: 1.2rem;
+  }
+  .hero h1 em { color: var(--accent); font-style: normal; }
+  .hero p { color: var(--muted); font-size: 1.05rem; line-height: 1.7; margin-bottom: 2rem; }
+  .hero-ctas { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+
+  /* ── TERMINAL CARD ── */
+  .terminal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  }
+  .terminal-bar {
+    background: var(--surface2);
+    padding: 0.6rem 1rem;
+    display: flex; align-items: center; gap: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #ffbd2e; }
+  .dot-g { background: #28c840; }
+  .terminal-title { font-family: var(--font); font-size: 0.75rem; color: var(--muted); margin-left: 0.5rem; }
+  .terminal-body { padding: 1.2rem 1.4rem; font-family: var(--font); font-size: 0.82rem; line-height: 1.9; }
+  .t-prompt { color: var(--accent); }
+  .t-cmd { color: var(--text); }
+  .t-section { color: var(--yellow); font-weight: 700; margin-top: 0.4rem; }
+  .t-value { color: var(--green); }
+  .t-warn { color: var(--yellow); }
+  .t-muted { color: var(--muted); }
+  .t-red { color: var(--red); }
+  .cursor { display: inline-block; width: 8px; height: 14px; background: var(--accent); animation: blink 1s step-end infinite; vertical-align: middle; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ── SECTION ── */
+  section { max-width: 1100px; margin: 0 auto; padding: 4rem 2rem; }
+  .section-label { font-family: var(--font); font-size: 0.75rem; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.8rem; }
+  .section-title { font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.8rem; }
+  .section-sub { color: var(--muted); font-size: 1rem; max-width: 600px; line-height: 1.7; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+  /* ── LIVE DATA STRIP ── */
+  .data-strip {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 1.2rem 2rem;
+    overflow-x: auto;
+  }
+  .data-strip-inner { display: flex; gap: 2rem; min-width: max-content; max-width: 1100px; margin: 0 auto; }
+  .ticker-pill {
+    display: flex; flex-direction: column; gap: 0.1rem;
+    padding: 0.5rem 1rem; border-radius: 8px;
+    background: var(--surface2); border: 1px solid var(--border);
+    cursor: pointer; transition: border-color 0.2s;
+    min-width: 120px;
+  }
+  .ticker-pill:hover, .ticker-pill.active { border-color: var(--accent); }
+  .tp-symbol { font-family: var(--font); font-size: 0.9rem; font-weight: 700; color: var(--text); }
+  .tp-price { font-family: var(--font); font-size: 1.1rem; font-weight: 700; }
+  .tp-trend { font-size: 0.72rem; font-family: var(--font); }
+  .up { color: var(--green); }
+  .down { color: var(--red); }
+  .neutral { color: var(--muted); }
+  .data-tag {
+    display: inline-flex; align-items: center; gap: 0.25rem;
+    font-size: 0.65rem; font-family: var(--font);
+    padding: 0.1rem 0.4rem; border-radius: 3px;
+  }
+  .tag-free { background: rgba(0,200,150,0.12); color: var(--green); border: 1px solid rgba(0,200,150,0.25); }
+  .tag-paid { background: rgba(124,58,237,0.12); color: #a78bfa; border: 1px solid rgba(124,58,237,0.25); }
+
+  /* ── DETAIL PANEL ── */
+  .detail-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+    margin-top: 2rem;
+  }
+  .detail-header {
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem;
+  }
+  .detail-ticker { font-family: var(--font); font-size: 1.5rem; font-weight: 800; }
+  .detail-name { color: var(--muted); font-size: 0.9rem; margin-top: 0.2rem; }
+  .detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1px; background: var(--border); }
+  .detail-card { background: var(--surface); padding: 1.2rem 1.5rem; }
+  .dc-label { font-size: 0.72rem; font-family: var(--font); color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.4rem; }
+  .dc-value { font-family: var(--font); font-size: 1.3rem; font-weight: 700; }
+  .dc-sub { font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; font-family: var(--font); }
+
+  /* ── REGIME BANNER ── */
+  .regime-banner {
+    margin: 2rem 0 0;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    border-left: 3px solid var(--green);
+    background: rgba(0,200,150,0.06);
+    display: flex; align-items: flex-start; gap: 1rem; flex-wrap: wrap;
+  }
+  .regime-banner.warn { border-color: var(--yellow); background: rgba(245,158,11,0.06); }
+  .regime-badge { font-family: var(--font); font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
+  .regime-text { font-size: 0.85rem; color: var(--muted); line-height: 1.5; }
+
+  /* ── FEATURES ── */
+  .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2.5rem; }
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 1.5rem;
+    transition: border-color 0.2s;
+  }
+  .feature-card:hover { border-color: var(--accent); }
+  .feature-icon { font-size: 1.5rem; margin-bottom: 0.8rem; }
+  .feature-title { font-weight: 700; margin-bottom: 0.5rem; font-size: 0.95rem; }
+  .feature-desc { color: var(--muted); font-size: 0.87rem; line-height: 1.6; }
+
+  /* ── GLOSSARY PREVIEW ── */
+  .gloss-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-top: 2rem; }
+  .gloss-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 1.2rem 1.4rem;
+    cursor: pointer; transition: all 0.2s;
+    position: relative;
+  }
+  .gloss-card:hover { border-color: var(--accent); background: var(--surface2); }
+  .gloss-term { font-family: var(--font); font-size: 0.9rem; font-weight: 700; color: var(--accent); margin-bottom: 0.5rem; }
+  .gloss-def { font-size: 0.83rem; color: var(--muted); line-height: 1.55; }
+  .gloss-category { position: absolute; top: 0.8rem; right: 0.8rem; font-size: 0.65rem; font-family: var(--font); color: var(--muted); background: var(--surface2); padding: 0.15rem 0.5rem; border-radius: 3px; }
+
+  /* ── HOW TO USE ── */
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-top: 2.5rem; }
+  .step { display: flex; gap: 1rem; }
+  .step-num {
+    flex-shrink: 0;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3);
+    color: var(--accent); font-family: var(--font); font-weight: 700;
+    display: flex; align-items: center; justify-content: center; font-size: 0.9rem;
+  }
+  .step-title { font-weight: 700; margin-bottom: 0.3rem; font-size: 0.95rem; }
+  .step-desc { color: var(--muted); font-size: 0.85rem; line-height: 1.5; }
+
+  /* ── DATA SOURCES ── */
+  .sources-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-top: 2rem; }
+  .source-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 1.2rem 1.4rem;
+  }
+  .source-name { font-weight: 700; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.5rem; }
+  .source-desc { color: var(--muted); font-size: 0.83rem; line-height: 1.5; margin-bottom: 0.8rem; }
+  .source-items { display: flex; flex-direction: column; gap: 0.3rem; }
+  .source-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; font-family: var(--font); }
+
+  /* ── DISCLAIMER ── */
+  .disclaimer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    text-align: center;
+  }
+  .disclaimer p { color: var(--muted); font-size: 0.78rem; max-width: 860px; margin: 0 auto; line-height: 1.7; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+    padding: 1.5rem 2rem;
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
+  }
+  .footer-brand { font-family: var(--font); font-size: 0.9rem; color: var(--muted); }
+  .footer-links { display: flex; gap: 1.5rem; }
+  .footer-links a { color: var(--muted); font-size: 0.83rem; }
+  .footer-links a:hover { color: var(--text); text-decoration: none; }
+
+  /* ── TOOLTIP ── */
+  .tooltip { position: relative; border-bottom: 1px dashed var(--accent); cursor: help; }
+  .tooltip::after {
+    content: attr(data-tip);
+    position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%);
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); font-size: 0.78rem; line-height: 1.5;
+    padding: 0.5rem 0.8rem; border-radius: 6px;
+    width: 220px; text-align: left; white-space: normal;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    z-index: 50;
+  }
+  .tooltip:hover::after { opacity: 1; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    nav .nav-links { display: none; }
+    .detail-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">Open<span>Jane</span> <span style="font-size:0.7rem;margin-left:4px;color:var(--accent)">by Claude</span></div>
+  <div class="nav-links">
+    <a href="#demo">Demo</a>
+    <a href="#glosario">Glosario</a>
+    <a href="#como-usar">Cómo usar</a>
+    <a href="#datos">Datos</a>
+    <a href="https://github.com/ussleo/openjane" target="_blank">GitHub</a>
+    <a href="glossary.html" class="btn btn-ghost">📖 Glosario completo</a>
+    <a href="https://claude.ai" target="_blank" class="btn btn-primary">Usar Jane ↗</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div>
+    <div class="hero-label">
+      <span>●</span> Open Source · Free Tier · Apache 2.0
+    </div>
+    <h1>El análisis de<br><em>Jane Street</em><br>para todos</h1>
+    <p>Jane Street genera $39B anuales sin predecir el futuro. Lo hace optimizando <span class="tooltip" data-tip="Diferencia entre precio de compra y venta de un activo. Cuanto más pequeño, más barato operar.">fricción</span>, <span class="tooltip" data-tip="Capacidad de comprar o vender sin mover el precio. Activos líquidos tienen spreads bajos y alto volumen.">liquidez</span> y <span class="tooltip" data-tip="Estado estructural del mercado: alcista, bajista, lateral o crisis. Cada régimen favorece estrategias distintas.">régimen</span>. OpenJane traduce esa lógica al alcance de cualquier persona — en español, inglés o portugués.</p>
+    <div class="hero-ctas">
+      <a href="https://claude.ai" target="_blank" class="btn btn-primary">🧠 Usar Jane gratis en Claude.ai</a>
+      <a href="https://github.com/ussleo/openjane" target="_blank" class="btn btn-ghost">Ver en GitHub</a>
+    </div>
+  </div>
+
+  <!-- TERMINAL DEMO -->
+  <div class="terminal">
+    <div class="terminal-bar">
+      <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+      <span class="terminal-title">OpenJane · quant-analyst</span>
+    </div>
+    <div class="terminal-body">
+      <div><span class="t-prompt">user › </span><span class="t-cmd">/spread-analysis ICE</span></div>
+      <div class="t-section">📊 ANÁLISIS QUANT — ICE — 2026-05-11</div>
+      <div>&nbsp;</div>
+      <div><span class="t-muted">🌍 RÉGIMEN</span></div>
+      <div><span class="t-value">Alcista moderado</span> <span class="t-muted">score +2 · 47 días</span></div>
+      <div><span class="t-muted">VIX: </span><span class="t-value">16.2</span> <span class="t-muted">· Calma · yield +0.46%</span></div>
+      <div>&nbsp;</div>
+      <div><span class="t-muted">🔬 MICROESTRUCTURA</span></div>
+      <div><span class="t-muted">Close: </span><span class="t-value">$155.82</span> <span class="t-muted">MA200: $163.32</span></div>
+      <div><span class="t-warn">Tendencia: </span><span class="t-red">bajista</span> <span class="t-muted">(precio bajo MA200)</span></div>
+      <div><span class="t-muted">ADV 20d: </span><span class="t-value">3.2M</span> <span class="t-muted">· Liquidez: Alta</span></div>
+      <div>&nbsp;</div>
+      <div><span class="t-muted">📋 VEREDICTO</span></div>
+      <div><span class="t-muted">ICE opera con buena liquidez pero está</span></div>
+      <div><span class="t-muted">bajo MA200. Mercado macro en calma.</span></div>
+      <div><span class="t-muted">Rango de reversión: $159-163.</span></div>
+      <div>&nbsp;</div>
+      <div><span class="t-muted" style="font-size:0.75em">⚠ Solo informativo · datos EOD · no asesoramiento</span></div>
+      <div><span class="t-prompt">› </span><span class="cursor"></span></div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- LIVE DATA STRIP -->
+<div id="demo" class="data-strip">
+  <div class="data-strip-inner" id="tickerStrip">
+    <!-- generado por JS desde snapshot.json -->
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<section style="padding-top:2rem;padding-bottom:2rem;">
+  <div class="section-label">Datos reales · Free tier</div>
+  <div class="section-title" id="panelTitle">Selecciona un ticker arriba</div>
+  <p class="section-sub">Datos EOD de <strong>Massive.com</strong> y <strong>EODHD</strong> — ambos gratuitos sin tarjeta de crédito. Cada badge indica si el dato es accesible en free tier o requiere plan de pago.</p>
+
+  <div class="detail-panel" id="detailPanel" style="display:none">
+    <div class="detail-header">
+      <div>
+        <div class="detail-ticker" id="dTicker">—</div>
+        <div class="detail-name" id="dName">—</div>
+      </div>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;" id="dTags"></div>
+    </div>
+    <div class="detail-grid" id="dGrid"></div>
+    <div id="dRegime"></div>
+  </div>
+
+  <!-- MACRO GLOBAL -->
+  <div style="margin-top:2rem;">
+    <div class="section-label">Macro global · EODHD</div>
+    <div class="detail-panel">
+      <div class="detail-grid" id="macroGrid"></div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- FEATURES -->
+<section>
+  <div class="section-label">Capacidades</div>
+  <div class="section-title">Cuatro skills. Un agente.</div>
+  <p class="section-sub">Jane aplica automáticamente el análisis correcto según tu pregunta. Sin código. Sin formularios. Solo lenguaje natural.</p>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🌍</div>
+      <div class="feature-title">Régimen de mercado</div>
+      <div class="feature-desc">Clasifica el estado actual del mercado (alcista, bajista, lateral, crisis) usando <span class="tooltip" data-tip="Media de los últimos 200 cierres. El indicador de tendencia más seguido por instituciones.">MA200</span>, <span class="tooltip" data-tip="Índice de volatilidad implícita del S&P 500. VIX>30 = miedo. VIX<15 = calma.">VIX</span> y curva de rendimientos. Base obligatoria antes de cualquier análisis.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔬</div>
+      <div class="feature-title">Microestructura</div>
+      <div class="feature-desc">Lee el mercado como Jane Street: <span class="tooltip" data-tip="Diferencia entre precio bid y ask. Cuanto más bajo, menor el costo de entrar y salir.">spread bid-ask</span>, <span class="tooltip" data-tip="Promedio de acciones negociadas por día en los últimos 20 días hábiles.">ADV</span>, señal de flujo y <span class="tooltip" data-tip="Diferencia entre el precio esperado de ejecución y el real. Costo invisible frecuente.">slippage</span> estimado. Lo que el precio solo no te dice.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📈</div>
+      <div class="feature-title">Volatilidad</div>
+      <div class="feature-desc">Compara <span class="tooltip" data-tip="Volatilidad que el mercado espera, derivada del precio de las opciones.">volatilidad implícita</span> vs <span class="tooltip" data-tip="Volatilidad real observada en los precios históricos. Se calcula con retornos logarítmicos.">volatilidad histórica</span>. Detecta si las opciones están caras o baratas. Skew y estructura temporal.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔗</div>
+      <div class="feature-title">Stat-Arb</div>
+      <div class="feature-desc">Identifica pares de activos <span class="tooltip" data-tip="Relación matemática donde la diferencia entre dos activos siempre tiende a volver a su media. Más fuerte que correlación.">cointegrados</span>, calcula el <span class="tooltip" data-tip="Cuántas desviaciones estándar está la divergencia actual vs su media histórica. Señal de entrada en ±2.0.">Z-score</span> actual y estima el <span class="tooltip" data-tip="Tiempo promedio que tarda una divergencia en reducirse a la mitad. Entre 2 y 30 días es ideal para inversores no-HFT.">half-life de reversión</span>.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- GLOSSARY PREVIEW -->
+<section id="glosario">
+  <div class="section-label">Glosario</div>
+  <div class="section-title">Terminología que Jane usa. Explicada sin filtros.</div>
+  <p class="section-sub">Si siempre volviste a buscar el mismo término, este glosario es para ti. Cada concepto incluye definición, cómo se mide y un ejemplo real.</p>
+  <div class="gloss-grid">
+    <div class="gloss-card">
+      <div class="gloss-category">microestructura</div>
+      <div class="gloss-term">Spread bid-ask</div>
+      <div class="gloss-def">La diferencia entre lo que el mercado paga y lo que cobra. Es el costo invisible más frecuente de cualquier operación. Un spread de 0.5% significa que pierdes 1% solo entrando y saliendo.</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-category">volatilidad</div>
+      <div class="gloss-term">IV vs HV</div>
+      <div class="gloss-def">Volatilidad Implícita (lo que el mercado espera) vs Volatilidad Histórica (lo que el activo ha movido realmente). Cuando IV > HV, las opciones están caras. Cuando IV < HV, están baratas.</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-category">stat-arb</div>
+      <div class="gloss-term">Z-score</div>
+      <div class="gloss-def">Cuántas desviaciones estándar está una divergencia alejada de su media histórica. Z > +2.0 = señal de entrada. Z = 0 = objetivo de salida. Z > +3.5 = el par puede estar roto.</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-category">régimen</div>
+      <div class="gloss-term">VIX</div>
+      <div class="gloss-def">El "índice del miedo" del mercado. Mide la volatilidad esperada para los próximos 30 días. VIX &lt; 15 = calma. VIX &gt; 30 = estrés. VIX &gt; 40 = pánico — históricamente señal de agotamiento.</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-category">régimen</div>
+      <div class="gloss-term">Curva de rendimientos</div>
+      <div class="gloss-def">La diferencia entre la tasa del bono 10Y y el 2Y. Positiva = economía sana. Invertida = alerta de recesión en 6-18 meses. Precedió todas las recesiones de EEUU en 50 años.</div>
+    </div>
+    <div class="gloss-card">
+      <div class="gloss-category">datos</div>
+      <div class="gloss-term">Free tier vs Paid</div>
+      <div class="gloss-def">Datos EOD (cierre del día anterior), históricos y fundamentales son gratuitos. Datos en tiempo real, opciones y order book completo requieren plan de pago en Massive y EODHD.</div>
+    </div>
+  </div>
+  <div style="margin-top:1.5rem;">
+    <a href="glossary.html" class="btn btn-ghost">Ver los 35+ términos del glosario completo →</a>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- HOW TO USE -->
+<section id="como-usar">
+  <div class="section-label">Cómo usar Jane</div>
+  <div class="section-title">Tres formas. Elige la tuya.</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div>
+        <div class="step-title">Sin instalar nada — Claude.ai</div>
+        <div class="step-desc">Abre <a href="https://claude.ai" target="_blank">claude.ai</a> (cuenta gratuita), crea un Project con las instrucciones del agente y empieza a hacer preguntas en lenguaje natural. Sin código, sin API keys.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div>
+        <div class="step-title">Con datos reales — Claude Code</div>
+        <div class="step-desc">Instala <a href="https://claude.ai/code" target="_blank">Claude Code</a>, clona este repo, añade tus API keys de Massive y EODHD (ambas gratuitas) y Jane tiene acceso a datos reales del mercado.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div>
+        <div class="step-title">Deploy propio — Docker (próximamente)</div>
+        <div class="step-desc">Imagen Docker con interfaz web. El usuario provee sus propias API keys. Deploy en cualquier VPS free tier (Fly.io, Render). Roadmap público en GitHub.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- DATA SOURCES -->
+<section id="datos">
+  <div class="section-label">Fuentes de datos</div>
+  <div class="section-title">Qué es gratis. Qué no lo es.</div>
+  <p class="section-sub">Sin sorpresas. Cada dato en OpenJane tiene una fuente verificable y un badge que indica si requiere pago.</p>
+  <div class="sources-grid">
+    <div class="source-card">
+      <div class="source-name">
+        <span>Massive.com</span>
+        <span class="data-tag tag-free">free tier</span>
+      </div>
+      <div class="source-desc">Ex-Polygon.io. Datos de mercado USA. Sin tarjeta de crédito para el free tier.</div>
+      <div class="source-items">
+        <div class="source-item"><span class="data-tag tag-free">free</span> Precios EOD (cierre anterior)</div>
+        <div class="source-item"><span class="data-tag tag-free">free</span> Históricos OHLCV (ilimitados)</div>
+        <div class="source-item"><span class="data-tag tag-free">free</span> Detalles del ticker</div>
+        <div class="source-item"><span class="data-tag tag-paid">paid</span> Precios en tiempo real</div>
+        <div class="source-item"><span class="data-tag tag-paid">paid</span> Opciones · bid/ask live</div>
+      </div>
+    </div>
+    <div class="source-card">
+      <div class="source-name">
+        <span>EODHD</span>
+        <span class="data-tag tag-free">20 calls/día gratis</span>
+      </div>
+      <div class="source-desc">Fundamentales y datos globales. Yield curve, históricos mundiales, forex.</div>
+      <div class="source-items">
+        <div class="source-item"><span class="data-tag tag-free">free</span> Históricos EOD globales</div>
+        <div class="source-item"><span class="data-tag tag-free">free</span> Volatilidad histórica (HV)</div>
+        <div class="source-item"><span class="data-tag tag-free">free</span> Yield curve (10Y-2Y)</div>
+        <div class="source-item"><span class="data-tag tag-free">free</span> Medias móviles MA50/MA200</div>
+        <div class="source-item"><span class="data-tag tag-paid">paid</span> Fundamentales completos</div>
+      </div>
+    </div>
+    <div class="source-card">
+      <div class="source-name">
+        <span>Claude (Anthropic)</span>
+        <span class="data-tag tag-free">free en claude.ai</span>
+      </div>
+      <div class="source-desc">El modelo de lenguaje que da vida a Jane. Análisis, explicaciones, glosario.</div>
+      <div class="source-items">
+        <div class="source-item"><span class="data-tag tag-free">free</span> Claude.ai (límite diario)</div>
+        <div class="source-item"><span class="data-tag tag-free">free</span> Claude Code CLI</div>
+        <div class="source-item"><span class="data-tag tag-paid">paid</span> Claude Pro (sin límite)</div>
+        <div class="source-item"><span class="data-tag tag-paid">paid</span> API para deploy propio</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DISCLAIMER -->
+<div class="disclaimer">
+  <p>
+    Datos de precios y volumen proporcionados por <strong>Massive.com</strong>. Datos fundamentales, históricos y macroeconómicos proporcionados por <strong>EODHD</strong>.
+    Análisis generado por <strong>Claude (Anthropic)</strong> usando los frameworks conceptuales documentados en este repositorio.
+    <br><br>
+    <strong>Toda la información es proporcionada exclusivamente con fines educativos e informativos y no está destinada a fines de trading ni como asesoramiento financiero, de inversión, fiscal, legal, contable u otro tipo de asesoramiento.</strong>
+    OpenJane no predice precios futuros ni recomienda comprar o vender ningún activo.
+    Los datos tienen retraso de al menos 24 horas en el free tier. El usuario es responsable de sus propias decisiones de inversión.
+  </p>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">OpenJane · by Claude · Apache 2.0</div>
+  <div class="footer-links">
+    <a href="https://github.com/ussleo/openjane" target="_blank">GitHub</a>
+    <a href="glossary.html">Glosario</a>
+    <a href="https://massive.com" target="_blank">Massive.com</a>
+    <a href="https://eodhd.com" target="_blank">EODHD</a>
+    <a href="https://claude.ai" target="_blank">Claude.ai</a>
+  </div>
+</footer>
+
+<script>
+// Carga snapshot.json y renderiza los datos reales
+const TREND_LABEL = { alcista: ['▲ Alcista', 'up'], bajista: ['▼ Bajista', 'down'], transicion: ['↔ Transición', 'neutral'], insuficiente: ['— Sin datos', 'neutral'] };
+
+async function loadSnapshot() {
+  try {
+    const res = await fetch('data/snapshot.json');
+    const data = await res.json();
+    renderStrip(data.tickers);
+    renderMacro(data.macro);
+    // Auto-seleccionar SPY
+    if (data.tickers.SPY) renderDetail('SPY', data.tickers.SPY);
+  } catch(e) {
+    document.getElementById('tickerStrip').innerHTML = '<span style="color:var(--muted);font-size:0.8rem;font-family:monospace">Ejecuta scripts/generate_snapshot.py para cargar datos reales</span>';
+  }
+}
+
+function renderStrip(tickers) {
+  const strip = document.getElementById('tickerStrip');
+  strip.innerHTML = '';
+  for (const [sym, d] of Object.entries(tickers)) {
+    const trend = d.trend || {};
+    const pc = d.prev_close || {};
+    const [label, cls] = TREND_LABEL[trend.trend] || ['—', 'neutral'];
+    const price = pc.close ? `$${pc.close.toFixed(2)}` : (trend.last_close ? `$${trend.last_close.toFixed(2)}` : '—');
+    const pill = document.createElement('div');
+    pill.className = 'ticker-pill';
+    pill.innerHTML = `<div class="tp-symbol">${sym}</div><div class="tp-price ${cls}">${price}</div><div class="tp-trend ${cls}">${label}</div>`;
+    pill.onclick = () => { document.querySelectorAll('.ticker-pill').forEach(p=>p.classList.remove('active')); pill.classList.add('active'); renderDetail(sym, d); };
+    strip.appendChild(pill);
+  }
+}
+
+function renderDetail(sym, d) {
+  document.getElementById('detailPanel').style.display = '';
+  document.getElementById('panelTitle').textContent = sym;
+  document.getElementById('dTicker').textContent = sym;
+  const details = d.details || {};
+  document.getElementById('dName').textContent = details.name || '—';
+
+  const trend = d.trend || {};
+  const pc = d.prev_close || {};
+  const hv = d.hv || {};
+  const vol = d.volume || {};
+
+  const [tLabel, tCls] = TREND_LABEL[trend.trend] || ['—','neutral'];
+  const price = pc.close || trend.last_close;
+
+  const cards = [
+    { label: 'Precio cierre', tag: 'free', source: 'Massive', value: price ? `$${price.toFixed(2)}` : '—', sub: pc.date || '—' },
+    { label: 'MA 50 días', tag: 'free', source: 'EODHD', value: trend.ma50 ? `$${trend.ma50.toFixed(2)}` : '—', sub: 'Media móvil 50d' },
+    { label: 'MA 200 días', tag: 'free', source: 'EODHD', value: trend.ma200 ? `$${trend.ma200.toFixed(2)}` : '—', sub: 'Media móvil 200d' },
+    { label: 'Tendencia', tag: 'free', source: 'EODHD', value: `<span class="${tCls}">${tLabel}</span>`, sub: 'Precio vs MA200' },
+    { label: 'Vol. histórica 20d', tag: 'free', source: 'EODHD', value: hv.hv_annual_pct ? `${hv.hv_annual_pct}%` : '—', sub: 'Anualizada' },
+    { label: 'Vol. diaria (HV)', tag: 'free', source: 'EODHD', value: hv.hv_daily_pct ? `${hv.hv_daily_pct}%` : '—', sub: 'Movimiento diario promedio' },
+    { label: 'ADV 20d', tag: 'free', source: 'Massive', value: vol.adv ? vol.adv.toLocaleString() : '—', sub: 'Volumen diario promedio' },
+    { label: 'Señal de flujo', tag: 'free', source: 'Massive', value: vol.flow_signal || '—', sub: 'Volumen vs ADV' },
+    { label: 'IV ATM', tag: 'paid', source: 'Massive Pro', value: '—', sub: 'Requiere plan de pago' },
+    { label: 'Skew opciones', tag: 'paid', source: 'Massive Pro', value: '—', sub: 'Requiere plan de pago' },
+  ];
+
+  document.getElementById('dGrid').innerHTML = cards.map(c => `
+    <div class="detail-card">
+      <div class="dc-label">
+        ${c.label}
+        <span class="data-tag ${c.tag === 'free' ? 'tag-free' : 'tag-paid'}">${c.tag}</span>
+        <span style="color:var(--muted);font-size:0.65rem">${c.source}</span>
+      </div>
+      <div class="dc-value">${c.value}</div>
+      <div class="dc-sub">${c.sub}</div>
+    </div>
+  `).join('');
+
+  // Regime banner
+  const regimeEl = document.getElementById('dRegime');
+  if (trend.trend) {
+    const isAlcista = trend.trend === 'alcista';
+    regimeEl.innerHTML = `
+      <div class="regime-banner ${isAlcista ? '' : 'warn'}" style="margin:0;border-radius:0;">
+        <div class="regime-badge">${tLabel} · MA200 ${trend.ma200 ? '$'+trend.ma200.toFixed(2) : '—'}</div>
+        <div class="regime-text">
+          ${isAlcista
+            ? `Precio ($${price?.toFixed(2)}) sobre MA200 y MA50. Régimen favorable para estrategias de momentum y stat-arb largo.`
+            : `Precio ($${price?.toFixed(2)}) bajo MA200 ($${trend.ma200?.toFixed(2)}). Cautela — régimen bajista o transición. Evaluar antes de nuevas posiciones largas.`
+          }
+          <span style="margin-left:0.5rem;font-size:0.75rem;color:var(--muted)">Datos: EODHD · ${d.trend?.data_points || '?'} días de histórico</span>
+        </div>
+      </div>`;
+  } else { regimeEl.innerHTML = ''; }
+}
+
+function renderMacro(macro) {
+  if (!macro?.yield_curve) return;
+  const yc = macro.yield_curve;
+  const isOk = yc.spread_10y_2y > 0;
+  document.getElementById('macroGrid').innerHTML = `
+    <div class="detail-card">
+      <div class="dc-label">Treasury 10Y <span class="data-tag tag-free">free</span> <span style="color:var(--muted);font-size:0.65rem">EODHD</span></div>
+      <div class="dc-value">${yc.us10y}%</div>
+      <div class="dc-sub">Bono gobierno EEUU 10 años</div>
+    </div>
+    <div class="detail-card">
+      <div class="dc-label">Treasury 2Y <span class="data-tag tag-free">free</span> <span style="color:var(--muted);font-size:0.65rem">EODHD</span></div>
+      <div class="dc-value">${yc.us2y}%</div>
+      <div class="dc-sub">Bono gobierno EEUU 2 años</div>
+    </div>
+    <div class="detail-card">
+      <div class="dc-label">Spread 10Y-2Y <span class="data-tag tag-free">free</span> <span style="color:var(--muted);font-size:0.65rem">EODHD</span></div>
+      <div class="dc-value ${isOk ? 'up' : 'down'}">${yc.spread_10y_2y > 0 ? '+' : ''}${yc.spread_10y_2y}%</div>
+      <div class="dc-sub">${isOk ? 'Curva positiva' : 'Curva invertida'}</div>
+    </div>
+    <div class="detail-card" style="grid-column: span 1;">
+      <div class="dc-label">Régimen macro</div>
+      <div class="dc-value" style="font-size:0.95rem;line-height:1.4">${yc.yield_curve_label}</div>
+      <div class="dc-sub">Indicador de ciclo económico</div>
+    </div>
+  `;
+}
+
+loadSnapshot();
+</script>
+</body>
+</html>

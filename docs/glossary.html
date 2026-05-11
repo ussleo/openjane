@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glosario · OpenJane</title>
+<meta name="description" content="35+ términos del análisis cuantitativo explicados en lenguaje claro. Cada concepto con definición, cómo se mide y ejemplo real.">
+<style>
+  :root {
+    --bg: #0a0e14; --surface: #111820; --surface2: #18222e; --border: #1e2d3d;
+    --accent: #00d4ff; --green: #00c896; --red: #ff4d6d; --yellow: #f59e0b;
+    --text: #e2e8f0; --muted: #64748b;
+    --font: 'SF Mono','Fira Code','Cascadia Code',monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.6; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10,14,20,0.92); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 56px;
+  }
+  .nav-brand { font-family: var(--font); font-size: 1rem; font-weight: 700; color: var(--accent); }
+  .nav-brand span { color: var(--muted); font-weight: 400; }
+  .nav-right { display: flex; gap: 1rem; align-items: center; }
+  .nav-right a { color: var(--muted); font-size: 0.85rem; }
+  .nav-right a:hover { color: var(--text); text-decoration: none; }
+  .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.82rem; font-weight: 600; transition: all 0.2s; border: 1px solid var(--border); color: var(--text); background: transparent; cursor: pointer; }
+  .btn:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+
+  .page-header { max-width: 900px; margin: 0 auto; padding: 4rem 2rem 2rem; }
+  .page-label { font-family: var(--font); font-size: 0.72rem; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.6rem; }
+  .page-title { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.8rem; }
+  .page-sub { color: var(--muted); max-width: 580px; line-height: 1.7; }
+
+  /* ── SEARCH + FILTERS ── */
+  .controls { max-width: 900px; margin: 0 auto; padding: 0 2rem 2rem; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
+  .search-wrap { position: relative; flex: 1; min-width: 200px; }
+  .search-wrap input {
+    width: 100%; background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); font-size: 0.9rem; padding: 0.6rem 0.8rem 0.6rem 2.4rem;
+    border-radius: 8px; outline: none; transition: border-color 0.2s;
+  }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-wrap input::placeholder { color: var(--muted); }
+  .search-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.9rem; pointer-events: none; }
+  .filter-btns { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .filter-btn {
+    font-family: var(--font); font-size: 0.72rem; padding: 0.35rem 0.8rem;
+    border-radius: 20px; border: 1px solid var(--border); background: transparent;
+    color: var(--muted); cursor: pointer; transition: all 0.2s;
+  }
+  .filter-btn:hover, .filter-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,212,255,0.07); }
+  .filter-btn[data-cat="microestructura"].active { border-color: #00c896; color: #00c896; background: rgba(0,200,150,0.07); }
+  .filter-btn[data-cat="volatilidad"].active { border-color: #f59e0b; color: #f59e0b; background: rgba(245,158,11,0.07); }
+  .filter-btn[data-cat="stat-arb"].active { border-color: #a78bfa; color: #a78bfa; background: rgba(167,139,250,0.07); }
+  .filter-btn[data-cat="regimen"].active { border-color: #00d4ff; color: #00d4ff; background: rgba(0,212,255,0.07); }
+  .filter-btn[data-cat="riesgo"].active { border-color: #ff4d6d; color: #ff4d6d; background: rgba(255,77,109,0.07); }
+  .filter-btn[data-cat="datos"].active { border-color: #64748b; color: var(--text); background: rgba(100,116,139,0.1); }
+
+  /* ── COUNT ── */
+  .result-count { max-width: 900px; margin: 0 auto; padding: 0 2rem 0.5rem; font-family: var(--font); font-size: 0.75rem; color: var(--muted); }
+
+  /* ── GLOSSARY CARDS ── */
+  .glossary { max-width: 900px; margin: 0 auto; padding: 0 2rem 4rem; display: flex; flex-direction: column; gap: 1px; background: var(--border); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+  .gloss-item {
+    background: var(--surface); padding: 1.4rem 1.6rem;
+    display: grid; grid-template-columns: 200px 1fr; gap: 1.5rem; align-items: start;
+    transition: background 0.15s; cursor: default;
+  }
+  .gloss-item:hover { background: var(--surface2); }
+  @media (max-width: 640px) { .gloss-item { grid-template-columns: 1fr; gap: 0.6rem; } }
+  .gloss-item.hidden { display: none; }
+  .gloss-left { display: flex; flex-direction: column; gap: 0.4rem; }
+  .gloss-term { font-family: var(--font); font-weight: 700; font-size: 0.95rem; color: var(--text); }
+  .gloss-cat {
+    display: inline-flex; align-items: center; font-family: var(--font);
+    font-size: 0.65rem; padding: 0.2rem 0.55rem; border-radius: 3px; width: fit-content;
+  }
+  .cat-microestructura { background: rgba(0,200,150,0.1); color: #00c896; border: 1px solid rgba(0,200,150,0.2); }
+  .cat-volatilidad     { background: rgba(245,158,11,0.1); color: #f59e0b; border: 1px solid rgba(245,158,11,0.2); }
+  .cat-stat-arb        { background: rgba(167,139,250,0.1); color: #a78bfa; border: 1px solid rgba(167,139,250,0.2); }
+  .cat-regimen         { background: rgba(0,212,255,0.1); color: #00d4ff; border: 1px solid rgba(0,212,255,0.2); }
+  .cat-riesgo          { background: rgba(255,77,109,0.1); color: #ff4d6d; border: 1px solid rgba(255,77,109,0.2); }
+  .cat-datos           { background: rgba(100,116,139,0.12); color: #94a3b8; border: 1px solid rgba(100,116,139,0.2); }
+  .gloss-right { display: flex; flex-direction: column; gap: 0.8rem; }
+  .gloss-def { color: var(--text); font-size: 0.88rem; line-height: 1.65; }
+  .gloss-measure { display: flex; gap: 0.5rem; align-items: flex-start; }
+  .gloss-measure-label { font-family: var(--font); font-size: 0.7rem; color: var(--accent); white-space: nowrap; padding-top: 0.1rem; }
+  .gloss-measure-val { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+  .gloss-example {
+    background: var(--surface2); border-left: 2px solid var(--accent);
+    padding: 0.6rem 0.9rem; border-radius: 0 4px 4px 0;
+    font-size: 0.8rem; color: var(--muted); line-height: 1.55;
+  }
+  .gloss-example strong { color: var(--text); }
+  .no-results { padding: 3rem; text-align: center; color: var(--muted); font-family: var(--font); }
+
+  footer { background: var(--surface2); border-top: 1px solid var(--border); padding: 1.2rem 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.8rem; }
+  .footer-brand { font-family: var(--font); font-size: 0.85rem; color: var(--muted); }
+  .footer-links { display: flex; gap: 1.5rem; }
+  .footer-links a { color: var(--muted); font-size: 0.8rem; }
+  .footer-links a:hover { color: var(--text); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand"><a href="index.html" style="color:inherit;text-decoration:none">Open<span>Jane</span></a> · <span>Glosario</span></div>
+  <div class="nav-right">
+    <a href="index.html">← Inicio</a>
+    <a href="https://github.com/ussleo/openjane" target="_blank">GitHub</a>
+    <a href="https://claude.ai" target="_blank" class="btn">Usar Jane ↗</a>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="page-label">Referencia completa</div>
+  <div class="page-title">Glosario OpenJane</div>
+  <p class="page-sub">Cada término que Jane usa — explicado sin filtros. Definición, cómo se mide, y un ejemplo real. Si siempre volviste a buscar el mismo concepto, este es tu lugar.</p>
+</div>
+
+<div class="controls">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="Buscar término... (ej: spread, VIX, Z-score)">
+  </div>
+  <div class="filter-btns">
+    <button class="filter-btn active" data-cat="all">Todos</button>
+    <button class="filter-btn" data-cat="microestructura">Microestructura</button>
+    <button class="filter-btn" data-cat="volatilidad">Volatilidad</button>
+    <button class="filter-btn" data-cat="stat-arb">Stat-Arb</button>
+    <button class="filter-btn" data-cat="regimen">Régimen</button>
+    <button class="filter-btn" data-cat="riesgo">Riesgo</button>
+    <button class="filter-btn" data-cat="datos">Datos</button>
+  </div>
+</div>
+
+<div class="result-count" id="resultCount"></div>
+
+<div class="glossary" id="glossary"></div>
+
+<footer>
+  <div class="footer-brand">OpenJane · by Claude · Apache 2.0</div>
+  <div class="footer-links">
+    <a href="index.html">Inicio</a>
+    <a href="https://github.com/ussleo/openjane" target="_blank">GitHub</a>
+    <a href="https://claude.ai" target="_blank">Claude.ai</a>
+  </div>
+</footer>
+
+<script>
+const TERMS = [
+  // ── MICROESTRUCTURA ──────────────────────────────────────────────────────
+  {
+    term: 'Spread bid-ask', cat: 'microestructura',
+    def: 'La diferencia entre el precio más alto que un comprador está dispuesto a pagar (bid) y el precio más bajo al que un vendedor está dispuesto a vender (ask). Es el costo invisible más frecuente en cualquier operación de mercado.',
+    measure: 'Spread = Ask − Bid. En porcentaje: (Ask − Bid) / Precio medio × 100',
+    example: 'ICE cotiza bid $155.60 / ask $155.65. Spread = $0.05 = 0.032%. Si compras y vendes de inmediato, pierdes ese 0.032% solo por el spread — sin que el mercado se haya movido.'
+  },
+  {
+    term: 'Market maker', cat: 'microestructura',
+    def: 'Firma o entidad que ofrece simultáneamente precios de compra y venta de un activo, garantizando liquidez al mercado. Ganan la diferencia (spread) entre ambos precios a cambio de asumir el riesgo de inventario.',
+    measure: 'Se identifica por su presencia constante en el order book con órdenes a ambos lados del mercado.',
+    example: 'Jane Street, Citadel Securities y Virtu Financial son los market makers más grandes del mundo. Cuando compras acciones de Apple en tu broker, en muchos casos quien te las vende no es otro inversor — es un market maker.'
+  },
+  {
+    term: 'Liquidez', cat: 'microestructura',
+    def: 'La capacidad de comprar o vender un activo rápidamente sin que el propio acto de comprar/vender cambie significativamente el precio.',
+    measure: 'ADV (volumen diario promedio), ratio volumen/capitalización, spread bid-ask, profundidad del order book.',
+    example: 'Apple negocia más de 50 millones de acciones por día — altísima liquidez. Una empresa pequeña puede negociar solo 50,000 acciones. Una orden de 5,000 tuya puede mover su precio.'
+  },
+  {
+    term: 'Flujo de órdenes (Order flow)', cat: 'microestructura',
+    def: 'El conjunto de órdenes de compra y venta que llegan al mercado en un período dado. Permite detectar si el mercado está siendo presionado por compradores o vendedores, y si ese flujo proviene de inversores informados o de ruido.',
+    measure: 'Ratio compras/ventas en tick data. VPIN: Volume-Synchronized Probability of Informed Trading.',
+    example: 'Si el 70% del volumen de una acción en la última hora fue a precios del ask (compras agresivas), hay presión compradora fuerte — algo puede estar ocurriendo antes de que llegue la noticia pública.'
+  },
+  {
+    term: 'ADV (Average Daily Volume)', cat: 'microestructura',
+    def: 'Volumen diario promedio: la cantidad de acciones negociadas en un día típico, calculada como promedio de los últimos 20 días hábiles. Es la referencia base para medir liquidez y dimensionar órdenes.',
+    measure: 'ADV = suma del volumen de los últimos 20 días ÷ 20. Regla práctica: nunca seas más del 10% del ADV en una sola sesión.',
+    example: 'ICE tiene un ADV de ~3.2M acciones. Para un inversor retail comprando 100 acciones, irrelevante. Para un fondo comprando 500,000 acciones, necesita distribuir la orden en varios días para no mover el precio en su contra.'
+  },
+  {
+    term: 'VWAP', cat: 'microestructura',
+    def: 'Volume-Weighted Average Price. Precio promedio ponderado por volumen durante un período. Es el benchmark de ejecución más usado por instituciones para evaluar si compraron bien o mal.',
+    measure: 'VWAP = Suma(Precio × Volumen de cada transacción) ÷ Volumen total del período.',
+    example: 'El VWAP de ICE hoy fue $155.50. Si tu broker ejecutó a $155.30, ejecutaste 0.13% mejor que el mercado ese día. Si ejecutó a $155.70, pagaste 0.13% de más.'
+  },
+  {
+    term: 'TWAP', cat: 'microestructura',
+    def: 'Time-Weighted Average Price. Estrategia de ejecución que divide una orden grande en partes iguales distribuidas uniformemente en el tiempo, para reducir el impacto de mercado.',
+    measure: 'Orden total ÷ número de intervalos = tamaño de cada orden parcial.',
+    example: 'Un fondo necesita comprar $10M de acciones en un día. En vez de ejecutar todo de una vez (lo que subiría el precio), divide en 24 órdenes de $417,000 cada 30 minutos.'
+  },
+  // ── VOLATILIDAD ──────────────────────────────────────────────────────────
+  {
+    term: 'Volatilidad implícita (IV)', cat: 'volatilidad',
+    def: 'La volatilidad esperada por el mercado para un activo en el futuro, derivada matemáticamente del precio de sus opciones. No es la volatilidad pasada — es lo que el mercado colectivamente cree que pasará.',
+    measure: 'Se invierte el modelo Black-Scholes: dado el precio de una opción, se calcula qué volatilidad genera ese precio. Se expresa como porcentaje anualizado.',
+    example: 'Antes de resultados de Apple, las opciones suben de precio aunque el subyacente no se mueva. IV del 45% significa que el mercado espera movimientos anualizados del ±45% — unos ±2.8% diarios.'
+  },
+  {
+    term: 'Volatilidad histórica (HV)', cat: 'volatilidad',
+    def: 'La volatilidad real observada en los precios pasados de un activo. Se calcula a partir de los retornos diarios logarítmicos. Es lo que el activo YA ha movido, no lo que el mercado espera que mueva.',
+    measure: 'HV = desviación estándar de los retornos logarítmicos diarios × √252 × 100 (para anualizarla en %).',
+    example: 'SPY en mayo 2026 tiene HV de 10.4% anualizada — muy baja, mercado tranquilo. En marzo 2020 (COVID) la HV llegó al 80%+. La diferencia entre IV y HV es la prima que cobran los market makers de opciones.'
+  },
+  {
+    term: 'Prima de volatilidad (Vol premium)', cat: 'volatilidad',
+    def: 'La diferencia entre la volatilidad implícita (lo que el mercado cobra por protección) y la volatilidad histórica (lo que el activo ha movido realmente). Es la ganancia estructural que cobran los vendedores de opciones.',
+    measure: 'Prima = IV − HV. Prima > 0: opciones caras, vendedores de vol favorecidos. Prima < 0: opciones baratas, compradores favorecidos.',
+    example: 'Si AAPL tiene IV del 30% pero HV de 20%, la prima es +10 puntos. El mercado está cobrando un 50% más de lo que el activo se ha movido históricamente. Jane Street y Citadel explotan esto sistemáticamente.'
+  },
+  {
+    term: 'Skew de volatilidad', cat: 'volatilidad',
+    def: 'La diferencia entre la IV de los puts (protección bajista) y la IV de los calls (protección alcista) al mismo vencimiento. Mide si el mercado teme más una caída que una subida.',
+    measure: 'Skew = IV put 25-delta − IV call 25-delta. Positivo = miedo bajista. Negativo = miedo alcista (raro).',
+    example: 'El S&P 500 siempre tiene skew positivo (5-10 puntos): los gestores pagan sistemáticamente más por protección bajista. Jane Street vende ese skew estructuralmente y compra volatilidad barata de otra forma.'
+  },
+  {
+    term: 'Estructura temporal de volatilidad', cat: 'volatilidad',
+    def: 'La curva de IV a través de distintos vencimientos. Revela en qué momento el mercado concentra su incertidumbre: ahora (backwardation) o en el futuro (contango).',
+    measure: 'Contango: IV corto plazo < IV largo plazo (normal). Backwardation: IV corto > IV largo (señal de crisis o evento inminente).',
+    example: 'Una semana antes de las elecciones presidenciales de EEUU, las opciones a 1 semana tienen IV del 60%, mientras las de 3 meses tienen IV del 22%. El mercado concentra el miedo en el corto plazo.'
+  },
+  {
+    term: 'Put/Call Ratio (P/C)', cat: 'volatilidad',
+    def: 'Ratio entre el volumen de opciones put (protección bajista) y opciones call (apuesta alcista) en un período dado. Es un termómetro de sentimiento del mercado y suele usarse como indicador contrario.',
+    measure: 'P/C = Volumen de puts ÷ Volumen de calls. > 1.5: miedo extremo bajista (contrario alcista). < 0.7: complacencia (contrario bajista).',
+    example: 'En marzo 2020 el P/C del SPY llegó a 3.0 — pánico extremo. Las firmas quant usaron eso como señal de agotamiento de la caída y cargaron posiciones largas. Dos semanas después empezó el rally más rápido de la historia.'
+  },
+  {
+    term: 'VIX', cat: 'volatilidad',
+    def: 'Índice de volatilidad del mercado calculado por CBOE a partir de opciones del S&P 500. Mide la volatilidad implícita esperada para los próximos 30 días. Conocido como "el índice del miedo".',
+    measure: 'Es un índice directo: VIX = 18 significa que el mercado espera movimientos anualizados del 18%, equivalente a ~1.1% diario.',
+    example: 'VIX en mayo 2026: ~16 (calma). COVID marzo 2020: VIX llegó a 82 (pánico extremo). Históricamente, VIX > 40 ha sido una buena señal de compra de largo plazo — el miedo máximo suele coincidir con el piso.'
+  },
+  // ── STAT-ARB ─────────────────────────────────────────────────────────────
+  {
+    term: 'Arbitraje estadístico (Stat-arb)', cat: 'stat-arb',
+    def: 'Estrategia cuantitativa que explota divergencias temporales en la relación histórica entre dos o más activos cointegrados. No apuesta a que el precio suba o baje — apuesta a que la relación entre dos precios vuelva a su media histórica.',
+    measure: 'Identificar par cointegrado → calcular spread histórico → Z-score extremo (>±2) → entrada. Z-score regresa a 0 → salida.',
+    example: 'ICE sube 5% por una noticia positiva pero CBOE no se mueve. Históricamente se mueven juntos. Vendes ICE y compras CBOE esperando que la divergencia se corrija. Eso es stat-arb — no dependes de que el mercado suba o baje.'
+  },
+  {
+    term: 'Cointegración', cat: 'stat-arb',
+    def: 'Relación matemática entre dos activos donde, aunque ambos se mueven de forma aleatoria individualmente, su diferencia tiende siempre a volver a un valor medio. Es más fuerte que la correlación.',
+    measure: 'Test de Engle-Granger: se verifica que el spread entre los dos activos sea estacionario (media constante, sin tendencia). p-value < 0.05 = cointegración confirmada.',
+    example: 'SPY e IVV (dos ETFs del S&P 500 de distintas gestoras) están cointegrados: si uno se separa del otro, los mecanismos de arbitraje lo corrigen en minutos. La cointegración es la garantía matemática de que la divergencia se corregirá.'
+  },
+  {
+    term: 'Z-score', cat: 'stat-arb',
+    def: 'Medida estadística que indica cuántas desviaciones estándar está un valor alejado de su media histórica. En stat-arb, mide qué tan anormal es la divergencia actual entre dos activos cointegrados.',
+    measure: 'Z-score = (Valor actual − Media histórica) ÷ Desviación estándar. Señal de entrada: |Z| > 2.0. Objetivo de salida: Z = 0. Stop-loss: |Z| > 3.5.',
+    example: 'El spread entre ICE y CBOE tiene media $10 y desviación $2. Hoy el spread es $14. Z-score = (14−10)/2 = +2.0. ICE está caro relativo a CBOE — oportunidad de entrar: vender ICE, comprar CBOE.'
+  },
+  {
+    term: 'Correlación', cat: 'stat-arb',
+    def: 'Medida estadística entre -1 y +1 que indica qué tan sincronizados se mueven dos activos. +1 = se mueven perfectamente juntos. -1 = dirección opuesta. 0 = sin relación estadística.',
+    measure: 'Coeficiente de Pearson sobre los retornos diarios en ventana de 252 días. Para stat-arb se requiere correlación > 0.75.',
+    example: 'XOM y CVX tienen correlación ~0.92 porque ambas suben y bajan con el precio del petróleo. Pero la correlación puede caer si una empresa tiene un problema específico — por eso la cointegración es más robusta.'
+  },
+  {
+    term: 'Half-life de reversión', cat: 'stat-arb',
+    def: 'El tiempo promedio que tarda una divergencia entre dos activos en reducirse a la mitad. Mide la velocidad con que el mercado corrige la anomalía estadística. Define si la estrategia es ejecutable para un inversor no-HFT.',
+    measure: 'Se estima con regresión de Ornstein-Uhlenbeck sobre la serie del spread. Entre 2 y 30 días es ideal para inversores con acceso normal.',
+    example: 'SPY vs IVV tienen half-life de menos de 1 día — solo HFTs pueden explotarlo. ICE vs CBOE pueden tener half-life de 10-15 días — perfectamente manejable para un inversor individual.'
+  },
+  // ── RÉGIMEN ──────────────────────────────────────────────────────────────
+  {
+    term: 'Régimen de mercado', cat: 'regimen',
+    def: 'El estado estructural del mercado en un momento dado. Los mercados alternan entre tendencia alcista, bajista, lateral y crisis. La misma estrategia que genera ganancias en un régimen puede destruir capital en otro.',
+    measure: 'Score compuesto: posición vs MA50/MA200, VIX, amplitud de mercado (% acciones sobre MA200), yield curve. Score +3/+4 = alcista fuerte. Score -3/-4 = bajista/crisis.',
+    example: 'Una estrategia de comprar caídas (buy the dip) genera ganancias en régimen alcista y destruye capital en régimen bajista. Las firmas quant cambian de estrategia según el régimen. La mayoría de inversores no lo hacen.'
+  },
+  {
+    term: 'Media móvil (MA50 / MA200)', cat: 'regimen',
+    def: 'El promedio del precio de cierre de un activo durante los últimos N días. Suaviza el ruido diario y revela la tendencia subyacente. MA200 es el indicador de tendencia más seguido por instituciones globales.',
+    measure: 'MA(N) = suma de los últimos N precios de cierre ÷ N. Se recalcula cada día. Golden cross: MA50 cruza MA200 hacia arriba (alcista). Death cross: MA50 cruza MA200 hacia abajo (bajista).',
+    example: 'SPY mayo 2026: precio $737, MA50 $683, MA200 $670. El precio está sobre ambas medias → tendencia alcista confirmada. Si el precio cayera a $660, estaría bajo MA200 → alerta mayor.'
+  },
+  {
+    term: 'Amplitud de mercado (Market breadth)', cat: 'regimen',
+    def: 'Medida de cuántas acciones dentro de un índice participan realmente de su movimiento. Un índice puede subir aunque la mayoría de sus acciones bajen si unas pocas muy grandes suben mucho.',
+    measure: 'Porcentaje de acciones del S&P 500 sobre su MA200. >70%: alza sana. 50-70%: mixto. <40%: divergencia peligrosa aunque el índice suba.',
+    example: 'El S&P 500 sube 1% pero 300 de sus 500 acciones están bajando — solo las 7 "Magnificent" compensan todo. Baja amplitud = rally frágil. Las firmas quant reducen exposición cuando ven esta divergencia.'
+  },
+  {
+    term: 'Curva de rendimientos (Yield curve)', cat: 'regimen',
+    def: 'Representación de las tasas de interés de bonos del gobierno a distintos plazos. Normalmente los bonos a largo plazo pagan más. Cuando se invierte (el corto paga más que el largo), históricamente precede recesiones.',
+    measure: 'Spread 10Y-2Y = tasa del bono a 10 años − tasa del bono a 2 años. Positivo = normal. Negativo = invertida = señal de alerta. Mayo 2026: +0.46% (plana, transición).',
+    example: 'En 2022-2023, la curva 10Y-2Y estuvo invertida varios meses. La señal funcionó como alerta macro aunque el timing exacto de la recesión fue incierto. Hoy la curva es plana (+0.46%) — señal de transición.'
+  },
+  {
+    term: 'Ghost ticker', cat: 'regimen',
+    def: 'Término de OpenJane para un activo cotizado que se mueve de forma estadísticamente similar a una firma privada (como Jane Street) sin tener relación directa con ella. Sirve como proxy de comportamiento observable.',
+    measure: 'Correlación de retornos, sensibilidad a VIX, comportamiento en distintos regímenes de volatilidad.',
+    example: 'Jane Street no cotiza en bolsa. Pero CBOE cotiza y su precio sube cuando la volatilidad aumenta — igual que probablemente las ganancias de Jane Street. CBOE es el "fantasma público" de una firma privada de $39B.'
+  },
+  // ── RIESGO ───────────────────────────────────────────────────────────────
+  {
+    term: 'Drawdown', cat: 'riesgo',
+    def: 'La caída máxima desde un pico de valor hasta el valle más bajo subsecuente, antes de recuperarse. Es la medida más importante del riesgo real que experimenta un inversor — más honesta que la volatilidad.',
+    measure: 'Max Drawdown = (Valor mínimo − Valor máximo previo) ÷ Valor máximo previo × 100. Un drawdown del 30% requiere un retorno del 43% solo para recuperarse.',
+    example: 'Tu portafolio sube de $100K a $120K y luego cae a $84K. Drawdown = −30%. Necesitas ganar 43% desde $84K para volver al pico. Por eso las firmas quant son obsesivas con limitar drawdowns — es matemática pura.'
+  },
+  {
+    term: 'Slippage', cat: 'riesgo',
+    def: 'La diferencia entre el precio al que esperabas ejecutar una orden y el precio al que realmente se ejecutó. Ocurre porque el mercado se mueve mientras tu orden se procesa, o porque tu propia orden mueve el precio.',
+    measure: 'Slippage = Precio ejecutado − Precio esperado. En %: (Ejecutado − Esperado) / Esperado × 100.',
+    example: 'Quieres comprar 1,000 acciones a $100. Las primeras 200 se ejecutan a $100.00, las siguientes a $100.05, las últimas a $100.12. Precio promedio real: $100.08. Ese $0.08 es tu slippage — el costo oculto más subestimado.'
+  },
+  {
+    term: 'Impacto de mercado (Market impact)', cat: 'riesgo',
+    def: 'El efecto que tiene tu propia orden grande sobre el precio del activo. Cuando compras en cantidad, empujas el precio hacia arriba contra ti mismo. Las firmas quant dedican equipos enteros a minimizarlo.',
+    measure: 'Modelos como Almgren-Chriss calculan el impacto óptimo distribuyendo órdenes en el tiempo. Regla: nunca superar el 10% del ADV en una sesión.',
+    example: 'Un fondo quiere comprar el 5% de las acciones de una empresa en un día. Solo ese intento sube el precio antes de que terminen — las últimas acciones cuestan más que las primeras. Es el costo de ser grande.'
+  },
+  {
+    term: 'Sharpe ratio', cat: 'riesgo',
+    def: 'Medida del retorno ajustado por riesgo de una estrategia. Indica cuánto retorno obtienes por cada unidad de riesgo que asumes. Creado por William Sharpe, Premio Nobel de Economía.',
+    measure: 'Sharpe = (Retorno promedio − Tasa libre de riesgo) ÷ Desviación estándar. <0.5: débil. 0.5-1: aceptable. 1-2: buena. >2: excelente.',
+    example: 'Tu estrategia gana 15% anual con volatilidad del 10%, tasa libre de riesgo al 5%. Sharpe = (15%-5%)/10% = 1.0. Una estrategia con Sharpe 0.3 y retorno del 20% es menos interesante de lo que parece.'
+  },
+  // ── DATOS ────────────────────────────────────────────────────────────────
+  {
+    term: 'OHLCV', cat: 'datos',
+    def: 'Open, High, Low, Close, Volume. Los cinco datos básicos de cualquier barra de precio. Son la materia prima de todo análisis técnico y cuantitativo. Disponibles en el free tier de Massive y EODHD.',
+    measure: 'Open: precio de apertura. High/Low: máximo y mínimo de la sesión. Close: precio de cierre. Volume: cantidad de acciones negociadas.',
+    example: 'AAPL el 8 de mayo 2026: Open $290.01 / High $294.76 / Low $290.00 / Close $293.32 / Volume 52.6M. Con solo estos 5 datos puedes calcular MA200, HV, ratio de volumen y media docena de indicadores más.'
+  },
+  {
+    term: 'Cierre ajustado (Adjusted close)', cat: 'datos',
+    def: 'El precio de cierre corregido por dividendos, splits y otras acciones corporativas. Es el dato correcto para calcular retornos reales — el precio de cierre sin ajustar puede crear señales falsas en el análisis histórico.',
+    measure: 'Se calcula retroactivamente: si una acción pagó un dividendo del 2%, todos los precios anteriores se reducen un 2% para que la serie sea continua.',
+    example: 'Apple ha hecho varios splits históricos (4:1 en 2020, 7:1 en 2014). Si usas el precio sin ajustar, verás caídas del 75% y del 86% que son artificiales. El adjusted close elimina esos saltos falsos.'
+  },
+  {
+    term: 'Free tier vs Paid tier', cat: 'datos',
+    def: 'La distinción entre datos accesibles sin costo y datos que requieren suscripción de pago. En OpenJane, todos los análisis de régimen y tendencia usan solo free tier. Los datos de opciones e IV requieren paid.',
+    measure: 'Free: datos EOD (fin del día anterior), históricos, fundamentales básicos, yield curve. Paid: tiempo real (<15min delay), opciones, order book, volatilidad implícita en tiempo real.',
+    example: 'Massive.com free tier: análisis de tendencia de AAPL con MA200, HV y volumen — completamente gratis. Massive paid ($29/mes): spread bid-ask en tiempo real, IV de opciones, datos de nivel 2. OpenJane usa solo lo gratuito.'
+  },
+  {
+    term: 'Backtesting', cat: 'datos',
+    def: 'Proceso de probar una estrategia sobre datos históricos para evaluar cómo habría funcionado en el pasado. Método estándar para validar una idea antes de arriesgar capital real.',
+    measure: 'Aplicar reglas de la estrategia sobre datos históricos, registrar cada operación simulada, calcular retornos, drawdown, Sharpe ratio. Validar en datos fuera del período de diseño (out-of-sample).',
+    example: 'Diseñas stat-arb entre ICE y CBOE usando datos 2015-2020 (in-sample) y validas con datos 2020-2025 que nunca usaste (out-of-sample). Si solo funciona en el primer período, es overfitting — la estrategia no es robusta.'
+  },
+  {
+    term: 'API key', cat: 'datos',
+    def: 'Código único que identifica a tu usuario ante un servicio de datos externo. Como una contraseña personalizada que permite al agente hacer solicitudes de datos en tu nombre.',
+    measure: 'Se obtiene registrándose en el sitio del proveedor. Se almacena como variable de entorno en el archivo .env — nunca en código expuesto públicamente.',
+    example: 'Te registras en massive.com, recibes una key como pk_abc123xyz. La añades al archivo .env: MASSIVE_API_KEY=pk_abc123xyz. OpenJane la lee automáticamente. Nunca compartas tu key — equivale a tu contraseña de la cuenta.'
+  },
+  {
+    term: 'MCP (Model Context Protocol)', cat: 'datos',
+    def: 'Protocolo estándar creado por Anthropic que permite conectar modelos de lenguaje como Claude con herramientas y fuentes de datos externas. En OpenJane define cómo el agente accede a Massive y EODHD.',
+    measure: 'Se configura en .mcp.json con la URL del servidor, autenticación y parámetros. El agente usa el protocolo automáticamente sin que el usuario programe nada.',
+    example: 'Escribes "/spread-analysis ICE" al agente. Via MCP, el agente llama a Massive.com, obtiene los datos de ICE, los procesa con la skill de microestructura, y te entrega el análisis en español. Sin código de tu parte.'
+  },
+  {
+    term: 'HFT (High-Frequency Trading)', cat: 'datos',
+    def: 'Trading de alta frecuencia: estrategias completamente automatizadas que ejecutan miles de operaciones por segundo, aprovechando ventajas de latencia medidas en microsegundos. El territorio donde operan Jane Street y Citadel.',
+    measure: 'Latencia en microsegundos. Servidores co-ubicados físicamente en los edificios de los exchanges (co-location). Inversión de infraestructura de millones de dólares.',
+    example: 'Cuando el S&P 500 cae 0.1% en Chicago, los HFTs ajustan precios de miles de acciones en Nueva York en microsegundos. OpenJane replica la lógica conceptual del HFT — no la velocidad. La lógica es accesible. La velocidad no.'
+  }
+];
+
+let currentCat = 'all';
+let currentSearch = '';
+
+function render() {
+  const container = document.getElementById('glossary');
+  const count = document.getElementById('resultCount');
+  const q = currentSearch.toLowerCase();
+
+  const visible = TERMS.filter(t => {
+    const catMatch = currentCat === 'all' || t.cat === currentCat;
+    const searchMatch = !q || t.term.toLowerCase().includes(q) || t.def.toLowerCase().includes(q) || t.example.toLowerCase().includes(q);
+    return catMatch && searchMatch;
+  });
+
+  count.textContent = `${visible.length} término${visible.length !== 1 ? 's' : ''}`;
+
+  if (visible.length === 0) {
+    container.innerHTML = '<div class="no-results">No se encontraron términos para "' + currentSearch + '"</div>';
+    return;
+  }
+
+  container.innerHTML = visible.map(t => `
+    <div class="gloss-item" data-cat="${t.cat}">
+      <div class="gloss-left">
+        <div class="gloss-term">${highlight(t.term, q)}</div>
+        <div class="gloss-cat cat-${t.cat}">${t.cat}</div>
+      </div>
+      <div class="gloss-right">
+        <div class="gloss-def">${highlight(t.def, q)}</div>
+        <div class="gloss-measure">
+          <span class="gloss-measure-label">Cómo se mide:</span>
+          <span class="gloss-measure-val">${t.measure}</span>
+        </div>
+        <div class="gloss-example"><strong>Ejemplo real:</strong> ${highlight(t.example, q)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function highlight(text, q) {
+  if (!q) return text;
+  const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  return text.replace(re, '<mark style="background:rgba(0,212,255,0.2);color:var(--accent);border-radius:2px">$1</mark>');
+}
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  currentSearch = e.target.value;
+  render();
+});
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentCat = btn.dataset.cat;
+    render();
+  });
+});
+
+render();
+</script>
+</body>
+</html>
