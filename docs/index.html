@@ -337,6 +337,67 @@
 
 <hr class="divider">
 
+<!-- SCREENSHOTS -->
+<section id="screenshots" style="padding-bottom:1rem;">
+  <div class="section-label">Jane en acción · Screenshots reales</div>
+  <div class="section-title">Datos reales. Terminal real. Sin filtros.</div>
+  <p class="section-sub">Los tres bloques de análisis corriendo localmente con datos de Massive.com y EODHD. Esto es exactamente lo que ves cuando ejecutas <code style="font-family:var(--font);font-size:0.85em;background:var(--surface2);padding:0.1em 0.4em;border-radius:3px;color:var(--green)">python scripts/jane_demo.py</code></p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-top:2rem;">
+
+    <div style="display:flex;flex-direction:column;gap:0.8rem;">
+      <div style="background:var(--surface2);border:1px solid rgba(0,212,255,0.2);border-radius:6px;padding:0.4rem 0.8rem;font-family:var(--font);font-size:0.72rem;color:var(--accent);">
+        [1/3] — /regime · Régimen de mercado global
+      </div>
+      <a href="screenshots/demo-01-regime.png" target="_blank">
+        <img src="screenshots/demo-01-regime.png"
+             alt="OpenJane — Análisis de régimen de mercado: SPY +4/+4 ALCISTA FUERTE, MA200, yield curve"
+             style="width:100%;border-radius:8px;border:1px solid var(--border);transition:border-color 0.2s;"
+             onmouseover="this.style.borderColor='var(--accent)'"
+             onmouseout="this.style.borderColor='var(--border)'">
+      </a>
+      <p style="font-size:0.8rem;color:var(--muted);line-height:1.5;">SPY sobre MA200 (+10%), yield curve +0.47%, HV 10.4%. Score +4/+4 → <span style="color:var(--green)">ALCISTA FUERTE</span>.</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:0.8rem;">
+      <div style="background:var(--surface2);border:1px solid rgba(0,212,255,0.2);border-radius:6px;padding:0.4rem 0.8rem;font-family:var(--font);font-size:0.72rem;color:var(--accent);">
+        [2/3] — /spread-analysis ICE · Microestructura
+      </div>
+      <a href="screenshots/demo-02-microstructure.png" target="_blank">
+        <img src="screenshots/demo-02-microstructure.png"
+             alt="OpenJane — Microestructura ICE: precio, VWAP, ADV, tendencia bajista bajo MA200"
+             style="width:100%;border-radius:8px;border:1px solid var(--border);transition:border-color 0.2s;"
+             onmouseover="this.style.borderColor='var(--accent)'"
+             onmouseout="this.style.borderColor='var(--border)'">
+      </a>
+      <p style="font-size:0.8rem;color:var(--muted);line-height:1.5;">ICE $155.82, ADV 3.2M acciones, HV 19.7%. Tendencia <span style="color:var(--red)">BAJISTA</span> — precio 4.6% bajo MA200.</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:0.8rem;">
+      <div style="background:var(--surface2);border:1px solid rgba(0,212,255,0.2);border-radius:6px;padding:0.4rem 0.8rem;font-family:var(--font);font-size:0.72rem;color:var(--accent);">
+        [3/3] — /stat-arb ICE CBOE · Arbitraje estadístico
+      </div>
+      <a href="screenshots/demo-03-statarb.png" target="_blank">
+        <img src="screenshots/demo-03-statarb.png"
+             alt="OpenJane — Stat-arb ICE vs CBOE: Z-score, half-life, zonas de entrada y stop-loss"
+             style="width:100%;border-radius:8px;border:1px solid var(--border);transition:border-color 0.2s;"
+             onmouseover="this.style.borderColor='var(--accent)'"
+             onmouseout="this.style.borderColor='var(--border)'">
+      </a>
+      <p style="font-size:0.8rem;color:var(--muted);line-height:1.5;">Par ICE/CBOE: Z-score 0.64 (neutral), half-life 19.6 días. Zonas de entrada calculadas con OLS + Ornstein-Uhlenbeck.</p>
+    </div>
+
+  </div>
+
+  <p style="margin-top:1.2rem;font-size:0.8rem;color:var(--muted);">
+    Clic en cualquier imagen para verla en tamaño completo. ·
+    Datos EOD de <strong>Massive.com</strong> + <strong>EODHD</strong> ·
+    <a href="api-keys.html">Obtén tus API keys gratis →</a>
+  </p>
+</section>
+
+<hr class="divider">
+
 <!-- LIVE DATA STRIP -->
 <div id="demo" class="data-strip">
   <div class="data-strip-inner" id="tickerStrip">
