@@ -39,6 +39,63 @@
     .nav-links a { color: var(--muted); text-decoration: none; margin-left: 20px; font-size: 12px; }
     .nav-links a:hover { color: var(--green); }
 
+    /* ── security stripe ── */
+    .sec-stripe {
+      background: #0d0d00;
+      border-bottom: 1px solid #443300;
+      padding: 7px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; flex-wrap: wrap;
+    }
+    .sec-stripe-text {
+      font-size: 11px; color: #886600; line-height: 1.5; flex: 1;
+    }
+    .sec-stripe-text strong { color: var(--yellow); }
+    .panic-btn {
+      flex-shrink: 0;
+      padding: 5px 14px;
+      background: transparent;
+      border: 1px solid var(--red);
+      color: var(--red);
+      font-family: var(--font);
+      font-size: 11px; font-weight: bold;
+      cursor: pointer; border-radius: 3px;
+      transition: all .15s; white-space: nowrap;
+    }
+    .panic-btn:hover { background: var(--red); color: #000; }
+
+    /* ── panic modal ── */
+    .panic-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.85); z-index: 999;
+      align-items: center; justify-content: center;
+    }
+    .panic-overlay.active { display: flex; }
+    .panic-modal {
+      background: #0a0000;
+      border: 2px solid var(--red);
+      border-radius: 6px;
+      padding: 28px 32px;
+      max-width: 420px; width: 90%;
+      text-align: center;
+    }
+    .panic-modal h2 { color: var(--red); font-size: 16px; margin-bottom: 10px; }
+    .panic-modal p { color: #aaa; font-size: 12px; line-height: 1.7; margin-bottom: 20px; }
+    .panic-modal p strong { color: #fff; }
+    .panic-actions { display: flex; gap: 10px; justify-content: center; }
+    .btn-confirm-panic {
+      padding: 8px 20px; background: var(--red); color: #000;
+      border: none; border-radius: 3px; font-family: var(--font);
+      font-size: 12px; font-weight: bold; cursor: pointer;
+    }
+    .btn-confirm-panic:hover { background: #ff2244; }
+    .btn-cancel-panic {
+      padding: 8px 20px; background: transparent; color: #666;
+      border: 1px solid #333; border-radius: 3px; font-family: var(--font);
+      font-size: 12px; cursor: pointer;
+    }
+    .btn-cancel-panic:hover { color: #aaa; border-color: #555; }
+
     /* ── layout ── */
     .container {
       max-width: 960px;
@@ -251,6 +308,35 @@
     <a href="/glossary">Glossary</a>
   </div>
 </nav>
+
+<!-- SECURITY STRIPE -->
+<div class="sec-stripe" id="secStripe">
+  <div class="sec-stripe-text" id="sec-text">
+    <strong>⚠ Plataforma de pruebas y aprendizaje.</strong>
+    Ninguna API key ni dato ingresado se almacena en ningún servidor.
+    Todo vive exclusivamente en tu sesión de navegador y desaparece al cerrar la pestaña o pulsar F5.
+    Si en algún momento sientes que tus keys están en riesgo, usa el botón de pánico.
+  </div>
+  <button class="panic-btn" onclick="openPanic()" id="panic-btn-text">🔴 Botón de pánico</button>
+</div>
+
+<!-- PANIC MODAL -->
+<div class="panic-overlay" id="panicOverlay">
+  <div class="panic-modal">
+    <h2 id="pm-title">⚠ Limpiar sesión completa</h2>
+    <p id="pm-body">
+      Esto eliminará <strong>todas tus API keys</strong> del formulario,
+      borrará todos los resultados visibles y limpiará el almacenamiento de sesión.<br><br>
+      Es equivalente a abrir la página en modo incógnito desde cero.<br><br>
+      <strong>No podemos revocar tus keys</strong> — eso debes hacerlo tú
+      en el panel de Massive.com y EODHD si sospechas de una filtración real.
+    </p>
+    <div class="panic-actions">
+      <button class="btn-confirm-panic" id="pm-confirm" onclick="executePanic()">Limpiar todo ahora</button>
+      <button class="btn-cancel-panic" id="pm-cancel" onclick="closePanic()">Cancelar</button>
+    </div>
+  </div>
+</div>
 
 <div class="container">
 
@@ -596,13 +682,89 @@
     sessionStorage.setItem('ob-dismissed','1');
   }
 
-  // auto-detect idioma
+  // ── security stripe i18n ───────────────────────────────────────────────────
+  const SEC = {
+    es: {
+      stripe: '<strong>⚠ Plataforma de pruebas y aprendizaje.</strong> Ninguna API key ni dato ingresado se almacena en ningún servidor. Todo vive exclusivamente en tu sesión de navegador y desaparece al cerrar la pestaña o pulsar F5. Si sientes que tus keys están en riesgo, usa el botón de pánico.',
+      panic:  '🔴 Botón de pánico',
+      pmTitle:'⚠ Limpiar sesión completa',
+      pmBody: 'Esto eliminará <strong>todas tus API keys</strong> del formulario, borrará todos los resultados visibles y limpiará el almacenamiento de sesión.<br><br>Es equivalente a abrir la página en modo incógnito desde cero.<br><br><strong>No podemos revocar tus keys</strong> — eso debes hacerlo tú en el panel de Massive.com y EODHD si sospechas de una filtración real.',
+      pmOk:   'Limpiar todo ahora',
+      pmCancel:'Cancelar',
+    },
+    en: {
+      stripe: '<strong>⚠ Test and learning platform.</strong> No API key or data you enter is stored on any server. Everything lives exclusively in your browser session and disappears when you close the tab or press F5. If you feel your keys are at risk, use the panic button.',
+      panic:  '🔴 Panic button',
+      pmTitle:'⚠ Clear full session',
+      pmBody: 'This will remove <strong>all your API keys</strong> from the form, erase all visible results and clear session storage.<br><br>It is equivalent to opening the page in incognito mode from scratch.<br><br><strong>We cannot revoke your keys</strong> — you must do that yourself in the Massive.com and EODHD dashboards if you suspect a real leak.',
+      pmOk:   'Clear everything now',
+      pmCancel:'Cancel',
+    },
+    pt: {
+      stripe: '<strong>⚠ Plataforma de testes e aprendizado.</strong> Nenhuma API key ou dado inserido é armazenado em nenhum servidor. Tudo vive exclusivamente na sua sessão do navegador e desaparece ao fechar a aba ou pressionar F5. Se sentir que suas keys estão em risco, use o botão de pânico.',
+      panic:  '🔴 Botão de pânico',
+      pmTitle:'⚠ Limpar sessão completa',
+      pmBody: 'Isso removerá <strong>todas as suas API keys</strong> do formulário, apagará todos os resultados visíveis e limpará o armazenamento de sessão.<br><br>É equivalente a abrir a página em modo anônimo do zero.<br><br><strong>Não podemos revogar suas keys</strong> — você deve fazer isso no painel da Massive.com e do EODHD se suspeitar de um vazamento real.',
+      pmOk:   'Limpar tudo agora',
+      pmCancel:'Cancelar',
+    },
+  };
+
+  function applySecLang(lang) {
+    const s = SEC[lang];
+    document.getElementById('sec-text').innerHTML    = s.stripe;
+    document.getElementById('panic-btn-text').textContent = s.panic;
+    document.getElementById('pm-title').textContent  = s.pmTitle;
+    document.getElementById('pm-body').innerHTML     = s.pmBody;
+    document.getElementById('pm-confirm').textContent= s.pmOk;
+    document.getElementById('pm-cancel').textContent = s.pmCancel;
+  }
+
+  // ── panic logic ────────────────────────────────────────────────────────────
+  function openPanic()  { document.getElementById('panicOverlay').classList.add('active'); }
+  function closePanic() { document.getElementById('panicOverlay').classList.remove('active'); }
+
+  function executePanic() {
+    // 1. borrar inputs de API keys
+    ['massiveKey','eodhdKey'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+    // 2. borrar tickers
+    ['microTicker','tickerA','tickerB'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+    // 3. borrar resultados
+    ['out-regime','out-micro','out-statarb'].forEach(id => { const el=document.getElementById(id); if(el) el.innerHTML=''; });
+    // 4. limpiar sessionStorage y localStorage
+    sessionStorage.clear();
+    localStorage.clear();
+    // 5. cerrar modal y mostrar onboarding de nuevo
+    closePanic();
+    const ob = document.getElementById('onboarding');
+    if (ob) ob.classList.remove('dismissed');
+    // 6. feedback visual breve
+    const stripe = document.getElementById('secStripe');
+    stripe.style.background = '#1a0000';
+    stripe.style.borderColor = 'var(--red)';
+    setTimeout(() => { stripe.style.background=''; stripe.style.borderColor=''; }, 2000);
+  }
+
+  // tecla F5 / Escape cierra modal de pánico si está abierto
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closePanic();
+  });
+
+  // ── auto-detect idioma ─────────────────────────────────────────────────────
   (function() {
     const nav = (navigator.language || 'es').toLowerCase();
     const lang = nav.startsWith('pt') ? 'pt' : nav.startsWith('en') ? 'en' : 'es';
     obLang(lang);
+    applySecLang(lang);
     if (sessionStorage.getItem('ob-dismissed')) dismissOnboarding();
   })();
+
+  // sincronizar idioma entre onboarding y stripe
+  const _origObLang = obLang;
+  function obLang(lang) {
+    _origObLang(lang);
+    applySecLang(lang);
+  }
 </script>
 </body>
 </html>
