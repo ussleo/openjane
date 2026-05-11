@@ -369,6 +369,10 @@ def analyze_page(): return FileResponse(str(DOCS/"analyze.html"))
 @app.get("/claude-setup.html")
 def claude_setup(): return FileResponse(str(DOCS/"claude-setup.html"))
 
+@app.get("/paper-trading-edu")
+@app.get("/paper-trading-edu.html")
+def paper_trading_edu(): return FileResponse(str(DOCS/"paper-trading-edu.html"))
+
 @app.get("/")
 @app.get("/index.html")
 def index():      return FileResponse(str(DOCS/"index.html"))

@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpenJane · Cómo gana dinero Jane Street — Explicado para humanos</title>
+  <meta name="description" content="Paper trading, backtesting y los secretos de Jane Street explicados en lenguaje visceral. Sin jerga. Con números reales.">
+  <style>
+    :root {
+      --bg: #0a0e14; --surface: #111820; --surface2: #18222e;
+      --border: #1e2d3d; --accent: #00d4ff; --green: #00c896;
+      --red: #ff4d6d; --yellow: #f59e0b; --purple: #a78bfa;
+      --text: #e2e8f0; --muted: #64748b;
+      --font: 'SF Mono','Fira Code','Cascadia Code',monospace;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:16px;line-height:1.7}
+    a{color:var(--accent);text-decoration:none}
+    a:hover{text-decoration:underline}
+
+    nav{position:sticky;top:0;z-index:100;background:rgba(10,14,20,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px}
+    .nav-brand{font-family:var(--font);font-size:1.1rem;font-weight:700;color:var(--accent)}
+    .nav-brand span{color:var(--muted);font-weight:400}
+    .nav-links{display:flex;gap:1.5rem;align-items:center}
+    .nav-links a{color:var(--muted);font-size:.9rem;transition:color .2s}
+    .nav-links a:hover{color:var(--text);text-decoration:none}
+    .btn{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem 1.1rem;border-radius:6px;font-size:.85rem;font-weight:600;transition:all .2s;cursor:pointer;border:none;text-decoration:none}
+    .btn-primary{background:var(--accent);color:#000}
+    .btn-primary:hover{background:#00b8e0;text-decoration:none}
+    .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border)}
+    .btn-ghost:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+
+    /* ── hero ── */
+    .hero{max-width:900px;margin:0 auto;padding:5rem 2rem 3rem;text-align:center}
+    .hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);color:var(--yellow);font-size:.78rem;font-family:var(--font);padding:.3rem .9rem;border-radius:20px;margin-bottom:1.2rem}
+    .hero h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800;line-height:1.1;letter-spacing:-.03em;margin-bottom:1rem}
+    .hero h1 em{color:var(--yellow);font-style:normal}
+    .hero p{color:var(--muted);font-size:1.1rem;line-height:1.7;max-width:650px;margin:0 auto 2rem}
+    .toc{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-top:1.5rem}
+    .toc a{background:var(--surface);border:1px solid var(--border);color:var(--muted);font-size:.8rem;padding:.3rem .8rem;border-radius:20px;transition:all .2s}
+    .toc a:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+
+    /* ── sections ── */
+    .section{max-width:900px;margin:0 auto;padding:4rem 2rem}
+    .section-num{font-family:var(--font);font-size:.75rem;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem}
+    .section h2{font-size:clamp(1.5rem,3vw,2.2rem);font-weight:800;line-height:1.2;letter-spacing:-.02em;margin-bottom:1rem}
+    .section h2 em{color:var(--green);font-style:normal}
+    .section h2 .yellow{color:var(--yellow)}
+    .lead{font-size:1.1rem;color:var(--muted);line-height:1.75;margin-bottom:1.5rem;max-width:720px}
+    .divider{border:none;border-top:1px solid var(--border)}
+
+    /* ── callout boxes ── */
+    .callout{border-radius:10px;padding:1.4rem 1.8rem;margin:2rem 0;border-left:4px solid}
+    .callout-yellow{background:rgba(245,158,11,.06);border-color:var(--yellow)}
+    .callout-green{background:rgba(0,200,150,.06);border-color:var(--green)}
+    .callout-red{background:rgba(255,77,109,.06);border-color:var(--red)}
+    .callout-blue{background:rgba(0,212,255,.06);border-color:var(--accent)}
+    .callout-title{font-weight:800;font-size:.9rem;margin-bottom:.5rem}
+    .callout p{color:var(--muted);font-size:.95rem;line-height:1.7}
+    .callout strong{color:var(--text)}
+    .callout .big{font-size:2rem;font-weight:900;color:var(--text);display:block;margin:.5rem 0}
+
+    /* ── SVG diagrams ── */
+    .diagram{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2rem;margin:2rem 0;overflow-x:auto;text-align:center}
+    .diagram-title{font-family:var(--font);font-size:.75rem;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:1.2rem}
+    svg text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+
+    /* ── math blocks ── */
+    .math-block{background:#050a0f;border:1px solid var(--border);border-radius:8px;padding:1.4rem 1.8rem;margin:1.5rem 0;font-family:var(--font);font-size:.9rem;line-height:2}
+    .math-block .eq{color:#fff}
+    .math-block .comment{color:var(--muted);font-size:.8rem}
+    .math-block .result{color:var(--green);font-weight:700;font-size:1.1rem}
+    .math-block .loss{color:var(--red);font-weight:700}
+
+    /* ── strategy cards ── */
+    .strategy-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.2rem;margin-top:2rem}
+    .strategy-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.4rem;transition:border-color .2s}
+    .strategy-card:hover{border-color:var(--accent)}
+    .sc-icon{font-size:2rem;margin-bottom:.8rem}
+    .sc-title{font-weight:700;font-size:1rem;margin-bottom:.4rem}
+    .sc-subtitle{font-size:.75rem;font-family:var(--font);color:var(--accent);margin-bottom:.8rem}
+    .sc-desc{color:var(--muted);font-size:.85rem;line-height:1.6}
+    .sc-tag{display:inline-block;font-size:.68rem;font-family:var(--font);padding:.15rem .5rem;border-radius:3px;margin-top:.8rem;border:1px solid}
+    .tag-green{color:var(--green);border-color:rgba(0,200,150,.3);background:rgba(0,200,150,.06)}
+    .tag-yellow{color:var(--yellow);border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.06)}
+
+    /* ── glossary ── */
+    .gloss-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-top:2rem}
+    .gloss-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.2rem 1.4rem;cursor:pointer;transition:all .2s;position:relative}
+    .gloss-card:hover{border-color:var(--accent);background:var(--surface2)}
+    .gloss-term{font-family:var(--font);font-size:.9rem;font-weight:700;color:var(--accent);margin-bottom:.4rem}
+    .gloss-en{font-size:.72rem;color:var(--muted);font-family:var(--font);margin-bottom:.5rem}
+    .gloss-def{font-size:.85rem;color:var(--muted);line-height:1.6}
+    .gloss-def strong{color:var(--text)}
+    .gloss-example{margin-top:.6rem;font-size:.78rem;color:var(--green);font-family:var(--font);background:rgba(0,200,150,.06);padding:.4rem .7rem;border-radius:4px;border-left:2px solid var(--green)}
+
+    /* ── timeline ── */
+    .timeline{position:relative;padding-left:2rem;margin:2rem 0}
+    .timeline::before{content:'';position:absolute;left:.5rem;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--accent),var(--green))}
+    .tl-item{position:relative;margin-bottom:2rem}
+    .tl-dot{position:absolute;left:-1.9rem;top:.3rem;width:14px;height:14px;border-radius:50%;background:var(--surface);border:2px solid var(--accent)}
+    .tl-dot.green{border-color:var(--green);background:rgba(0,200,150,.2)}
+    .tl-dot.yellow{border-color:var(--yellow);background:rgba(245,158,11,.2)}
+    .tl-dot.red{border-color:var(--red);background:rgba(255,77,109,.2)}
+    .tl-time{font-family:var(--font);font-size:.72rem;color:var(--muted);margin-bottom:.3rem}
+    .tl-title{font-weight:700;margin-bottom:.3rem}
+    .tl-desc{color:var(--muted);font-size:.88rem;line-height:1.6}
+
+    /* ── video placeholder ── */
+    .video-placeholder{background:var(--surface2);border:2px dashed var(--border);border-radius:12px;padding:3rem 2rem;text-align:center;margin:2rem 0}
+    .video-placeholder .icon{font-size:3rem;margin-bottom:1rem}
+    .video-placeholder h3{font-size:1.1rem;margin-bottom:.6rem}
+    .video-placeholder p{color:var(--muted);font-size:.88rem;max-width:500px;margin:0 auto .8rem}
+
+    footer{background:var(--surface2);border-top:1px solid var(--border);padding:1.5rem 2rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+    .footer-brand{font-family:var(--font);font-size:.9rem;color:var(--muted)}
+    .footer-links{display:flex;gap:1.5rem;flex-wrap:wrap}
+    .footer-links a{color:var(--muted);font-size:.83rem}
+    .footer-links a:hover{color:var(--text)}
+    @media(max-width:600px){nav .nav-links{display:none}}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">Open<span>Jane</span> <span style="font-size:.7rem;margin-left:4px;color:var(--accent)">by Claude</span></div>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/analyze">Analizar en vivo</a>
+    <a href="/glossary">Glosario</a>
+    <a href="/claude-setup">Claude.ai</a>
+    <a href="/analyze" class="btn btn-primary">⚡ Analizar</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">🎓 Educación cuantitativa · Nivel: cualquier persona</div>
+  <h1>Cómo gana dinero<br><em>Jane Street</em><br>explicado para humanos</h1>
+  <p>No necesitas un PhD. No necesitas saber programar. Solo necesitas entender tres ideas — y después podrás montar tu propio teatro de operaciones con datos reales y dinero virtual.</p>
+  <div class="toc">
+    <a href="#centavo">El secreto del centavo</a>
+    <a href="#escala">La magia de la escala</a>
+    <a href="#paper">Paper trading</a>
+    <a href="#backtesting">Backtesting</a>
+    <a href="#ventana">Ventana rodante</a>
+    <a href="#teatro">Teatro de operaciones</a>
+    <a href="#estrategias">Otras estrategias</a>
+    <a href="#glosario">Glosario visceral</a>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- SECCIÓN 1: EL SECRETO DEL CENTAVO -->
+<div class="section" id="centavo">
+  <div class="section-num">Idea 1 de 3</div>
+  <h2>El secreto del <em>centavo</em></h2>
+  <p class="lead">Jane Street no apuesta a que el mercado suba o baje. No tiene una opinión sobre si Apple vale más o menos mañana. Jane Street tiene una obsesión diferente: <strong style="color:var(--text)">la diferencia de precio entre el comprador y el vendedor.</strong></p>
+
+  <div class="callout callout-yellow">
+    <div class="callout-title">🛒 Analogía del supermercado</div>
+    <p>Cuando vas al supermercado, el arroz tiene un precio. Pero la tienda lo compró al proveedor más barato. Esa diferencia es su margen. <strong>Jane Street es el supermercado del mercado financiero</strong> — compra activos al precio que el vendedor acepta y los vende al precio que el comprador paga. La diferencia, aunque sea un centavo, es su ganancia.</p>
+  </div>
+
+  <!-- DIAGRAMA 1: El spread -->
+  <div class="diagram">
+    <div class="diagram-title">El Spread — la brecha donde vive el dinero</div>
+    <svg width="100%" height="200" viewBox="0 0 700 200" style="max-width:700px">
+      <!-- Vendedor -->
+      <rect x="20" y="60" width="180" height="80" rx="8" fill="#1a2a1a" stroke="#00c896" stroke-width="1.5"/>
+      <text x="110" y="90" text-anchor="middle" fill="#64748b" font-size="12">VENDEDOR quiere vender</text>
+      <text x="110" y="115" text-anchor="middle" fill="#00c896" font-size="22" font-weight="bold">$10.00</text>
+
+      <!-- Flecha izquierda -->
+      <path d="M 205 100 L 260 100" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4"/>
+      <polygon points="258,95 268,100 258,105" fill="#64748b"/>
+
+      <!-- Jane Street en el medio -->
+      <rect x="270" y="40" width="160" height="120" rx="8" fill="#0a1a2a" stroke="#00d4ff" stroke-width="2"/>
+      <text x="350" y="68" text-anchor="middle" fill="#00d4ff" font-size="11" font-weight="bold">JANE STREET</text>
+      <text x="350" y="88" text-anchor="middle" fill="#64748b" font-size="10">compra a $10.00</text>
+      <text x="350" y="108" text-anchor="middle" fill="#64748b" font-size="10">vende a $10.02</text>
+      <rect x="300" y="118" width="100" height="28" rx="4" fill="rgba(245,158,11,0.15)" stroke="#f59e0b" stroke-width="1"/>
+      <text x="350" y="137" text-anchor="middle" fill="#f59e0b" font-size="13" font-weight="bold">+ $0.02 ← ganancia</text>
+
+      <!-- Flecha derecha -->
+      <path d="M 432 100 L 487 100" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4"/>
+      <polygon points="485,95 495,100 485,105" fill="#64748b"/>
+
+      <!-- Comprador -->
+      <rect x="497" y="60" width="183" height="80" rx="8" fill="#1a1a2a" stroke="#a78bfa" stroke-width="1.5"/>
+      <text x="588" y="90" text-anchor="middle" fill="#64748b" font-size="12">COMPRADOR quiere comprar</text>
+      <text x="588" y="115" text-anchor="middle" fill="#a78bfa" font-size="22" font-weight="bold">$10.02</text>
+
+      <!-- Labels -->
+      <text x="350" y="185" text-anchor="middle" fill="#64748b" font-size="11">Bid = $10.00 · Ask = $10.02 · Spread = $0.02</text>
+    </svg>
+  </div>
+
+  <div class="math-block">
+    <span class="comment"># Un solo trade:</span><br>
+    <span class="eq">Compra 1 acción a $10.00 → Vende a $10.02 → Ganancia = </span><span class="result">$0.02</span><br><br>
+    <span class="comment"># En un día normal de Jane Street:</span><br>
+    <span class="eq">$0.02 × 50,000,000 trades = </span><span class="result">$1,000,000 en un día</span><br><br>
+    <span class="comment"># En un año (252 días de mercado):</span><br>
+    <span class="eq">$1,000,000 × 252 = </span><span class="result">$252,000,000 — solo de un spread de 2 centavos</span>
+  </div>
+
+  <div class="callout callout-green">
+    <div class="callout-title">💡 La revelación</div>
+    <p>Jane Street no necesita que Apple suba ni que el mercado sea alcista. <strong>Solo necesita que alguien quiera comprar y alguien quiera vender — al mismo tiempo.</strong> Ellos están en el medio, todos los días, en millones de activos simultáneamente.</p>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- SECCIÓN 2: LA MAGIA DE LA ESCALA -->
+<div class="section" id="escala">
+  <div class="section-num">Idea 2 de 3</div>
+  <h2>La magia de <em>la escala</em></h2>
+  <p class="lead">El centavo solo tiene poder cuando se repite millones de veces. Esta es la diferencia entre Jane Street y tú — no la inteligencia ni el algoritmo. <strong style="color:var(--text)">La escala.</strong></p>
+
+  <!-- DIAGRAMA 2: Escala -->
+  <div class="diagram">
+    <div class="diagram-title">El mismo $0.02 — resultados completamente distintos según la escala</div>
+    <svg width="100%" height="280" viewBox="0 0 700 280" style="max-width:700px">
+      <!-- Eje Y -->
+      <line x1="80" y1="20" x2="80" y2="240" stroke="#1e2d3d" stroke-width="1"/>
+      <!-- Eje X -->
+      <line x1="80" y1="240" x2="660" y2="240" stroke="#1e2d3d" stroke-width="1"/>
+
+      <!-- Barras -->
+      <!-- Tú: 10 trades -->
+      <rect x="100" y="225" width="80" height="15" rx="3" fill="rgba(100,116,139,0.4)" stroke="#64748b" stroke-width="1"/>
+      <text x="140" y="260" text-anchor="middle" fill="#64748b" font-size="10">Tú</text>
+      <text x="140" y="275" text-anchor="middle" fill="#64748b" font-size="9">10 trades/día</text>
+      <text x="140" y="218" text-anchor="middle" fill="#64748b" font-size="10">$0.20</text>
+
+      <!-- Inversor activo: 100 trades -->
+      <rect x="220" y="210" width="80" height="30" rx="3" fill="rgba(0,212,255,0.2)" stroke="#00d4ff" stroke-width="1"/>
+      <text x="260" y="260" text-anchor="middle" fill="#00d4ff" font-size="10">Inversor activo</text>
+      <text x="260" y="275" text-anchor="middle" fill="#00d4ff" font-size="9">100 trades/día</text>
+      <text x="260" y="203" text-anchor="middle" fill="#00d4ff" font-size="10">$2</text>
+
+      <!-- Fondo: 10k trades -->
+      <rect x="340" y="150" width="80" height="90" rx="3" fill="rgba(167,139,250,0.2)" stroke="#a78bfa" stroke-width="1"/>
+      <text x="380" y="260" text-anchor="middle" fill="#a78bfa" font-size="10">Hedge Fund</text>
+      <text x="380" y="275" text-anchor="middle" fill="#a78bfa" font-size="9">10,000 trades/día</text>
+      <text x="380" y="143" text-anchor="middle" fill="#a78bfa" font-size="10">$200</text>
+
+      <!-- Jane Street: 50M trades -->
+      <rect x="460" y="30" width="80" height="210" rx="3" fill="rgba(245,158,11,0.15)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="500" y="260" text-anchor="middle" fill="#f59e0b" font-size="10">Jane Street</text>
+      <text x="500" y="275" text-anchor="middle" fill="#f59e0b" font-size="9">50M trades/día</text>
+      <text x="500" y="23" text-anchor="middle" fill="#f59e0b" font-size="11" font-weight="bold">$1,000,000</text>
+
+      <!-- Fórmula -->
+      <text x="580" y="120" text-anchor="middle" fill="#64748b" font-size="11">$0.02</text>
+      <text x="580" y="138" text-anchor="middle" fill="#64748b" font-size="11">×</text>
+      <text x="580" y="156" text-anchor="middle" fill="#f59e0b" font-size="11">escala</text>
+      <text x="580" y="174" text-anchor="middle" fill="#64748b" font-size="11">=</text>
+      <text x="580" y="192" text-anchor="middle" fill="#00c896" font-size="11">fortuna</text>
+    </svg>
+  </div>
+
+  <div class="callout callout-blue">
+    <div class="callout-title">🎯 Lo que esto significa para ti</div>
+    <p>No puedes replicar los 50 millones de trades de Jane Street. <strong>Pero sí puedes replicar el razonamiento.</strong> Si entiendes cuándo y en qué activos el spread es explotable, y aplicas esa lógica con $100 o $1,000, estás usando el mismo marco conceptual — a tu propia escala.</p>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- SECCIÓN 3: PAPER TRADING -->
+<div class="section" id="paper">
+  <div class="section-num">Idea 3 de 3</div>
+  <h2>Paper trading:<br>el <em>simulador de vuelo</em></h2>
+  <p class="lead">Un piloto no aprende a volar en un avión real con pasajeros. Aprende en un simulador — mismo panel, mismos controles, mismas turbulencias — pero si algo sale mal, nadie muere. <strong style="color:var(--text)">Paper trading es exactamente eso para el mercado financiero.</strong></p>
+
+  <div class="callout callout-yellow">
+    <div class="callout-title">📄 Por qué se llama "paper"</div>
+    <p>Antes de las computadoras, los traders aprendían <strong>anotando en papel</strong> sus operaciones simuladas. "Compré 10 acciones de X a $50" — escrito a mano, sin ejecutar nada real. Hoy es digital, pero el principio es idéntico: dinero virtual, precios reales, lecciones verdaderas.</p>
+  </div>
+
+  <!-- DIAGRAMA 3: Paper trading vs real -->
+  <div class="diagram">
+    <div class="diagram-title">Paper trading vs Trading real — mismos datos, consecuencias distintas</div>
+    <svg width="100%" height="220" viewBox="0 0 700 220" style="max-width:700px">
+      <!-- Paper -->
+      <rect x="30" y="30" width="290" height="160" rx="10" fill="#0a1a0a" stroke="#00c896" stroke-width="1.5"/>
+      <text x="175" y="58" text-anchor="middle" fill="#00c896" font-size="13" font-weight="bold">PAPER TRADING</text>
+
+      <text x="60" y="85" fill="#64748b" font-size="11">✓  Precios del mercado real</text>
+      <text x="60" y="105" fill="#64748b" font-size="11">✓  Volatilidad real</text>
+      <text x="60" y="125" fill="#64748b" font-size="11">✓  P&amp;L calculado con datos reales</text>
+      <text x="60" y="145" fill="#64748b" font-size="11">✓  Lecciones verdaderas</text>
+      <text x="60" y="165" fill="#00c896" font-size="11" font-weight="bold">✗  Dinero virtual — sin riesgo real</text>
+
+      <!-- Vs -->
+      <text x="350" y="115" text-anchor="middle" fill="#1e2d3d" font-size="22" font-weight="bold">VS</text>
+
+      <!-- Real -->
+      <rect x="380" y="30" width="290" height="160" rx="10" fill="#1a0a0a" stroke="#ff4d6d" stroke-width="1.5"/>
+      <text x="525" y="58" text-anchor="middle" fill="#ff4d6d" font-size="13" font-weight="bold">TRADING REAL</text>
+
+      <text x="410" y="85" fill="#64748b" font-size="11">✓  Precios del mercado real</text>
+      <text x="410" y="105" fill="#64748b" font-size="11">✓  Volatilidad real</text>
+      <text x="410" y="125" fill="#64748b" font-size="11">✓  P&amp;L calculado con datos reales</text>
+      <text x="410" y="145" fill="#64748b" font-size="11">✓  Lecciones verdaderas</text>
+      <text x="410" y="165" fill="#ff4d6d" font-size="11" font-weight="bold">⚠  Dinero real — pérdidas reales</text>
+    </svg>
+  </div>
+
+  <div class="callout callout-green">
+    <div class="callout-title">🧠 La lección más importante del paper trading</div>
+    <p>La mayoría de las personas pierden dinero en el mercado no porque el mercado sea impredecible, sino porque <strong>nunca entrenaron sus emociones</strong>. Ver $-200 en papel duele de forma diferente que verlos en tu cuenta real. El paper trading te enseña a tomar decisiones bajo presión — sin el costo de aprender a golpes.</p>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- SECCIÓN 4: BACKTESTING -->
+<div class="section" id="backtesting">
+  <div class="section-num">El motor del aprendizaje</div>
+  <h2><em>Backtesting:</em><br>la máquina del tiempo del inversor</h2>
+  <p class="lead">Imagina que puedes volver al 1 de enero del año pasado con todo tu conocimiento de hoy. ¿Qué habrías comprado? ¿Cuánto habrías ganado? <strong style="color:var(--text)">El backtesting te da exactamente esa máquina del tiempo — pero con datos reales.</strong></p>
+
+  <!-- DIAGRAMA 4: Backtesting timeline -->
+  <div class="diagram">
+    <div class="diagram-title">Cómo funciona el backtesting — probando una estrategia en el pasado</div>
+    <svg width="100%" height="160" viewBox="0 0 700 160" style="max-width:700px">
+      <!-- Línea de tiempo -->
+      <line x1="50" y1="80" x2="650" y2="80" stroke="#1e2d3d" stroke-width="2"/>
+
+      <!-- Punto inicio -->
+      <circle cx="80" cy="80" r="8" fill="#00d4ff"/>
+      <text x="80" y="108" text-anchor="middle" fill="#00d4ff" font-size="11">Hace 1 año</text>
+      <text x="80" y="122" text-anchor="middle" fill="#64748b" font-size="10">Inicio del test</text>
+
+      <!-- Señales en el tiempo -->
+      <circle cx="200" cy="80" r="6" fill="#00c896"/>
+      <text x="200" y="55" text-anchor="middle" fill="#00c896" font-size="10">▲ Comprar ICE</text>
+      <text x="200" y="40" text-anchor="middle" fill="#00c896" font-size="10">$142.50</text>
+
+      <circle cx="320" cy="80" r="6" fill="#ff4d6d"/>
+      <text x="320" y="55" text-anchor="middle" fill="#ff4d6d" font-size="10">▼ Vender ICE</text>
+      <text x="320" y="40" text-anchor="middle" fill="#ff4d6d" font-size="10">$138.20 (-3%)</text>
+
+      <circle cx="440" cy="80" r="6" fill="#00c896"/>
+      <text x="440" y="108" text-anchor="middle" fill="#00c896" font-size="10">▲ Comprar CBOE</text>
+      <text x="440" y="122" text-anchor="middle" fill="#00c896" font-size="10">$181.40</text>
+
+      <circle cx="560" cy="80" r="6" fill="#f59e0b"/>
+      <text x="560" y="108" text-anchor="middle" fill="#f59e0b" font-size="10">▼ Vender CBOE</text>
+      <text x="560" y="122" text-anchor="middle" fill="#f59e0b" font-size="10">$194.60 (+7.3%)</text>
+
+      <!-- Punto final -->
+      <circle cx="630" cy="80" r="8" fill="#f59e0b"/>
+      <text x="630" y="55" text-anchor="middle" fill="#f59e0b" font-size="11">Hoy</text>
+      <text x="630" y="40" text-anchor="middle" fill="#f59e0b" font-size="10">Resultado: +4.1%</text>
+
+      <!-- Flecha de tiempo -->
+      <polygon points="645,75 655,80 645,85" fill="#1e2d3d"/>
+    </svg>
+  </div>
+
+  <div class="math-block">
+    <span class="comment"># Ejemplo real de backtesting — portafolio de $100 en 4 tickers (último año)</span><br><br>
+    <span class="eq">ICE:  $25 invertidos → salida $24.25 → </span><span class="loss">-$0.75 (-3.0%)</span><br>
+    <span class="eq">CBOE: $25 invertidos → salida $26.83 → </span><span class="result">+$1.83 (+7.3%)</span><br>
+    <span class="eq">VIRT: $25 invertidos → salida $27.50 → </span><span class="result">+$2.50 (+10.0%)</span><br>
+    <span class="eq">SPY:  $25 invertidos → salida $26.35 → </span><span class="result">+$1.35 (+5.4%)</span><br>
+    <span style="border-top:1px solid #1e2d3d;display:block;margin:.5rem 0;padding-top:.5rem"></span>
+    <span class="eq">Total invertido: $100 → Total final: $104.93</span><br>
+    <span class="eq">Menos costos estimados de transacción (0.4% × 4): -$0.40</span><br>
+    <span class="result">Resultado neto: +$4.53 en 24 horas (+4.53%)</span><br><br>
+    <span class="comment"># La pregunta que responde el backtesting:</span><br>
+    <span class="comment"># "Si hubiera hecho ESTO, en ESTE período, con ESTOS activos..."</span><br>
+    <span class="comment"># "...¿cuánto habría ganado o perdido?"</span>
+  </div>
+
+  <div class="callout callout-red">
+    <div class="callout-title">⚠️ La trampa del backtesting — lo que hay que saber</div>
+    <p>Un backtest siempre puede parecer perfecto porque <strong>ya sabemos lo que pasó</strong>. El riesgo es diseñar una estrategia que "funciona" solo porque fue optimizada con los datos del pasado. Esto se llama <strong>overfitting</strong> — la estrategia aprendió el ruido, no la señal. Por eso el backtesting es educativo, no una garantía de resultados futuros.</p>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- SECCIÓN 5: VENTANA RODANTE -->
+<div class="section" id="ventana">
+  <div class="section-num">El truco de los 24 horas</div>
+  <h2>La <em>ventana rodante:</em><br>ver el mundo a través de un ojo móvil</h2>
+  <p class="lead">En lugar de analizar todo el año de una vez, la ventana rodante analiza siempre las mismas 24 horas — pero avanzando un día cada vez. Como mirar el horizonte desde un tren: el paisaje cambia, pero la ventana siempre tiene el mismo tamaño.</p>
+
+  <!-- DIAGRAMA 5: Ventana rodante -->
+  <div class="diagram">
+    <div class="diagram-title">Ventana rodante de 24 horas — el mismo análisis, avanzando en el tiempo</div>
+    <svg width="100%" height="200" viewBox="0 0 700 200" style="max-width:700px">
+      <!-- Timeline base -->
+      <line x1="40" y1="100" x2="660" y2="100" stroke="#1e2d3d" stroke-width="1.5"/>
+
+      <!-- Días marcados -->
+      <line x1="100" y1="93" x2="100" y2="107" stroke="#1e2d3d" stroke-width="1"/>
+      <text x="100" y="125" text-anchor="middle" fill="#64748b" font-size="10">Lun</text>
+      <line x1="200" y1="93" x2="200" y2="107" stroke="#1e2d3d" stroke-width="1"/>
+      <text x="200" y="125" text-anchor="middle" fill="#64748b" font-size="10">Mar</text>
+      <line x1="300" y1="93" x2="300" y2="107" stroke="#1e2d3d" stroke-width="1"/>
+      <text x="300" y="125" text-anchor="middle" fill="#64748b" font-size="10">Mié</text>
+      <line x1="400" y1="93" x2="400" y2="107" stroke="#1e2d3d" stroke-width="1"/>
+      <text x="400" y="125" text-anchor="middle" fill="#64748b" font-size="10">Jue</text>
+      <line x1="500" y1="93" x2="500" y2="107" stroke="#1e2d3d" stroke-width="1"/>
+      <text x="500" y="125" text-anchor="middle" fill="#64748b" font-size="10">Vie</text>
+      <line x1="600" y1="93" x2="600" y2="107" stroke="#1e2d3d" stroke-width="1"/>
+      <text x="600" y="125" text-anchor="middle" fill="#64748b" font-size="10">Hoy</text>
+
+      <!-- Ventana 1 (pasado) -->
+      <rect x="100" y="65" width="100" height="35" rx="4" fill="rgba(100,116,139,0.1)" stroke="#64748b" stroke-width="1" stroke-dasharray="4"/>
+      <text x="150" y="57" text-anchor="middle" fill="#64748b" font-size="9">Análisis 1</text>
+
+      <!-- Ventana 2 -->
+      <rect x="200" y="65" width="100" height="35" rx="4" fill="rgba(100,116,139,0.1)" stroke="#64748b" stroke-width="1" stroke-dasharray="4"/>
+      <text x="250" y="57" text-anchor="middle" fill="#64748b" font-size="9">Análisis 2</text>
+
+      <!-- Ventana 3 -->
+      <rect x="300" y="65" width="100" height="35" rx="4" fill="rgba(100,116,139,0.1)" stroke="#64748b" stroke-width="1" stroke-dasharray="4"/>
+      <text x="350" y="57" text-anchor="middle" fill="#64748b" font-size="9">Análisis 3</text>
+
+      <!-- Ventana actual (destacada) -->
+      <rect x="500" y="55" width="100" height="55" rx="4" fill="rgba(0,200,150,0.08)" stroke="#00c896" stroke-width="2"/>
+      <text x="550" y="47" text-anchor="middle" fill="#00c896" font-size="10" font-weight="bold">AHORA</text>
+      <text x="550" y="78" text-anchor="middle" fill="#00c896" font-size="10">Ayer 2pm</text>
+      <text x="550" y="95" text-anchor="middle" fill="#00c896" font-size="10">→ Hoy 2pm</text>
+
+      <!-- Flecha de movimiento -->
+      <path d="M 180 160 Q 350 180 520 160" stroke="#f59e0b" stroke-width="1.5" fill="none" stroke-dasharray="5"/>
+      <polygon points="518,155 528,160 518,165" fill="#f59e0b"/>
+      <text x="350" y="195" text-anchor="middle" fill="#f59e0b" font-size="10">la ventana avanza un día cada vez →</text>
+    </svg>
+  </div>
+
+  <div class="callout callout-blue">
+    <div class="callout-title">🎯 Por qué 24 horas es la ventana perfecta para aprender</div>
+    <p>Es suficiente para que los precios se muevan de forma significativa. Es corta para que entiendas exactamente qué pasó y por qué. Y es perfecta para datos EOD (End of Day) — la clase de datos gratuitos que tenemos disponibles. <strong>Ayer a las 2pm y hoy a las 2pm: misma hora, mismo mercado, distinto momento.</strong></p>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- SECCIÓN 6: TEATRO DE OPERACIONES -->
+<div class="section" id="teatro">
+  <div class="section-num">El experimento real</div>
+  <h2>Tu <em>teatro de operaciones</em><br>— cómo funciona</h2>
+  <p class="lead">Ahora juntas las tres ideas: el centavo, la escala, el paper trading, el backtesting y la ventana rodante. El resultado es tu propio teatro de operaciones — un laboratorio donde pruebas estrategias con datos reales y dinero virtual.</p>
+
+  <!-- Timeline del teatro -->
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-time">Día 1 · 2:00pm</div>
+      <div class="tl-title">Defines tu portafolio virtual</div>
+      <div class="tl-desc">Decides invertir $100 virtuales: $25 en ICE, $25 en CBOE, $25 en VIRT, $25 en SPY. Jane registra los precios de cierre de hoy como tu precio de entrada.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot yellow"></div>
+      <div class="tl-time">Día 1 · Cierre de mercado</div>
+      <div class="tl-title">Jane analiza las condiciones de entrada</div>
+      <div class="tl-desc">Régimen del mercado (+3/+4 = alcista moderado), microestructura de cada ticker (liquidez, ADV, señal de flujo), spread bid-ask estimado. Todo queda registrado.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot green"></div>
+      <div class="tl-time">Día 2 · 2:00pm</div>
+      <div class="tl-title">Jane evalúa el resultado</div>
+      <div class="tl-desc">Compara el precio de ayer con el de hoy. Calcula el P&L de cada posición. Descuenta el costo estimado de transacción. Muestra el resultado neto.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot red"></div>
+      <div class="tl-time">Día 2 · La lección</div>
+      <div class="tl-title">Entiende por qué ganaste o perdiste</div>
+      <div class="tl-desc">El análisis explica qué pasó con el régimen de mercado, qué señales de microestructura precedieron el movimiento, y qué habrías necesitado saber para anticiparlo.</div>
+    </div>
+  </div>
+
+  <!-- Resultado ejemplo -->
+  <div class="diagram">
+    <div class="diagram-title">Ejemplo de resultado — portafolio de $100 · ventana 24 horas</div>
+    <svg width="100%" height="220" viewBox="0 0 700 220" style="max-width:700px">
+      <!-- Header -->
+      <rect x="20" y="10" width="660" height="30" rx="4" fill="#111820"/>
+      <text x="40" y="30" fill="#64748b" font-size="11" font-family="monospace">TICKER</text>
+      <text x="180" y="30" fill="#64748b" font-size="11" font-family="monospace">ENTRADA</text>
+      <text x="300" y="30" fill="#64748b" font-size="11" font-family="monospace">SALIDA</text>
+      <text x="420" y="30" fill="#64748b" font-size="11" font-family="monospace">P&amp;L</text>
+      <text x="540" y="30" fill="#64748b" font-size="11" font-family="monospace">RESULTADO</text>
+
+      <!-- Rows -->
+      <rect x="20" y="45" width="660" height="28" rx="2" fill="rgba(0,200,150,0.04)"/>
+      <text x="40" y="63" fill="#fff" font-size="12" font-family="monospace" font-weight="bold">ICE</text>
+      <text x="180" y="63" fill="#64748b" font-size="12" font-family="monospace">$155.82</text>
+      <text x="300" y="63" fill="#64748b" font-size="12" font-family="monospace">$153.10</text>
+      <text x="420" y="63" fill="#ff4d6d" font-size="12" font-family="monospace">-$0.44</text>
+      <text x="540" y="63" fill="#ff4d6d" font-size="12" font-family="monospace">-1.75%</text>
+
+      <rect x="20" y="78" width="660" height="28" rx="2" fill="rgba(0,200,150,0.04)"/>
+      <text x="40" y="96" fill="#fff" font-size="12" font-family="monospace" font-weight="bold">CBOE</text>
+      <text x="180" y="96" fill="#64748b" font-size="12" font-family="monospace">$194.60</text>
+      <text x="300" y="96" fill="#64748b" font-size="12" font-family="monospace">$200.20</text>
+      <text x="420" y="96" fill="#00c896" font-size="12" font-family="monospace">+$0.72</text>
+      <text x="540" y="96" fill="#00c896" font-size="12" font-family="monospace">+2.88%</text>
+
+      <rect x="20" y="111" width="660" height="28" rx="2" fill="rgba(0,200,150,0.04)"/>
+      <text x="40" y="129" fill="#fff" font-size="12" font-family="monospace" font-weight="bold">VIRT</text>
+      <text x="180" y="129" fill="#64748b" font-size="12" font-family="monospace">$38.50</text>
+      <text x="300" y="129" fill="#64748b" font-size="12" font-family="monospace">$40.10</text>
+      <text x="420" y="129" fill="#00c896" font-size="12" font-family="monospace">+$1.04</text>
+      <text x="540" y="129" fill="#00c896" font-size="12" font-family="monospace">+4.16%</text>
+
+      <rect x="20" y="144" width="660" height="28" rx="2" fill="rgba(0,200,150,0.04)"/>
+      <text x="40" y="162" fill="#fff" font-size="12" font-family="monospace" font-weight="bold">SPY</text>
+      <text x="180" y="162" fill="#64748b" font-size="12" font-family="monospace">$528.40</text>
+      <text x="300" y="162" fill="#64748b" font-size="12" font-family="monospace">$531.20</text>
+      <text x="420" y="162" fill="#00c896" font-size="12" font-family="monospace">+$0.13</text>
+      <text x="540" y="162" fill="#00c896" font-size="12" font-family="monospace">+0.53%</text>
+
+      <!-- Total -->
+      <rect x="20" y="177" width="660" height="35" rx="4" fill="#0a1a0a" stroke="#00c896" stroke-width="1"/>
+      <text x="40" y="200" fill="#fff" font-size="12" font-family="monospace" font-weight="bold">TOTAL $100</text>
+      <text x="300" y="200" fill="#64748b" font-size="11" font-family="monospace">costo transacción: -$0.40</text>
+      <text x="420" y="200" fill="#00c896" font-size="13" font-family="monospace" font-weight="bold">+$1.09</text>
+      <text x="540" y="200" fill="#00c896" font-size="13" font-family="monospace" font-weight="bold">+1.45% neto</text>
+    </svg>
+  </div>
+
+  <div class="callout callout-yellow">
+    <div class="callout-title">🧮 Extrapolando a escala — la lección de Jane Street</div>
+    <p>Tu $1.45% en $100 = $1.45. Si fuera $10,000 = $145. Si fuera $1,000,000 = $14,500. <strong>En un solo día.</strong> Jane Street hace esto con $10,000,000,000 — pero el razonamiento que usaste para elegir esos 4 tickers es exactamente el mismo.</p>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- SECCIÓN 7: OTRAS ESTRATEGIAS -->
+<div class="section" id="estrategias">
+  <div class="section-num">Más teatros de operaciones</div>
+  <h2>Las otras formas en que<br>Jane Street <em>gana millones</em></h2>
+  <p class="lead">El market making con spreads es solo una de las estrategias. Aquí están las otras — todas replicables en formato educativo con los datos gratuitos que ya tenemos.</p>
+
+  <div class="strategy-grid">
+    <div class="strategy-card">
+      <div class="sc-icon">🏗️</div>
+      <div class="sc-title">ETF Arbitrage</div>
+      <div class="sc-subtitle">La estrategia más grande de Jane Street</div>
+      <div class="sc-desc">El SPY (ETF del S&P500) debería valer exactamente la suma de sus 500 acciones. Cuando hay una diferencia mínima, Jane Street compra el más barato y vende el más caro simultáneamente. Ganancia sin riesgo de dirección. Jane Street es el mayor creador de ETFs del mundo.</div>
+      <span class="sc-tag tag-green">✅ Teatro posible con datos EOD</span>
+    </div>
+
+    <div class="strategy-card">
+      <div class="sc-icon">📅</div>
+      <div class="sc-title">Index Rebalancing</div>
+      <div class="sc-subtitle">Comprar antes que los fondos obligados</div>
+      <div class="sc-desc">Cuando una empresa entra al S&P500, todos los fondos índice DEBEN comprarla. Jane compra la acción días antes, cuando se anuncia la inclusión, y se la vende a los fondos al precio más alto. Es legal, predecible y ocurre cada trimestre.</div>
+      <span class="sc-tag tag-green">✅ Teatro posible — fechas de rebalanceo son públicas</span>
+    </div>
+
+    <div class="strategy-card">
+      <div class="sc-icon">🔗</div>
+      <div class="sc-title">Stat-Arb (ya en Jane)</div>
+      <div class="sc-subtitle">Pares que se alejan y vuelven</div>
+      <div class="sc-desc">ICE y CBOE son dos bolsas con comportamiento histórico muy correlacionado. Cuando divergen más de 2 desviaciones estándar, Jane apuesta a que volverán a converger. Ya implementado en OpenJane con Z-score y half-life en tiempo real.</div>
+      <span class="sc-tag tag-green">✅ Ya disponible en /analyze</span>
+    </div>
+
+    <div class="strategy-card">
+      <div class="sc-icon">⚡</div>
+      <div class="sc-title">Cross-venue Arbitrage</div>
+      <div class="sc-subtitle">La misma acción, dos precios distintos</div>
+      <div class="sc-desc">AAPL cotiza en NYSE y NASDAQ simultáneamente. En microsegundos puede haber diferencias de $0.01-0.03 entre ambas bolsas. Jane captura esa diferencia antes de que el mercado la corrija. Requiere latencia de microsegundos — solo educativo.</div>
+      <span class="sc-tag tag-yellow">⚠️ Solo educativo — requiere HFT real</span>
+    </div>
+
+    <div class="strategy-card">
+      <div class="sc-icon">📈</div>
+      <div class="sc-title">Options Market Making</div>
+      <div class="sc-subtitle">Vender volatilidad, cubrir el delta</div>
+      <div class="sc-desc">Jane vende opciones (cobra la prima) y cubre continuamente el riesgo de dirección comprando/vendiendo el activo subyacente. El spread bid-ask de las opciones es su ganancia. La cobertura dinámica es lo que hace que no importe si el mercado sube o baja.</div>
+      <span class="sc-tag tag-yellow">⚠️ Requiere datos de opciones (plan de pago)</span>
+    </div>
+
+    <div class="strategy-card">
+      <div class="sc-icon">🌍</div>
+      <div class="sc-title">Regime-Based Allocation</div>
+      <div class="sc-subtitle">Cambiar estrategia según el estado del mercado</div>
+      <div class="sc-desc">En régimen alcista (+4/+4): estrategias largas. En régimen mixto (+2/+4): reducir exposición. En crisis (0/+4): coberturas y cash. Ajustar el portafolio según el régimen es lo que Jane hace sistemáticamente — y es 100% replicable con datos EOD.</div>
+      <span class="sc-tag tag-green">✅ Teatro posible — ya tenemos el detector de régimen</span>
+    </div>
+  </div>
+
+  <div class="callout callout-blue" style="margin-top:2rem">
+    <div class="callout-title">🗺️ El roadmap de teatros para OpenJane</div>
+    <p>
+      <strong>Teatro 1 (próximo):</strong> Paper Portfolio — $100 virtuales en 4-5 tickers, evaluación 24h con P&L real.<br>
+      <strong>Teatro 2:</strong> ETF Arbitrage monitor — SPY vs sus componentes, detectar divergencias.<br>
+      <strong>Teatro 3:</strong> Index Rebalancing calendar — alertas cuando hay inclusiones/exclusiones en índices.<br>
+      <strong>Teatro 4:</strong> Regime-based allocation — portafolio que cambia de composición según el score de régimen.
+    </p>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- GLOSARIO VISCERAL -->
+<div class="section" id="glosario">
+  <div class="section-num">Diccionario para humanos</div>
+  <h2>Glosario <em>visceral</em><br>de paper trading</h2>
+  <p class="lead">Cada término que vas a escuchar, explicado como si te lo contara alguien en un café — no en un libro de texto.</p>
+
+  <div class="gloss-grid">
+
+    <div class="gloss-card">
+      <div class="gloss-term">Spread bid-ask</div>
+      <div class="gloss-en">Bid-ask spread</div>
+      <div class="gloss-def">La diferencia entre <strong>lo que el mercado paga</strong> (bid) y <strong>lo que cobra</strong> (ask). Si puedes comprar a $10.00 y vender a $10.02, el spread es $0.02. Esa diferencia existe porque alguien en el medio (como Jane Street) facilita la transacción y se queda con ella.</div>
+      <div class="gloss-example">Spread de $0.02 × 50M operaciones = $1M por día</div>
+    </div>
+
+    <div class="gloss-card">
+      <div class="gloss-term">Paper trading</div>
+      <div class="gloss-en">Paper trading / Simulated trading</div>
+      <div class="gloss-def">Operar con <strong>dinero ficticio usando precios reales</strong>. El nombre viene de que antes se anotaba todo en papel. Es el simulador de vuelo del mundo financiero: aprendes los controles sin riesgo de estrellarte.</div>
+      <div class="gloss-example">Compro 1 acción de ICE a $155.82 (virtual) → Si mañana vale $158, gané $2.18 en papel</div>
+    </div>
+
+    <div class="gloss-card">
+      <div class="gloss-term">Backtesting</div>
+      <div class="gloss-en">Backtesting / Historical simulation</div>
+      <div class="gloss-def">Probar una estrategia de inversión <strong>usando datos históricos</strong> para ver qué habría pasado si la hubieras aplicado en el pasado. Es una máquina del tiempo: vuelves al 1 de enero con tu estrategia de hoy y ves si habría funcionado.</div>
+      <div class="gloss-example">Si en los últimos 30 días hubiera comprado los ghost tickers cuando el Z-score era &gt;2, habría ganado X%</div>
+    </div>
+
+    <div class="gloss-card">
+      <div class="gloss-term">Ventana rodante</div>
+      <div class="gloss-en">Rolling window</div>
+      <div class="gloss-def">Analizar siempre el mismo período de tiempo (24h, 7 días, 30 días) pero <strong>avanzando un paso cada vez</strong>. Como mirar por la ventana de un tren: el encuadre es siempre el mismo, pero el paisaje cambia.</div>
+      <div class="gloss-example">Hoy analizo ayer→hoy. Mañana analizo hoy→mañana. La ventana siempre es de 24h.</div>
+    </div>
+
+    <div class="gloss-card">
+      <div class="gloss-term">P&L</div>
+      <div class="gloss-en">Profit & Loss · Ganancias y pérdidas</div>
+      <div class="gloss-def">El marcador del partido. <strong>P = lo que ganaste, L = lo que perdiste.</strong> En el teatro de operaciones, el P&L es tu resultado neto después de restar los costos de transacción. Un P&L positivo significa que tu tesis de inversión fue correcta (esta vez).</div>
+      <div class="gloss-example">Entrada $100 → Salida $104.53 → Costos -$0.40 → P&L neto: +$4.13</div>
+    </div>
+
+    <div class="gloss-card">
+      <div class="gloss-term">Costo de transacción</div>
+      <div class="gloss-en">Transaction cost / Slippage</div>
+      <div class="gloss-def">El costo real de entrar y salir de una posición. Incluye comisiones del broker y el slippage (diferencia entre el precio que querías y el que conseguiste). <strong>Muchas estrategias que "funcionan" en papel fallan en la realidad</strong> porque ignoran estos costos.</div>
+      <div class="gloss-example">Spread estimado del 0.4% × entrada + salida = ~0.8% total de costo round-trip</div>
+    </div>
+
+    <div class="gloss-card">
+      <div class="gloss-term">EOD (End of Day)</div>
+      <div class="gloss-en">End of Day · Cierre del día</div>
+      <div class="gloss-def">El precio de cierre oficial de un activo al final de la sesión bursátil. Es el dato más fiable y el más accesible gratuitamente. <strong>En el teatro de operaciones usamos precios EOD</strong> — son reales, verificables y gratuitos con Massive.com y EODHD.</div>
+      <div class="gloss-example">ICE cerró a $155.82 el 11-May-2026 (EOD) — ese es tu precio de entrada</div>
+    </div>
+
+    <div class="gloss-card">
+      <div class="gloss-term">Market maker</div>
+      <div class="gloss-en">Market maker · Creador de mercado</div>
+      <div class="gloss-def">Un actor que siempre está dispuesto a <strong>comprar Y vender</strong> al mismo tiempo, proporcionando liquidez al mercado. Jane Street es el mayor market maker del mundo. Gana el spread en cada transacción. Sin market makers, muchos activos serían imposibles de comprar o vender rápidamente.</div>
+      <div class="gloss-example">Jane: "Compro ICE a $155.80 y vendo ICE a $155.82" — simultáneamente, todo el día</div>
+    </div>
+
+    <div class="gloss-card">
+      <div class="gloss-term">Régimen de mercado</div>
+      <div class="gloss-en">Market regime</div>
+      <div class="gloss-def">El "estado de ánimo" estructural del mercado: alcista, bajista, lateral o crisis. <strong>Las estrategias que funcionan en un régimen pueden destruirte en otro.</strong> Lo primero que Jane analiza antes de cualquier operación es el régimen actual.</div>
+      <div class="gloss-example">Score +4/+4 = Alcista fuerte → estrategias largas. Score +1/+4 = Bajista → cautela máxima.</div>
+    </div>
+
+    <div class="gloss-card">
+      <div class="gloss-term">ADV</div>
+      <div class="gloss-en">Average Daily Volume · Volumen diario promedio</div>
+      <div class="gloss-def">Cuántas acciones se negocian en un activo en un día típico (promedio de los últimos 20 días). <strong>Un activo con ADV bajo es peligroso</strong>: si quieres salir rápido, no habrá quien te compre al precio que quieres. Jane Street solo opera activos con ADV millonario.</div>
+      <div class="gloss-example">ICE: ADV 3.2M acciones/día → Alta liquidez → Puedes entrar y salir sin mover el precio</div>
+    </div>
+
+    <div class="gloss-card">
+      <div class="gloss-term">Z-score</div>
+      <div class="gloss-en">Z-score · Desviación estándar normalizada</div>
+      <div class="gloss-def">Cuántas desviaciones estándar está una medida alejada de su media histórica. <strong>Z-score &gt; +2.0 = señal de entrada en stat-arb</strong>. Z-score = 0 = objetivo de salida. Z-score &gt; +3.5 = el sistema puede estar roto.</div>
+      <div class="gloss-example">Par ICE/CBOE: Z-score actual 0.64 → Neutral. Si llega a 2.0 → Señal de entrada activa.</div>
+    </div>
+
+    <div class="gloss-card">
+      <div class="gloss-term">Overfitting</div>
+      <div class="gloss-en">Overfitting · Sobreajuste</div>
+      <div class="gloss-def">Cuando una estrategia "funciona perfectamente" en el backtest porque fue diseñada para ese período específico — pero falla en el futuro porque aprendió el ruido, no la señal. <strong>La trampa más peligrosa del backtesting.</strong></div>
+      <div class="gloss-example">Estrategia que "gana" el 90% de los días en 2022 pero falla en 2023 → probablemente overfitting</div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- VIDEO PLACEHOLDER -->
+<div class="section">
+  <div class="section-num">Próximamente</div>
+  <h2>El video <em>explicativo</em></h2>
+  <div class="video-placeholder">
+    <div class="icon">🎬</div>
+    <h3>Paper Trading + Backtesting — Explicado visualmente</h3>
+    <p>Un walkthrough en video del teatro de operaciones completo: desde definir el portafolio virtual hasta interpretar el P&L 24 horas después. Con pantalla compartida, datos reales y narración en español.</p>
+    <p style="color:var(--muted);font-size:.8rem">Guión sugerido: (1) Abrir /analyze · (2) Definir portafolio · (3) Esperar 24h · (4) Interpretar resultados con Jane · (5) Extrapolación a escala de Jane Street</p>
+    <a href="https://openjane.onrender.com/analyze" target="_blank" class="btn btn-primary" style="margin-top:1rem">⚡ Practicar ahora en el análisis en vivo</a>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- CTA FINAL -->
+<div class="section" style="text-align:center;padding-bottom:5rem">
+  <div class="section-num">Siguiente paso</div>
+  <h2>Empieza tu primer<br>teatro de operaciones</h2>
+  <p class="lead" style="margin:0 auto 2rem">Elige la ruta que más te conviene. Ambas son gratuitas.</p>
+  <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+    <a href="/claude-setup" class="btn btn-ghost" style="font-size:1rem;padding:.8rem 2rem">🧠 Vía Claude.ai (sin API keys)</a>
+    <a href="/analyze" class="btn btn-primary" style="font-size:1rem;padding:.8rem 2rem">⚡ Vía Render (datos reales)</a>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-brand">OpenJane · by Claude · Apache 2.0</div>
+  <div class="footer-links">
+    <a href="/">Home</a>
+    <a href="/analyze">Análisis en vivo</a>
+    <a href="/claude-setup">Claude.ai setup</a>
+    <a href="/glossary">Glosario completo</a>
+    <a href="https://github.com/ussleo/openjane" target="_blank">GitHub</a>
+  </div>
+</footer>
+
+</body>
+</html>
