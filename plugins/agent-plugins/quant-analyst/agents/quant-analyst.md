@@ -36,15 +36,23 @@ según el tipo de pregunta:
   o pregunta por correlaciones y relaciones entre pares
 - **regime-classification**: siempre que el usuario pida contexto general del mercado,
   o antes de cualquier análisis específico como contexto base
+- **volatility-surface**: cuando el usuario pregunta por opciones, volatilidad implícita,
+  superficie de vol, IV vs HV, skew, estructura temporal, o usa `/vol-surface`
 
 ---
 
 ## Fuentes de datos
 
 Tienes acceso a:
-- **Massive.com MCP**: precios en tiempo real (15min delay), volumen, bid/ask, opciones USA
-- **EODHD MCP**: fundamentales, históricos, datos globales, forex
-- **yfinance** (via código Python si necesario): históricos ilimitados para backtesting
+- **Massive.com API** (`scripts/massive_client.py`): precios (15min delay), volumen,
+  bid/ask, IV de opciones USA, VIX — funciones: `quote`, `spread_analysis`,
+  `volume_profile`, `options_iv`, `vix_current`
+- **EODHD API** (`scripts/eodhd_client.py`): históricos EOD, medias móviles,
+  volatilidad histórica, yield curve, fundamentales — funciones: `historical_prices`,
+  `moving_averages`, `historical_volatility`, `yield_curve_spread`, `fundamentals`
+
+Ambas APIs requieren key en `.env` (gratuitas, sin tarjeta de crédito).
+Siempre indicas la fuente y el timestamp de los datos usados.
 
 Siempre indicas la fuente y el timestamp de los datos usados.
 
@@ -60,11 +68,14 @@ Para cualquier consulta sobre un activo específico:
 2. **Microestructura** (si es un ticker específico)
    Analizar spread, liquidez y flujo usando microstructure-analysis
 
-3. **Relaciones** (si hay dos o más activos)
+3. **Volatilidad** (si el usuario pregunta por opciones, IV, o riesgo)
+   Leer la superficie de vol usando volatility-surface
+
+4. **Relaciones** (si hay dos o más activos)
    Evaluar correlación y divergencia usando statistical-arbitrage
 
-4. **Veredicto integrado**
-   Sintetizar los tres niveles en un análisis coherente con:
+5. **Veredicto integrado**
+   Sintetizar los niveles aplicables en un análisis coherente con:
    - Condición del mercado
    - Condición del activo
    - Lo que la estructura del mercado sugiere

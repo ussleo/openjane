@@ -1,21 +1,55 @@
 {
-  "mcpServers": {
+  "_comment": "Configuración de datos para OpenJane. Las APIs son REST, no MCP servers nativos.",
+  "_comment2": "La integración se hace via scripts/massive_client.py y scripts/eodhd_client.py",
+
+  "data_sources": {
     "massive": {
-      "comment": "Datos de mercado USA en tiempo real — acciones, opciones, forex, crypto",
-      "comment2": "API key gratuita en https://massive.com — sin tarjeta de crédito",
-      "url": "https://api.massive.com/mcp",
-      "env": {
-        "MASSIVE_API_KEY": "${MASSIVE_API_KEY}"
-      }
+      "description": "Datos de mercado USA en tiempo real — acciones, opciones, forex, crypto",
+      "base_url": "https://api.massive.com/v1",
+      "auth": "Bearer ${MASSIVE_API_KEY}",
+      "free_tier": {
+        "delay": "15 minutos",
+        "markets": ["US equities", "US options", "Forex", "Crypto"],
+        "rate_limit": "Sin límite documentado en free tier"
+      },
+      "signup": "https://massive.com",
+      "requires_card": false,
+      "client_script": "scripts/massive_client.py",
+      "key_functions": [
+        "quote(ticker) — precio, bid, ask, volumen",
+        "spread_analysis(ticker) — microestructura y clasificación de liquidez",
+        "volume_profile(ticker, days) — ADV y señal de flujo",
+        "options_iv(ticker, expiry) — IV ATM y skew de opciones",
+        "vix_current() — nivel VIX y régimen de volatilidad"
+      ]
     },
     "eodhd": {
-      "comment": "Datos fundamentales, históricos globales, forex — 20 llamadas/día gratis",
-      "comment3": "API key gratuita en https://eodhd.com — sin tarjeta de crédito",
-      "url": "https://eodhd.com/mcp",
-      "env": {
-        "EODHD_API_KEY": "${EODHD_API_KEY}"
-      }
+      "description": "Fundamentales, históricos EOD globales, forex, yield curve",
+      "base_url": "https://eodhd.com/api",
+      "auth": "api_token=${EODHD_API_KEY} (query param)",
+      "free_tier": {
+        "calls_per_day": 20,
+        "markets": ["US equities fundamentals", "Global EOD prices", "Forex", "Indices"],
+        "historical_limit": "Ilimitado en días, limitado por llamadas/día"
+      },
+      "signup": "https://eodhd.com",
+      "requires_card": false,
+      "client_script": "scripts/eodhd_client.py",
+      "key_functions": [
+        "historical_prices(ticker, exchange, days) — EOD OHLCV ajustado",
+        "moving_averages(ticker) — MA50 y MA200 con señal de tendencia",
+        "historical_volatility(ticker, window) — HV realizada anualizada",
+        "yield_curve_spread() — spread 10Y-2Y con clasificación de régimen macro",
+        "fundamentals(ticker) — market cap, P/E, sector, EPS, 52W high/low"
+      ]
     }
   },
-  "note": "Configura tus API keys como variables de entorno o reemplaza directamente. Ambas son gratuitas."
+
+  "setup": {
+    "step_1": "cp .env.example .env",
+    "step_2": "Añade MASSIVE_API_KEY desde https://massive.com (gratis)",
+    "step_3": "Añade EODHD_API_KEY desde https://eodhd.com (gratis)",
+    "step_4": "Prueba: python scripts/massive_client.py AAPL",
+    "step_5": "Prueba: python scripts/eodhd_client.py AAPL"
+  }
 }
