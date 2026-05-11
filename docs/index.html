@@ -45,7 +45,7 @@
   }
   .nav-brand { font-family: var(--font); font-size: 1.1rem; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; }
   .nav-brand span { color: var(--muted); font-weight: 400; }
-  .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+  .nav-links { display: flex; gap: 1.2rem; align-items: center; }
   .nav-links a { color: var(--muted); font-size: 0.9rem; transition: color 0.2s; }
   .nav-links a:hover { color: var(--text); text-decoration: none; }
   .btn {
@@ -57,6 +57,16 @@
   .btn-primary:hover { background: #00b8e0; text-decoration: none; }
   .btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
   .btn-ghost:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+
+  /* ── LANG SWITCHER ── */
+  .lang-switcher { display: flex; gap: 2px; }
+  .lang-btn {
+    padding: 3px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600;
+    cursor: pointer; border: 1px solid var(--border); background: transparent;
+    color: var(--muted); font-family: var(--font); transition: all .15s;
+  }
+  .lang-btn:hover { color: var(--text); border-color: #444; }
+  .lang-btn.active { background: rgba(0,212,255,0.1); border-color: var(--accent); color: var(--accent); }
 
   /* ── HERO ── */
   .hero {
@@ -249,7 +259,7 @@
     display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;
   }
   .footer-brand { font-family: var(--font); font-size: 0.9rem; color: var(--muted); }
-  .footer-links { display: flex; gap: 1.5rem; }
+  .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
   .footer-links a { color: var(--muted); font-size: 0.83rem; }
   .footer-links a:hover { color: var(--text); text-decoration: none; }
 
@@ -280,14 +290,18 @@
 <nav>
   <div class="nav-brand">Open<span>Jane</span> <span style="font-size:0.7rem;margin-left:4px;color:var(--accent)">by Claude</span></div>
   <div class="nav-links">
-    <a href="#demo">Demo</a>
-    <a href="#glosario">Glosario</a>
-    <a href="#como-usar">Cómo usar</a>
-    <a href="#datos">Datos</a>
+    <a href="#demo" data-i18n="nav.demo">Demo</a>
+    <a href="#glosario" data-i18n="nav.glossary">Glosario</a>
+    <a href="#como-usar" data-i18n="nav.howto">Cómo usar</a>
+    <a href="#datos" data-i18n="nav.data">Datos</a>
     <a href="https://github.com/ussleo/openjane" target="_blank">GitHub</a>
-    <a href="api-keys.html">API Keys</a>
-    <a href="glossary.html" class="btn btn-ghost">📖 Glosario</a>
-    <a href="https://claude.ai" target="_blank" class="btn btn-primary">Usar Jane ↗</a>
+    <a href="api-keys.html" data-i18n="nav.apikeys">API Keys</a>
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="setLang('es')">ES</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" onclick="setLang('pt')">PT</button>
+    </div>
+    <a href="https://openjane.onrender.com/analyze" target="_blank" class="btn btn-primary" data-i18n="nav.cta">Usar Jane ↗</a>
   </div>
 </nav>
 
@@ -297,11 +311,12 @@
     <div class="hero-label">
       <span>●</span> Open Source · Free Tier · Apache 2.0
     </div>
-    <h1>El análisis de<br><em>Jane Street</em><br>para todos</h1>
-    <p>Jane Street genera $39B anuales sin predecir el futuro. Lo hace optimizando <span class="tooltip" data-tip="Diferencia entre precio de compra y venta de un activo. Cuanto más pequeño, más barato operar.">fricción</span>, <span class="tooltip" data-tip="Capacidad de comprar o vender sin mover el precio. Activos líquidos tienen spreads bajos y alto volumen.">liquidez</span> y <span class="tooltip" data-tip="Estado estructural del mercado: alcista, bajista, lateral o crisis. Cada régimen favorece estrategias distintas.">régimen</span>. OpenJane traduce esa lógica al alcance de cualquier persona — en español, inglés o portugués.</p>
+    <h1 data-i18n="hero.h1">El análisis de<br><em>Jane Street</em><br>para todos</h1>
+    <p data-i18n="hero.sub">Jane Street genera $39B anuales sin predecir el futuro. Lo hace optimizando <span class="tooltip" data-tip="Diferencia entre precio de compra y venta de un activo.">fricción</span>, <span class="tooltip" data-tip="Capacidad de comprar o vender sin mover el precio.">liquidez</span> y <span class="tooltip" data-tip="Estado estructural del mercado: alcista, bajista, lateral o crisis.">régimen</span>. OpenJane traduce esa lógica al alcance de cualquier persona — en español, inglés o portugués.</p>
     <div class="hero-ctas">
-      <a href="https://claude.ai" target="_blank" class="btn btn-primary">🧠 Usar Jane gratis en Claude.ai</a>
-      <a href="https://github.com/ussleo/openjane" target="_blank" class="btn btn-ghost">Ver en GitHub</a>
+      <a href="https://openjane.onrender.com/analyze" target="_blank" class="btn btn-primary" data-i18n="hero.cta1">⚡ Analizar en vivo</a>
+      <a href="https://claude.ai" target="_blank" class="btn btn-ghost" data-i18n="hero.cta2">🧠 Usar en Claude.ai gratis</a>
+      <a href="https://ussleo.github.io/openjane/" target="_blank" class="btn btn-ghost" data-i18n="hero.cta3">🌐 GitHub Pages</a>
     </div>
   </div>
 
@@ -339,60 +354,47 @@
 
 <!-- SCREENSHOTS -->
 <section id="screenshots" style="padding-bottom:1rem;">
-  <div class="section-label">Jane en acción · Screenshots reales</div>
-  <div class="section-title">Datos reales. Terminal real. Sin filtros.</div>
-  <p class="section-sub">Los tres bloques de análisis corriendo localmente con datos de Massive.com y EODHD. Esto es exactamente lo que ves cuando ejecutas <code style="font-family:var(--font);font-size:0.85em;background:var(--surface2);padding:0.1em 0.4em;border-radius:3px;color:var(--green)">python scripts/jane_demo.py</code></p>
+  <div class="section-label" data-i18n="ss.label">Jane en acción · Screenshots reales</div>
+  <div class="section-title" data-i18n="ss.title">Datos reales. Terminal real. Sin filtros.</div>
+  <p class="section-sub" data-i18n="ss.sub">Los tres bloques de análisis corriendo localmente con datos de Massive.com y EODHD.</p>
 
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-top:2rem;">
-
     <div style="display:flex;flex-direction:column;gap:0.8rem;">
       <div style="background:var(--surface2);border:1px solid rgba(0,212,255,0.2);border-radius:6px;padding:0.4rem 0.8rem;font-family:var(--font);font-size:0.72rem;color:var(--accent);">
         [1/3] — /regime · Régimen de mercado global
       </div>
       <a href="screenshots/demo-01-regime.png" target="_blank">
-        <img src="screenshots/demo-01-regime.png"
-             alt="OpenJane — Análisis de régimen de mercado: SPY +4/+4 ALCISTA FUERTE, MA200, yield curve"
+        <img src="screenshots/demo-01-regime.png" alt="OpenJane — Régimen de mercado: SPY +4/+4 ALCISTA FUERTE"
              style="width:100%;border-radius:8px;border:1px solid var(--border);transition:border-color 0.2s;"
-             onmouseover="this.style.borderColor='var(--accent)'"
-             onmouseout="this.style.borderColor='var(--border)'">
+             onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
       </a>
-      <p style="font-size:0.8rem;color:var(--muted);line-height:1.5;">SPY sobre MA200 (+10%), yield curve +0.47%, HV 10.4%. Score +4/+4 → <span style="color:var(--green)">ALCISTA FUERTE</span>.</p>
+      <p style="font-size:0.8rem;color:var(--muted);line-height:1.5;" data-i18n="ss.cap1">SPY sobre MA200 (+10%), yield curve +0.47%, HV 10.4%. Score +4/+4 → <span style="color:var(--green)">ALCISTA FUERTE</span>.</p>
     </div>
-
     <div style="display:flex;flex-direction:column;gap:0.8rem;">
       <div style="background:var(--surface2);border:1px solid rgba(0,212,255,0.2);border-radius:6px;padding:0.4rem 0.8rem;font-family:var(--font);font-size:0.72rem;color:var(--accent);">
         [2/3] — /spread-analysis ICE · Microestructura
       </div>
       <a href="screenshots/demo-02-microstructure.png" target="_blank">
-        <img src="screenshots/demo-02-microstructure.png"
-             alt="OpenJane — Microestructura ICE: precio, VWAP, ADV, tendencia bajista bajo MA200"
+        <img src="screenshots/demo-02-microstructure.png" alt="OpenJane — Microestructura ICE"
              style="width:100%;border-radius:8px;border:1px solid var(--border);transition:border-color 0.2s;"
-             onmouseover="this.style.borderColor='var(--accent)'"
-             onmouseout="this.style.borderColor='var(--border)'">
+             onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
       </a>
-      <p style="font-size:0.8rem;color:var(--muted);line-height:1.5;">ICE $155.82, ADV 3.2M acciones, HV 19.7%. Tendencia <span style="color:var(--red)">BAJISTA</span> — precio 4.6% bajo MA200.</p>
+      <p style="font-size:0.8rem;color:var(--muted);line-height:1.5;" data-i18n="ss.cap2">ICE $155.82, ADV 3.2M, HV 19.7%. Tendencia <span style="color:var(--red)">BAJISTA</span> — precio 4.6% bajo MA200.</p>
     </div>
-
     <div style="display:flex;flex-direction:column;gap:0.8rem;">
       <div style="background:var(--surface2);border:1px solid rgba(0,212,255,0.2);border-radius:6px;padding:0.4rem 0.8rem;font-family:var(--font);font-size:0.72rem;color:var(--accent);">
         [3/3] — /stat-arb ICE CBOE · Arbitraje estadístico
       </div>
       <a href="screenshots/demo-03-statarb.png" target="_blank">
-        <img src="screenshots/demo-03-statarb.png"
-             alt="OpenJane — Stat-arb ICE vs CBOE: Z-score, half-life, zonas de entrada y stop-loss"
+        <img src="screenshots/demo-03-statarb.png" alt="OpenJane — Stat-arb ICE vs CBOE"
              style="width:100%;border-radius:8px;border:1px solid var(--border);transition:border-color 0.2s;"
-             onmouseover="this.style.borderColor='var(--accent)'"
-             onmouseout="this.style.borderColor='var(--border)'">
+             onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
       </a>
-      <p style="font-size:0.8rem;color:var(--muted);line-height:1.5;">Par ICE/CBOE: Z-score 0.64 (neutral), half-life 19.6 días. Zonas de entrada calculadas con OLS + Ornstein-Uhlenbeck.</p>
+      <p style="font-size:0.8rem;color:var(--muted);line-height:1.5;" data-i18n="ss.cap3">Par ICE/CBOE: Z-score 0.64 (neutral), half-life 19.6 días. OLS + Ornstein-Uhlenbeck.</p>
     </div>
-
   </div>
-
   <p style="margin-top:1.2rem;font-size:0.8rem;color:var(--muted);">
-    Clic en cualquier imagen para verla en tamaño completo. ·
-    Datos EOD de <strong>Massive.com</strong> + <strong>EODHD</strong> ·
-    <a href="api-keys.html">Obtén tus API keys gratis →</a>
+    <a href="api-keys.html" data-i18n="ss.keyslink">Obtén tus API keys gratis →</a>
   </p>
 </section>
 
@@ -400,17 +402,14 @@
 
 <!-- LIVE DATA STRIP -->
 <div id="demo" class="data-strip">
-  <div class="data-strip-inner" id="tickerStrip">
-    <!-- generado por JS desde snapshot.json -->
-  </div>
+  <div class="data-strip-inner" id="tickerStrip"></div>
 </div>
 
 <!-- DETAIL PANEL -->
 <section style="padding-top:2rem;padding-bottom:2rem;">
-  <div class="section-label">Datos reales · Free tier</div>
-  <div class="section-title" id="panelTitle">Selecciona un ticker arriba</div>
-  <p class="section-sub">Datos EOD de <strong>Massive.com</strong> y <strong>EODHD</strong> — ambos gratuitos sin tarjeta de crédito. Cada badge indica si el dato es accesible en free tier o requiere plan de pago.</p>
-
+  <div class="section-label" data-i18n="dp.label">Datos reales · Free tier</div>
+  <div class="section-title" id="panelTitle" data-i18n="dp.title">Selecciona un ticker arriba</div>
+  <p class="section-sub" data-i18n="dp.sub">Datos EOD de <strong>Massive.com</strong> y <strong>EODHD</strong> — ambos gratuitos sin tarjeta de crédito.</p>
   <div class="detail-panel" id="detailPanel" style="display:none">
     <div class="detail-header">
       <div>
@@ -422,10 +421,8 @@
     <div class="detail-grid" id="dGrid"></div>
     <div id="dRegime"></div>
   </div>
-
-  <!-- MACRO GLOBAL -->
   <div style="margin-top:2rem;">
-    <div class="section-label">Macro global · EODHD</div>
+    <div class="section-label" data-i18n="macro.label">Macro global · EODHD</div>
     <div class="detail-panel">
       <div class="detail-grid" id="macroGrid"></div>
     </div>
@@ -436,29 +433,29 @@
 
 <!-- FEATURES -->
 <section>
-  <div class="section-label">Capacidades</div>
-  <div class="section-title">Cuatro skills. Un agente.</div>
-  <p class="section-sub">Jane aplica automáticamente el análisis correcto según tu pregunta. Sin código. Sin formularios. Solo lenguaje natural.</p>
+  <div class="section-label" data-i18n="feat.label">Capacidades</div>
+  <div class="section-title" data-i18n="feat.title">Cuatro skills. Un agente.</div>
+  <p class="section-sub" data-i18n="feat.sub">Jane aplica automáticamente el análisis correcto según tu pregunta. Sin código. Sin formularios. Solo lenguaje natural.</p>
   <div class="features-grid">
     <div class="feature-card">
       <div class="feature-icon">🌍</div>
-      <div class="feature-title">Régimen de mercado</div>
-      <div class="feature-desc">Clasifica el estado actual del mercado (alcista, bajista, lateral, crisis) usando <span class="tooltip" data-tip="Media de los últimos 200 cierres. El indicador de tendencia más seguido por instituciones.">MA200</span>, <span class="tooltip" data-tip="Índice de volatilidad implícita del S&P 500. VIX>30 = miedo. VIX<15 = calma.">VIX</span> y curva de rendimientos. Base obligatoria antes de cualquier análisis.</div>
+      <div class="feature-title" data-i18n="feat.f1.title">Régimen de mercado</div>
+      <div class="feature-desc" data-i18n="feat.f1.desc">Clasifica el estado actual del mercado (alcista, bajista, lateral, crisis) usando MA200, VIX y curva de rendimientos.</div>
     </div>
     <div class="feature-card">
       <div class="feature-icon">🔬</div>
-      <div class="feature-title">Microestructura</div>
-      <div class="feature-desc">Lee el mercado como Jane Street: <span class="tooltip" data-tip="Diferencia entre precio bid y ask. Cuanto más bajo, menor el costo de entrar y salir.">spread bid-ask</span>, <span class="tooltip" data-tip="Promedio de acciones negociadas por día en los últimos 20 días hábiles.">ADV</span>, señal de flujo y <span class="tooltip" data-tip="Diferencia entre el precio esperado de ejecución y el real. Costo invisible frecuente.">slippage</span> estimado. Lo que el precio solo no te dice.</div>
+      <div class="feature-title" data-i18n="feat.f2.title">Microestructura</div>
+      <div class="feature-desc" data-i18n="feat.f2.desc">Lee el mercado como Jane Street: spread bid-ask, ADV, señal de flujo y slippage estimado.</div>
     </div>
     <div class="feature-card">
       <div class="feature-icon">📈</div>
-      <div class="feature-title">Volatilidad</div>
-      <div class="feature-desc">Compara <span class="tooltip" data-tip="Volatilidad que el mercado espera, derivada del precio de las opciones.">volatilidad implícita</span> vs <span class="tooltip" data-tip="Volatilidad real observada en los precios históricos. Se calcula con retornos logarítmicos.">volatilidad histórica</span>. Detecta si las opciones están caras o baratas. Skew y estructura temporal.</div>
+      <div class="feature-title" data-i18n="feat.f3.title">Volatilidad</div>
+      <div class="feature-desc" data-i18n="feat.f3.desc">Compara volatilidad implícita vs histórica. Detecta si las opciones están caras o baratas. Skew y estructura temporal.</div>
     </div>
     <div class="feature-card">
       <div class="feature-icon">🔗</div>
-      <div class="feature-title">Stat-Arb</div>
-      <div class="feature-desc">Identifica pares de activos <span class="tooltip" data-tip="Relación matemática donde la diferencia entre dos activos siempre tiende a volver a su media. Más fuerte que correlación.">cointegrados</span>, calcula el <span class="tooltip" data-tip="Cuántas desviaciones estándar está la divergencia actual vs su media histórica. Señal de entrada en ±2.0.">Z-score</span> actual y estima el <span class="tooltip" data-tip="Tiempo promedio que tarda una divergencia en reducirse a la mitad. Entre 2 y 30 días es ideal para inversores no-HFT.">half-life de reversión</span>.</div>
+      <div class="feature-title" data-i18n="feat.f4.title">Stat-Arb</div>
+      <div class="feature-desc" data-i18n="feat.f4.desc">Identifica pares cointegrados, calcula el Z-score actual y estima el half-life de reversión usando OLS + Ornstein-Uhlenbeck.</div>
     </div>
   </div>
 </section>
@@ -467,43 +464,43 @@
 
 <!-- GLOSSARY PREVIEW -->
 <section id="glosario">
-  <div class="section-label">Glosario</div>
-  <div class="section-title">Terminología que Jane usa. Explicada sin filtros.</div>
-  <p class="section-sub">Si siempre volviste a buscar el mismo término, este glosario es para ti. Cada concepto incluye definición, cómo se mide y un ejemplo real.</p>
+  <div class="section-label" data-i18n="gloss.label">Glosario</div>
+  <div class="section-title" data-i18n="gloss.title">Terminología que Jane usa. Explicada sin filtros.</div>
+  <p class="section-sub" data-i18n="gloss.sub">Cada concepto incluye definición, cómo se mide y un ejemplo real.</p>
   <div class="gloss-grid">
     <div class="gloss-card">
       <div class="gloss-category">microestructura</div>
       <div class="gloss-term">Spread bid-ask</div>
-      <div class="gloss-def">La diferencia entre lo que el mercado paga y lo que cobra. Es el costo invisible más frecuente de cualquier operación. Un spread de 0.5% significa que pierdes 1% solo entrando y saliendo.</div>
+      <div class="gloss-def" data-i18n="gloss.g1">La diferencia entre lo que el mercado paga y lo que cobra. Un spread de 0.5% significa que pierdes 1% solo entrando y saliendo.</div>
     </div>
     <div class="gloss-card">
       <div class="gloss-category">volatilidad</div>
       <div class="gloss-term">IV vs HV</div>
-      <div class="gloss-def">Volatilidad Implícita (lo que el mercado espera) vs Volatilidad Histórica (lo que el activo ha movido realmente). Cuando IV > HV, las opciones están caras. Cuando IV < HV, están baratas.</div>
+      <div class="gloss-def" data-i18n="gloss.g2">Volatilidad Implícita (lo que el mercado espera) vs Volatilidad Histórica (lo real). Cuando IV > HV, las opciones están caras.</div>
     </div>
     <div class="gloss-card">
       <div class="gloss-category">stat-arb</div>
       <div class="gloss-term">Z-score</div>
-      <div class="gloss-def">Cuántas desviaciones estándar está una divergencia alejada de su media histórica. Z > +2.0 = señal de entrada. Z = 0 = objetivo de salida. Z > +3.5 = el par puede estar roto.</div>
+      <div class="gloss-def" data-i18n="gloss.g3">Cuántas desviaciones estándar está una divergencia de su media. Z > +2.0 = señal de entrada. Z = 0 = objetivo de salida.</div>
     </div>
     <div class="gloss-card">
       <div class="gloss-category">régimen</div>
       <div class="gloss-term">VIX</div>
-      <div class="gloss-def">El "índice del miedo" del mercado. Mide la volatilidad esperada para los próximos 30 días. VIX &lt; 15 = calma. VIX &gt; 30 = estrés. VIX &gt; 40 = pánico — históricamente señal de agotamiento.</div>
+      <div class="gloss-def" data-i18n="gloss.g4">El "índice del miedo". Mide la volatilidad esperada 30 días. VIX &lt; 15 = calma. VIX &gt; 30 = estrés. VIX &gt; 40 = pánico.</div>
     </div>
     <div class="gloss-card">
       <div class="gloss-category">régimen</div>
-      <div class="gloss-term">Curva de rendimientos</div>
-      <div class="gloss-def">La diferencia entre la tasa del bono 10Y y el 2Y. Positiva = economía sana. Invertida = alerta de recesión en 6-18 meses. Precedió todas las recesiones de EEUU en 50 años.</div>
+      <div class="gloss-term" data-i18n="gloss.g5.term">Curva de rendimientos</div>
+      <div class="gloss-def" data-i18n="gloss.g5.def">Diferencia entre tasa 10Y y 2Y. Positiva = economía sana. Invertida = alerta de recesión. Precedió todas las recesiones de EEUU en 50 años.</div>
     </div>
     <div class="gloss-card">
       <div class="gloss-category">datos</div>
       <div class="gloss-term">Free tier vs Paid</div>
-      <div class="gloss-def">Datos EOD (cierre del día anterior), históricos y fundamentales son gratuitos. Datos en tiempo real, opciones y order book completo requieren plan de pago en Massive y EODHD.</div>
+      <div class="gloss-def" data-i18n="gloss.g6">Datos EOD, históricos y fundamentales son gratuitos. Tiempo real, opciones y order book completo requieren plan de pago.</div>
     </div>
   </div>
   <div style="margin-top:1.5rem;">
-    <a href="glossary.html" class="btn btn-ghost">Ver los 35+ términos del glosario completo →</a>
+    <a href="glossary.html" class="btn btn-ghost" data-i18n="gloss.more">Ver los 35+ términos del glosario completo →</a>
   </div>
 </section>
 
@@ -511,28 +508,28 @@
 
 <!-- HOW TO USE -->
 <section id="como-usar">
-  <div class="section-label">Cómo usar Jane</div>
-  <div class="section-title">Tres formas. Elige la tuya.</div>
+  <div class="section-label" data-i18n="howto.label">Cómo usar Jane</div>
+  <div class="section-title" data-i18n="howto.title">Tres formas. Elige la tuya.</div>
   <div class="steps">
     <div class="step">
       <div class="step-num">1</div>
       <div>
-        <div class="step-title">Sin instalar nada — Claude.ai</div>
-        <div class="step-desc">Abre <a href="https://claude.ai" target="_blank">claude.ai</a> (cuenta gratuita), crea un Project con las instrucciones del agente y empieza a hacer preguntas en lenguaje natural. Sin código, sin API keys.</div>
+        <div class="step-title" data-i18n="howto.s1.title">Sin instalar nada — Claude.ai</div>
+        <div class="step-desc" data-i18n="howto.s1.desc">Abre <a href="https://claude.ai" target="_blank">claude.ai</a> (cuenta gratuita), crea un Project con las instrucciones del agente y empieza en lenguaje natural. Sin código, sin API keys.</div>
       </div>
     </div>
     <div class="step">
       <div class="step-num">2</div>
       <div>
-        <div class="step-title">Con datos reales — Claude Code</div>
-        <div class="step-desc">Instala <a href="https://claude.ai/code" target="_blank">Claude Code</a>, clona este repo, añade tus API keys de Massive y EODHD (ambas gratuitas) y Jane tiene acceso a datos reales del mercado.</div>
+        <div class="step-title" data-i18n="howto.s2.title">Análisis en vivo — Web</div>
+        <div class="step-desc" data-i18n="howto.s2.desc">Abre <a href="https://openjane.onrender.com/analyze" target="_blank">openjane.onrender.com/analyze</a>, ingresa tus API keys de Massive y EODHD (ambas gratuitas) y obtén análisis en tiempo real desde el navegador.</div>
       </div>
     </div>
     <div class="step">
       <div class="step-num">3</div>
       <div>
-        <div class="step-title">Deploy propio — Docker (próximamente)</div>
-        <div class="step-desc">Imagen Docker con interfaz web. El usuario provee sus propias API keys. Deploy en cualquier VPS free tier (Fly.io, Render). Roadmap público en GitHub.</div>
+        <div class="step-title" data-i18n="howto.s3.title">Deploy propio — Docker</div>
+        <div class="step-desc" data-i18n="howto.s3.desc">Clona el repo, usa el <code>Dockerfile</code> incluido y despliega en cualquier plataforma. Imagen Python 3.12, FastAPI + uvicorn, sin dependencias externas.</div>
       </div>
     </div>
   </div>
@@ -542,22 +539,22 @@
 
 <!-- DATA SOURCES -->
 <section id="datos">
-  <div class="section-label">Fuentes de datos</div>
-  <div class="section-title">Qué es gratis. Qué no lo es.</div>
-  <p class="section-sub">Sin sorpresas. Cada dato en OpenJane tiene una fuente verificable y un badge que indica si requiere pago.</p>
+  <div class="section-label" data-i18n="src.label">Fuentes de datos</div>
+  <div class="section-title" data-i18n="src.title">Qué es gratis. Qué no lo es.</div>
+  <p class="section-sub" data-i18n="src.sub">Sin sorpresas. Cada dato en OpenJane tiene una fuente verificable y un badge que indica si requiere pago.</p>
   <div class="sources-grid">
     <div class="source-card">
       <div class="source-name">
         <span>Massive.com</span>
         <span class="data-tag tag-free">free tier</span>
       </div>
-      <div class="source-desc">Ex-Polygon.io. Datos de mercado USA. Sin tarjeta de crédito para el free tier.</div>
+      <div class="source-desc" data-i18n="src.massive.desc">Ex-Polygon.io. Datos de mercado USA. Sin tarjeta de crédito para el free tier.</div>
       <div class="source-items">
-        <div class="source-item"><span class="data-tag tag-free">free</span> Precios EOD (cierre anterior)</div>
-        <div class="source-item"><span class="data-tag tag-free">free</span> Históricos OHLCV (ilimitados)</div>
-        <div class="source-item"><span class="data-tag tag-free">free</span> Detalles del ticker</div>
-        <div class="source-item"><span class="data-tag tag-paid">paid</span> Precios en tiempo real</div>
-        <div class="source-item"><span class="data-tag tag-paid">paid</span> Opciones · bid/ask live</div>
+        <div class="source-item"><span class="data-tag tag-free">free</span> <span data-i18n="src.massive.i1">Precios EOD (cierre anterior)</span></div>
+        <div class="source-item"><span class="data-tag tag-free">free</span> <span data-i18n="src.massive.i2">Históricos OHLCV (ilimitados)</span></div>
+        <div class="source-item"><span class="data-tag tag-free">free</span> <span data-i18n="src.massive.i3">Detalles del ticker</span></div>
+        <div class="source-item"><span class="data-tag tag-paid">paid</span> <span data-i18n="src.massive.i4">Precios en tiempo real</span></div>
+        <div class="source-item"><span class="data-tag tag-paid">paid</span> <span data-i18n="src.massive.i5">Opciones · bid/ask live</span></div>
       </div>
     </div>
     <div class="source-card">
@@ -565,13 +562,13 @@
         <span>EODHD</span>
         <span class="data-tag tag-free">20 calls/día gratis</span>
       </div>
-      <div class="source-desc">Fundamentales y datos globales. Yield curve, históricos mundiales, forex.</div>
+      <div class="source-desc" data-i18n="src.eodhd.desc">Fundamentales y datos globales. Yield curve, históricos mundiales, forex.</div>
       <div class="source-items">
-        <div class="source-item"><span class="data-tag tag-free">free</span> Históricos EOD globales</div>
-        <div class="source-item"><span class="data-tag tag-free">free</span> Volatilidad histórica (HV)</div>
-        <div class="source-item"><span class="data-tag tag-free">free</span> Yield curve (10Y-2Y)</div>
-        <div class="source-item"><span class="data-tag tag-free">free</span> Medias móviles MA50/MA200</div>
-        <div class="source-item"><span class="data-tag tag-paid">paid</span> Fundamentales completos</div>
+        <div class="source-item"><span class="data-tag tag-free">free</span> <span data-i18n="src.eodhd.i1">Históricos EOD globales</span></div>
+        <div class="source-item"><span class="data-tag tag-free">free</span> <span data-i18n="src.eodhd.i2">Volatilidad histórica (HV)</span></div>
+        <div class="source-item"><span class="data-tag tag-free">free</span> <span data-i18n="src.eodhd.i3">Yield curve (10Y-2Y)</span></div>
+        <div class="source-item"><span class="data-tag tag-free">free</span> <span data-i18n="src.eodhd.i4">Medias móviles MA50/MA200</span></div>
+        <div class="source-item"><span class="data-tag tag-paid">paid</span> <span data-i18n="src.eodhd.i5">Fundamentales completos</span></div>
       </div>
     </div>
     <div class="source-card">
@@ -579,12 +576,12 @@
         <span>Claude (Anthropic)</span>
         <span class="data-tag tag-free">free en claude.ai</span>
       </div>
-      <div class="source-desc">El modelo de lenguaje que da vida a Jane. Análisis, explicaciones, glosario.</div>
+      <div class="source-desc" data-i18n="src.claude.desc">El modelo de lenguaje que da vida a Jane. Análisis, explicaciones, glosario.</div>
       <div class="source-items">
-        <div class="source-item"><span class="data-tag tag-free">free</span> Claude.ai (límite diario)</div>
-        <div class="source-item"><span class="data-tag tag-free">free</span> Claude Code CLI</div>
-        <div class="source-item"><span class="data-tag tag-paid">paid</span> Claude Pro (sin límite)</div>
-        <div class="source-item"><span class="data-tag tag-paid">paid</span> API para deploy propio</div>
+        <div class="source-item"><span class="data-tag tag-free">free</span> <span data-i18n="src.claude.i1">Claude.ai (límite diario)</span></div>
+        <div class="source-item"><span class="data-tag tag-free">free</span> <span data-i18n="src.claude.i2">Claude Code CLI</span></div>
+        <div class="source-item"><span class="data-tag tag-paid">paid</span> <span data-i18n="src.claude.i3">Claude Pro (sin límite)</span></div>
+        <div class="source-item"><span class="data-tag tag-paid">paid</span> <span data-i18n="src.claude.i4">API para deploy propio</span></div>
       </div>
     </div>
   </div>
@@ -594,90 +591,24 @@
 <div style="background:var(--surface2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:0.55rem 0;overflow:hidden;white-space:nowrap;position:relative;">
   <div style="display:inline-block;animation:ticker 28s linear infinite;padding-left:100%;">
     <span style="font-family:var(--font);font-size:0.72rem;letter-spacing:0.04em;color:var(--muted);">
-      &nbsp;&nbsp;&nbsp;
-      <span style="color:var(--accent)">—</span>
-      <strong style="color:var(--text)">Disclaimer</strong>
-      <span style="color:var(--accent)">—</span>
-      &nbsp;&nbsp;·&nbsp;&nbsp;
-      <span style="color:var(--accent)">—</span>
-      <strong style="color:var(--text)">Warning</strong>
-      <span style="color:var(--accent)">—</span>
-      &nbsp;&nbsp;·&nbsp;&nbsp;
-      <span style="color:var(--accent)">—</span>
-      <strong style="color:var(--text)">Legal Notice</strong>
-      <span style="color:var(--accent)">—</span>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      <span style="color:var(--accent)">—</span>
-      <strong style="color:var(--text)">Advertencia</strong>
-      <span style="color:var(--accent)">—</span>
-      &nbsp;&nbsp;·&nbsp;&nbsp;
-      <span style="color:var(--accent)">—</span>
-      <strong style="color:var(--text)">Aviso Legal</strong>
-      <span style="color:var(--accent)">—</span>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      <span style="color:var(--accent)">—</span>
-      <strong style="color:var(--text)">Isenção de responsabilidade</strong>
-      <span style="color:var(--accent)">—</span>
-      &nbsp;&nbsp;·&nbsp;&nbsp;
-      <span style="color:var(--accent)">—</span>
-      <strong style="color:var(--text)">Advertência</strong>
-      <span style="color:var(--accent)">—</span>
-      &nbsp;&nbsp;·&nbsp;&nbsp;
-      <span style="color:var(--accent)">—</span>
-      <strong style="color:var(--text)">Aviso legal</strong>
-      <span style="color:var(--accent)">—</span>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      <span style="color:var(--accent)">—</span>
-      <strong style="color:var(--text)">Disclaimer</strong>
-      <span style="color:var(--accent)">—</span>
-      &nbsp;&nbsp;·&nbsp;&nbsp;
-      <span style="color:var(--accent)">—</span>
-      <strong style="color:var(--text)">Warning</strong>
-      <span style="color:var(--accent)">—</span>
-      &nbsp;&nbsp;·&nbsp;&nbsp;
-      <span style="color:var(--accent)">—</span>
-      <strong style="color:var(--text)">Legal Notice</strong>
-      <span style="color:var(--accent)">—</span>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      <span style="color:var(--accent)">—</span>
-      <strong style="color:var(--text)">Advertencia</strong>
-      <span style="color:var(--accent)">—</span>
-      &nbsp;&nbsp;·&nbsp;&nbsp;
-      <span style="color:var(--accent)">—</span>
-      <strong style="color:var(--text)">Aviso Legal</strong>
-      <span style="color:var(--accent)">—</span>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      <span style="color:var(--accent)">—</span>
-      <strong style="color:var(--text)">Isenção de responsabilidade</strong>
-      <span style="color:var(--accent)">—</span>
-      &nbsp;&nbsp;·&nbsp;&nbsp;
-      <span style="color:var(--accent)">—</span>
-      <strong style="color:var(--text)">Advertência</strong>
-      <span style="color:var(--accent)">—</span>
-      &nbsp;&nbsp;·&nbsp;&nbsp;
-      <span style="color:var(--accent)">—</span>
-      <strong style="color:var(--text)">Aviso legal</strong>
-      <span style="color:var(--accent)">—</span>
-      &nbsp;&nbsp;&nbsp;
+      &nbsp;&nbsp;&nbsp;<span style="color:var(--accent)">—</span><strong style="color:var(--text)">Disclaimer</strong><span style="color:var(--accent)">—</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span style="color:var(--accent)">—</span><strong style="color:var(--text)">Warning</strong><span style="color:var(--accent)">—</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span style="color:var(--accent)">—</span><strong style="color:var(--text)">Legal Notice</strong><span style="color:var(--accent)">—</span>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--accent)">—</span><strong style="color:var(--text)">Advertencia</strong><span style="color:var(--accent)">—</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span style="color:var(--accent)">—</span><strong style="color:var(--text)">Aviso Legal</strong><span style="color:var(--accent)">—</span>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--accent)">—</span><strong style="color:var(--text)">Isenção de responsabilidade</strong><span style="color:var(--accent)">—</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span style="color:var(--accent)">—</span><strong style="color:var(--text)">Advertência</strong><span style="color:var(--accent)">—</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span style="color:var(--accent)">—</span><strong style="color:var(--text)">Aviso legal</strong><span style="color:var(--accent)">—</span>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--accent)">—</span><strong style="color:var(--text)">Disclaimer</strong><span style="color:var(--accent)">—</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span style="color:var(--accent)">—</span><strong style="color:var(--text)">Warning</strong><span style="color:var(--accent)">—</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span style="color:var(--accent)">—</span><strong style="color:var(--text)">Legal Notice</strong><span style="color:var(--accent)">—</span>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--accent)">—</span><strong style="color:var(--text)">Advertencia</strong><span style="color:var(--accent)">—</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span style="color:var(--accent)">—</span><strong style="color:var(--text)">Aviso Legal</strong><span style="color:var(--accent)">—</span>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--accent)">—</span><strong style="color:var(--text)">Isenção de responsabilidade</strong><span style="color:var(--accent)">—</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span style="color:var(--accent)">—</span><strong style="color:var(--text)">Advertência</strong><span style="color:var(--accent)">—</span>&nbsp;&nbsp;·&nbsp;&nbsp;<span style="color:var(--accent)">—</span><strong style="color:var(--text)">Aviso legal</strong><span style="color:var(--accent)">—</span>&nbsp;&nbsp;&nbsp;
     </span>
   </div>
 </div>
-<style>
-@keyframes ticker {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-</style>
+<style>@keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }</style>
 
 <!-- DISCLAIMER -->
 <div class="disclaimer">
-  <p>
-    Datos de precios y volumen proporcionados por <strong>Massive.com</strong>. Datos fundamentales, históricos y macroeconómicos proporcionados por <strong>EODHD</strong>.
-    Análisis generado por <strong>Claude (Anthropic)</strong> usando los frameworks conceptuales documentados en este repositorio.
+  <p data-i18n="disclaimer">
+    Datos proporcionados por <strong>Massive.com</strong> y <strong>EODHD</strong>. Análisis generado por <strong>Claude (Anthropic)</strong>.
     <br><br>
-    <strong>Toda la información es proporcionada exclusivamente con fines educativos e informativos y no está destinada a fines de trading ni como asesoramiento financiero, de inversión, fiscal, legal, contable u otro tipo de asesoramiento.</strong>
-    OpenJane no predice precios futuros ni recomienda comprar o vender ningún activo.
-    Los datos tienen retraso de al menos 24 horas en el free tier. El usuario es responsable de sus propias decisiones de inversión.
+    <strong>Toda la información es proporcionada exclusivamente con fines educativos e informativos y no está destinada como asesoramiento financiero, de inversión, fiscal ni legal.</strong>
+    OpenJane no predice precios futuros ni recomienda comprar o vender ningún activo. Los datos tienen retraso de al menos 24 horas en el free tier. El usuario es responsable de sus propias decisiones de inversión.
   </p>
 </div>
 
@@ -685,8 +616,10 @@
 <footer>
   <div class="footer-brand">OpenJane · by Claude · Apache 2.0</div>
   <div class="footer-links">
+    <a href="https://openjane.onrender.com/analyze" target="_blank" data-i18n="footer.analyze">Analizar en vivo</a>
     <a href="https://github.com/ussleo/openjane" target="_blank">GitHub</a>
-    <a href="glossary.html">Glosario</a>
+    <a href="https://ussleo.github.io/openjane/" target="_blank">GitHub Pages</a>
+    <a href="glossary.html" data-i18n="footer.glossary">Glosario</a>
     <a href="https://massive.com" target="_blank">Massive.com</a>
     <a href="https://eodhd.com" target="_blank">EODHD</a>
     <a href="https://claude.ai" target="_blank">Claude.ai</a>
@@ -694,8 +627,187 @@
 </footer>
 
 <script>
-// Carga snapshot.json y renderiza los datos reales
-const TREND_LABEL = { alcista: ['▲ Alcista', 'up'], bajista: ['▼ Bajista', 'down'], transicion: ['↔ Transición', 'neutral'], insuficiente: ['— Sin datos', 'neutral'] };
+// ── i18n ────────────────────────────────────────────────────────────────────
+const T = {
+  es: {
+    'nav.demo': 'Demo', 'nav.glossary': 'Glosario', 'nav.howto': 'Cómo usar',
+    'nav.data': 'Datos', 'nav.apikeys': 'API Keys', 'nav.cta': 'Usar Jane ↗',
+    'hero.h1': 'El análisis de<br><em>Jane Street</em><br>para todos',
+    'hero.sub': 'Jane Street genera $39B anuales sin predecir el futuro. Lo hace optimizando fricción, liquidez y régimen. OpenJane traduce esa lógica al alcance de cualquier persona.',
+    'hero.cta1': '⚡ Analizar en vivo', 'hero.cta2': '🧠 Usar en Claude.ai gratis', 'hero.cta3': '🌐 GitHub Pages',
+    'ss.label': 'Jane en acción · Screenshots reales', 'ss.title': 'Datos reales. Terminal real. Sin filtros.',
+    'ss.sub': 'Los tres bloques de análisis corriendo localmente con datos de Massive.com y EODHD.',
+    'ss.cap1': 'SPY sobre MA200 (+10%), yield curve +0.47%, HV 10.4%. Score +4/+4 → <span style="color:var(--green)">ALCISTA FUERTE</span>.',
+    'ss.cap2': 'ICE $155.82, ADV 3.2M, HV 19.7%. Tendencia <span style="color:var(--red)">BAJISTA</span> — precio 4.6% bajo MA200.',
+    'ss.cap3': 'Par ICE/CBOE: Z-score 0.64 (neutral), half-life 19.6 días. OLS + Ornstein-Uhlenbeck.',
+    'ss.keyslink': 'Obtén tus API keys gratis →',
+    'dp.label': 'Datos reales · Free tier', 'dp.title': 'Selecciona un ticker arriba',
+    'dp.sub': 'Datos EOD de <strong>Massive.com</strong> y <strong>EODHD</strong> — ambos gratuitos sin tarjeta de crédito.',
+    'macro.label': 'Macro global · EODHD',
+    'feat.label': 'Capacidades', 'feat.title': 'Cuatro skills. Un agente.',
+    'feat.sub': 'Jane aplica automáticamente el análisis correcto según tu pregunta. Sin código. Sin formularios. Solo lenguaje natural.',
+    'feat.f1.title': 'Régimen de mercado', 'feat.f1.desc': 'Clasifica el estado actual del mercado (alcista, bajista, lateral, crisis) usando MA200, VIX y curva de rendimientos.',
+    'feat.f2.title': 'Microestructura', 'feat.f2.desc': 'Lee el mercado como Jane Street: spread bid-ask, ADV, señal de flujo y slippage estimado.',
+    'feat.f3.title': 'Volatilidad', 'feat.f3.desc': 'Compara volatilidad implícita vs histórica. Detecta si las opciones están caras o baratas. Skew y estructura temporal.',
+    'feat.f4.title': 'Stat-Arb', 'feat.f4.desc': 'Identifica pares cointegrados, calcula el Z-score actual y estima el half-life de reversión usando OLS + Ornstein-Uhlenbeck.',
+    'gloss.label': 'Glosario', 'gloss.title': 'Terminología que Jane usa. Explicada sin filtros.',
+    'gloss.sub': 'Cada concepto incluye definición, cómo se mide y un ejemplo real.',
+    'gloss.g1': 'La diferencia entre lo que el mercado paga y lo que cobra. Un spread de 0.5% significa que pierdes 1% solo entrando y saliendo.',
+    'gloss.g2': 'Volatilidad Implícita (lo que el mercado espera) vs Volatilidad Histórica (lo real). Cuando IV > HV, las opciones están caras.',
+    'gloss.g3': 'Cuántas desviaciones estándar está una divergencia de su media. Z > +2.0 = señal de entrada. Z = 0 = objetivo de salida.',
+    'gloss.g4': 'El "índice del miedo". Mide la volatilidad esperada 30 días. VIX < 15 = calma. VIX > 30 = estrés.',
+    'gloss.g5.term': 'Curva de rendimientos', 'gloss.g5.def': 'Diferencia entre tasa 10Y y 2Y. Positiva = economía sana. Invertida = alerta de recesión.',
+    'gloss.g6': 'Datos EOD, históricos y fundamentales son gratuitos. Tiempo real y opciones requieren plan de pago.',
+    'gloss.more': 'Ver los 35+ términos del glosario completo →',
+    'howto.label': 'Cómo usar Jane', 'howto.title': 'Tres formas. Elige la tuya.',
+    'howto.s1.title': 'Sin instalar nada — Claude.ai',
+    'howto.s1.desc': 'Abre <a href="https://claude.ai" target="_blank">claude.ai</a> (cuenta gratuita), crea un Project y empieza en lenguaje natural. Sin código, sin API keys.',
+    'howto.s2.title': 'Análisis en vivo — Web',
+    'howto.s2.desc': 'Abre <a href="https://openjane.onrender.com/analyze" target="_blank">openjane.onrender.com/analyze</a>, ingresa tus API keys y obtén análisis en tiempo real desde el navegador.',
+    'howto.s3.title': 'Deploy propio — Docker',
+    'howto.s3.desc': 'Clona el repo, usa el <code>Dockerfile</code> incluido y despliega en cualquier plataforma. Python 3.12, FastAPI + uvicorn.',
+    'src.label': 'Fuentes de datos', 'src.title': 'Qué es gratis. Qué no lo es.',
+    'src.sub': 'Sin sorpresas. Cada dato en OpenJane tiene una fuente verificable y un badge que indica si requiere pago.',
+    'src.massive.desc': 'Ex-Polygon.io. Datos de mercado USA. Sin tarjeta de crédito para el free tier.',
+    'src.massive.i1': 'Precios EOD (cierre anterior)', 'src.massive.i2': 'Históricos OHLCV (ilimitados)',
+    'src.massive.i3': 'Detalles del ticker', 'src.massive.i4': 'Precios en tiempo real', 'src.massive.i5': 'Opciones · bid/ask live',
+    'src.eodhd.desc': 'Fundamentales y datos globales. Yield curve, históricos mundiales, forex.',
+    'src.eodhd.i1': 'Históricos EOD globales', 'src.eodhd.i2': 'Volatilidad histórica (HV)',
+    'src.eodhd.i3': 'Yield curve (10Y-2Y)', 'src.eodhd.i4': 'Medias móviles MA50/MA200', 'src.eodhd.i5': 'Fundamentales completos',
+    'src.claude.desc': 'El modelo de lenguaje que da vida a Jane. Análisis, explicaciones, glosario.',
+    'src.claude.i1': 'Claude.ai (límite diario)', 'src.claude.i2': 'Claude Code CLI',
+    'src.claude.i3': 'Claude Pro (sin límite)', 'src.claude.i4': 'API para deploy propio',
+    'disclaimer': 'Datos proporcionados por <strong>Massive.com</strong> y <strong>EODHD</strong>. Análisis generado por <strong>Claude (Anthropic)</strong>.<br><br><strong>Toda la información es proporcionada exclusivamente con fines educativos e informativos y no está destinada como asesoramiento financiero, de inversión, fiscal ni legal.</strong> El usuario es responsable de sus propias decisiones de inversión.',
+    'footer.analyze': 'Analizar en vivo', 'footer.glossary': 'Glosario',
+  },
+  en: {
+    'nav.demo': 'Demo', 'nav.glossary': 'Glossary', 'nav.howto': 'How to use',
+    'nav.data': 'Data', 'nav.apikeys': 'API Keys', 'nav.cta': 'Use Jane ↗',
+    'hero.h1': 'The <em>Jane Street</em><br>analysis<br>for everyone',
+    'hero.sub': 'Jane Street earns $39B/year without predicting the future. It does it by optimizing friction, liquidity and regime. OpenJane brings that logic to anyone.',
+    'hero.cta1': '⚡ Live Analysis', 'hero.cta2': '🧠 Use on Claude.ai free', 'hero.cta3': '🌐 GitHub Pages',
+    'ss.label': 'Jane in action · Real screenshots', 'ss.title': 'Real data. Real terminal. No filters.',
+    'ss.sub': 'The three analysis blocks running locally with data from Massive.com and EODHD.',
+    'ss.cap1': 'SPY above MA200 (+10%), yield curve +0.47%, HV 10.4%. Score +4/+4 → <span style="color:var(--green)">STRONG BULLISH</span>.',
+    'ss.cap2': 'ICE $155.82, ADV 3.2M, HV 19.7%. Trend <span style="color:var(--red)">BEARISH</span> — price 4.6% below MA200.',
+    'ss.cap3': 'Pair ICE/CBOE: Z-score 0.64 (neutral), half-life 19.6 days. OLS + Ornstein-Uhlenbeck.',
+    'ss.keyslink': 'Get your free API keys →',
+    'dp.label': 'Real data · Free tier', 'dp.title': 'Select a ticker above',
+    'dp.sub': 'EOD data from <strong>Massive.com</strong> and <strong>EODHD</strong> — both free, no credit card required.',
+    'macro.label': 'Global macro · EODHD',
+    'feat.label': 'Capabilities', 'feat.title': 'Four skills. One agent.',
+    'feat.sub': 'Jane automatically applies the right analysis for your question. No code. No forms. Just natural language.',
+    'feat.f1.title': 'Market Regime', 'feat.f1.desc': 'Classifies the current market state (bullish, bearish, sideways, crisis) using MA200, VIX and the yield curve.',
+    'feat.f2.title': 'Microstructure', 'feat.f2.desc': 'Reads the market like Jane Street: bid-ask spread, ADV, flow signal and estimated slippage.',
+    'feat.f3.title': 'Volatility', 'feat.f3.desc': 'Compares implied vs historical volatility. Detects whether options are expensive or cheap. Skew and term structure.',
+    'feat.f4.title': 'Stat-Arb', 'feat.f4.desc': 'Identifies cointegrated pairs, computes the current Z-score and estimates mean-reversion half-life using OLS + Ornstein-Uhlenbeck.',
+    'gloss.label': 'Glossary', 'gloss.title': 'The terms Jane uses. Explained plainly.',
+    'gloss.sub': 'Each concept includes a definition, how it is measured, and a real example.',
+    'gloss.g1': 'The difference between what the market pays and charges. A 0.5% spread means you lose 1% just entering and exiting.',
+    'gloss.g2': 'Implied Volatility (market expectation) vs Historical Volatility (actual moves). When IV > HV, options are expensive.',
+    'gloss.g3': 'How many standard deviations a divergence is from its mean. Z > +2.0 = entry signal. Z = 0 = exit target.',
+    'gloss.g4': 'The "fear index". Measures expected 30-day volatility. VIX < 15 = calm. VIX > 30 = stress.',
+    'gloss.g5.term': 'Yield Curve', 'gloss.g5.def': 'Difference between 10Y and 2Y rates. Positive = healthy economy. Inverted = recession warning.',
+    'gloss.g6': 'EOD, historical and fundamental data are free. Real-time, options and full order book require a paid plan.',
+    'gloss.more': 'See all 35+ terms in the full glossary →',
+    'howto.label': 'How to use Jane', 'howto.title': 'Three ways. Pick yours.',
+    'howto.s1.title': 'No install — Claude.ai',
+    'howto.s1.desc': 'Open <a href="https://claude.ai" target="_blank">claude.ai</a> (free account), create a Project with the agent instructions and start in natural language. No code, no API keys.',
+    'howto.s2.title': 'Live analysis — Web',
+    'howto.s2.desc': 'Open <a href="https://openjane.onrender.com/analyze" target="_blank">openjane.onrender.com/analyze</a>, enter your Massive and EODHD API keys (both free) and get live analysis in the browser.',
+    'howto.s3.title': 'Self-host — Docker',
+    'howto.s3.desc': 'Clone the repo, use the included <code>Dockerfile</code> and deploy anywhere. Python 3.12, FastAPI + uvicorn.',
+    'src.label': 'Data sources', 'src.title': "What's free. What's not.",
+    'src.sub': 'No surprises. Every data point in OpenJane has a verifiable source and a badge indicating whether it requires payment.',
+    'src.massive.desc': 'Ex-Polygon.io. US market data. No credit card for the free tier.',
+    'src.massive.i1': 'EOD prices (previous close)', 'src.massive.i2': 'Historical OHLCV (unlimited)',
+    'src.massive.i3': 'Ticker details', 'src.massive.i4': 'Real-time prices', 'src.massive.i5': 'Options · live bid/ask',
+    'src.eodhd.desc': 'Fundamentals and global data. Yield curve, global historical, forex.',
+    'src.eodhd.i1': 'Global EOD historical data', 'src.eodhd.i2': 'Historical volatility (HV)',
+    'src.eodhd.i3': 'Yield curve (10Y-2Y)', 'src.eodhd.i4': 'Moving averages MA50/MA200', 'src.eodhd.i5': 'Full fundamentals',
+    'src.claude.desc': 'The language model that powers Jane. Analysis, explanations, glossary.',
+    'src.claude.i1': 'Claude.ai (daily limit)', 'src.claude.i2': 'Claude Code CLI',
+    'src.claude.i3': 'Claude Pro (unlimited)', 'src.claude.i4': 'API for self-hosting',
+    'disclaimer': 'Data provided by <strong>Massive.com</strong> and <strong>EODHD</strong>. Analysis generated by <strong>Claude (Anthropic)</strong>.<br><br><strong>All information is provided for educational and informational purposes only and is not intended as financial, investment, tax or legal advice.</strong> The user is solely responsible for their own investment decisions.',
+    'footer.analyze': 'Live Analysis', 'footer.glossary': 'Glossary',
+  },
+  pt: {
+    'nav.demo': 'Demo', 'nav.glossary': 'Glossário', 'nav.howto': 'Como usar',
+    'nav.data': 'Dados', 'nav.apikeys': 'API Keys', 'nav.cta': 'Usar Jane ↗',
+    'hero.h1': 'A análise da<br><em>Jane Street</em><br>para todos',
+    'hero.sub': 'A Jane Street gera $39B anuais sem prever o futuro. Ela faz isso otimizando fricção, liquidez e regime. O OpenJane traduz essa lógica para qualquer pessoa.',
+    'hero.cta1': '⚡ Análise ao vivo', 'hero.cta2': '🧠 Usar no Claude.ai grátis', 'hero.cta3': '🌐 GitHub Pages',
+    'ss.label': 'Jane em ação · Screenshots reais', 'ss.title': 'Dados reais. Terminal real. Sem filtros.',
+    'ss.sub': 'Os três blocos de análise rodando localmente com dados de Massive.com e EODHD.',
+    'ss.cap1': 'SPY acima da MA200 (+10%), yield curve +0.47%, HV 10.4%. Score +4/+4 → <span style="color:var(--green)">ALTISTA FORTE</span>.',
+    'ss.cap2': 'ICE $155.82, ADV 3.2M, HV 19.7%. Tendência <span style="color:var(--red)">BAIXISTA</span> — preço 4.6% abaixo da MA200.',
+    'ss.cap3': 'Par ICE/CBOE: Z-score 0.64 (neutro), half-life 19.6 dias. OLS + Ornstein-Uhlenbeck.',
+    'ss.keyslink': 'Obtenha suas API keys gratuitas →',
+    'dp.label': 'Dados reais · Free tier', 'dp.title': 'Selecione um ticker acima',
+    'dp.sub': 'Dados EOD de <strong>Massive.com</strong> e <strong>EODHD</strong> — ambos gratuitos, sem cartão de crédito.',
+    'macro.label': 'Macro global · EODHD',
+    'feat.label': 'Capacidades', 'feat.title': 'Quatro skills. Um agente.',
+    'feat.sub': 'A Jane aplica automaticamente a análise correta para sua pergunta. Sem código. Sem formulários. Só linguagem natural.',
+    'feat.f1.title': 'Regime de mercado', 'feat.f1.desc': 'Classifica o estado atual do mercado (altista, baixista, lateral, crise) usando MA200, VIX e curva de juros.',
+    'feat.f2.title': 'Microestrutura', 'feat.f2.desc': 'Lê o mercado como a Jane Street: spread bid-ask, ADV, sinal de fluxo e slippage estimado.',
+    'feat.f3.title': 'Volatilidade', 'feat.f3.desc': 'Compara volatilidade implícita vs histórica. Detecta se as opções estão caras ou baratas. Skew e estrutura a termo.',
+    'feat.f4.title': 'Stat-Arb', 'feat.f4.desc': 'Identifica pares cointegrados, calcula o Z-score atual e estima o half-life de reversão usando OLS + Ornstein-Uhlenbeck.',
+    'gloss.label': 'Glossário', 'gloss.title': 'Terminologia que a Jane usa. Explicada sem filtros.',
+    'gloss.sub': 'Cada conceito inclui definição, como é medido e um exemplo real.',
+    'gloss.g1': 'A diferença entre o que o mercado paga e o que cobra. Um spread de 0.5% significa que você perde 1% só entrando e saindo.',
+    'gloss.g2': 'Volatilidade Implícita (expectativa do mercado) vs Volatilidade Histórica (o real). Quando IV > HV, as opções estão caras.',
+    'gloss.g3': 'Quantos desvios padrão uma divergência está de sua média. Z > +2.0 = sinal de entrada. Z = 0 = objetivo de saída.',
+    'gloss.g4': 'O "índice do medo". Mede a volatilidade esperada em 30 dias. VIX < 15 = calma. VIX > 30 = estresse.',
+    'gloss.g5.term': 'Curva de juros', 'gloss.g5.def': 'Diferença entre a taxa 10Y e 2Y. Positiva = economia saudável. Invertida = alerta de recessão.',
+    'gloss.g6': 'Dados EOD, históricos e fundamentais são gratuitos. Tempo real e opções requerem plano pago.',
+    'gloss.more': 'Ver todos os 35+ termos do glossário completo →',
+    'howto.label': 'Como usar a Jane', 'howto.title': 'Três formas. Escolha a sua.',
+    'howto.s1.title': 'Sem instalar nada — Claude.ai',
+    'howto.s1.desc': 'Abra <a href="https://claude.ai" target="_blank">claude.ai</a> (conta gratuita), crie um Project com as instruções do agente e comece em linguagem natural. Sem código, sem API keys.',
+    'howto.s2.title': 'Análise ao vivo — Web',
+    'howto.s2.desc': 'Abra <a href="https://openjane.onrender.com/analyze" target="_blank">openjane.onrender.com/analyze</a>, insira suas API keys de Massive e EODHD (ambas gratuitas) e obtenha análise em tempo real no navegador.',
+    'howto.s3.title': 'Deploy próprio — Docker',
+    'howto.s3.desc': 'Clone o repo, use o <code>Dockerfile</code> incluído e faça deploy em qualquer plataforma. Python 3.12, FastAPI + uvicorn.',
+    'src.label': 'Fontes de dados', 'src.title': 'O que é gratuito. O que não é.',
+    'src.sub': 'Sem surpresas. Cada dado no OpenJane tem uma fonte verificável e um badge indicando se requer pagamento.',
+    'src.massive.desc': 'Ex-Polygon.io. Dados de mercado dos EUA. Sem cartão de crédito para o free tier.',
+    'src.massive.i1': 'Preços EOD (fechamento anterior)', 'src.massive.i2': 'Histórico OHLCV (ilimitado)',
+    'src.massive.i3': 'Detalhes do ticker', 'src.massive.i4': 'Preços em tempo real', 'src.massive.i5': 'Opções · bid/ask ao vivo',
+    'src.eodhd.desc': 'Fundamentais e dados globais. Curva de juros, histórico mundial, forex.',
+    'src.eodhd.i1': 'Histórico EOD global', 'src.eodhd.i2': 'Volatilidade histórica (HV)',
+    'src.eodhd.i3': 'Curva de juros (10Y-2Y)', 'src.eodhd.i4': 'Médias móveis MA50/MA200', 'src.eodhd.i5': 'Fundamentais completos',
+    'src.claude.desc': 'O modelo de linguagem que dá vida à Jane. Análise, explicações, glossário.',
+    'src.claude.i1': 'Claude.ai (limite diário)', 'src.claude.i2': 'Claude Code CLI',
+    'src.claude.i3': 'Claude Pro (sem limite)', 'src.claude.i4': 'API para deploy próprio',
+    'disclaimer': 'Dados fornecidos por <strong>Massive.com</strong> e <strong>EODHD</strong>. Análise gerada por <strong>Claude (Anthropic)</strong>.<br><br><strong>Todas as informações são fornecidas exclusivamente para fins educacionais e informativos e não se destinam a aconselhamento financeiro, de investimento, fiscal ou legal.</strong> O usuário é o único responsável por suas próprias decisões de investimento.',
+    'footer.analyze': 'Análise ao vivo', 'footer.glossary': 'Glossário',
+  }
+};
+
+let currentLang = 'es';
+
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.textContent === lang.toUpperCase()));
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const val = T[lang][key];
+    if (val !== undefined) el.innerHTML = val;
+  });
+  document.documentElement.lang = lang;
+}
+
+// ── snapshot data ───────────────────────────────────────────────────────────
+const TREND_LABEL = {
+  alcista:    { es: ['▲ Alcista','up'],     en: ['▲ Bullish','up'],  pt: ['▲ Altista','up'] },
+  bajista:    { es: ['▼ Bajista','down'],   en: ['▼ Bearish','down'], pt: ['▼ Baixista','down'] },
+  transicion: { es: ['↔ Transición','neutral'], en: ['↔ Transition','neutral'], pt: ['↔ Transição','neutral'] },
+  insuficiente:{ es: ['— Sin datos','neutral'], en: ['— No data','neutral'], pt: ['— Sem dados','neutral'] },
+};
+
+function trendLabel(trend) {
+  return (TREND_LABEL[trend] || TREND_LABEL.insuficiente)[currentLang] || ['—','neutral'];
+}
 
 async function loadSnapshot() {
   try {
@@ -703,10 +815,9 @@ async function loadSnapshot() {
     const data = await res.json();
     renderStrip(data.tickers);
     renderMacro(data.macro);
-    // Auto-seleccionar SPY
     if (data.tickers.SPY) renderDetail('SPY', data.tickers.SPY);
   } catch(e) {
-    document.getElementById('tickerStrip').innerHTML = '<span style="color:var(--muted);font-size:0.8rem;font-family:monospace">Ejecuta scripts/generate_snapshot.py para cargar datos reales</span>';
+    document.getElementById('tickerStrip').innerHTML = '<span style="color:var(--muted);font-size:0.8rem;font-family:monospace">No snapshot data — run scripts/generate_snapshot.py</span>';
   }
 }
 
@@ -716,7 +827,7 @@ function renderStrip(tickers) {
   for (const [sym, d] of Object.entries(tickers)) {
     const trend = d.trend || {};
     const pc = d.prev_close || {};
-    const [label, cls] = TREND_LABEL[trend.trend] || ['—', 'neutral'];
+    const [label, cls] = trendLabel(trend.trend);
     const price = pc.close ? `$${pc.close.toFixed(2)}` : (trend.last_close ? `$${trend.last_close.toFixed(2)}` : '—');
     const pill = document.createElement('div');
     pill.className = 'ticker-pill';
@@ -737,50 +848,47 @@ function renderDetail(sym, d) {
   const pc = d.prev_close || {};
   const hv = d.hv || {};
   const vol = d.volume || {};
-
-  const [tLabel, tCls] = TREND_LABEL[trend.trend] || ['—','neutral'];
+  const [tLabel, tCls] = trendLabel(trend.trend);
   const price = pc.close || trend.last_close;
 
+  const L = {
+    es: ['Precio cierre','MA 50 días','MA 200 días','Tendencia','Vol. histórica 20d','Vol. diaria (HV)','ADV 20d','Señal de flujo','IV ATM','Skew opciones','Media móvil 50d','Media móvil 200d','Precio vs MA200','Anualizada','Movimiento diario promedio','Volumen diario promedio','Volumen vs ADV','Requiere plan de pago'],
+    en: ['Close price','MA 50 days','MA 200 days','Trend','Historical vol. 20d','Daily vol. (HV)','ADV 20d','Flow signal','IV ATM','Options skew','50-day moving avg.','200-day moving avg.','Price vs MA200','Annualized','Avg. daily move','Avg. daily volume','Volume vs ADV','Requires paid plan'],
+    pt: ['Preço fechamento','MA 50 dias','MA 200 dias','Tendência','Vol. histórica 20d','Vol. diária (HV)','ADV 20d','Sinal de fluxo','IV ATM','Skew opções','Média móvel 50d','Média móvel 200d','Preço vs MA200','Anualizada','Movimento diário médio','Volume diário médio','Volume vs ADV','Requer plano pago'],
+  }[currentLang];
+
   const cards = [
-    { label: 'Precio cierre', tag: 'free', source: 'Massive', value: price ? `$${price.toFixed(2)}` : '—', sub: pc.date || '—' },
-    { label: 'MA 50 días', tag: 'free', source: 'EODHD', value: trend.ma50 ? `$${trend.ma50.toFixed(2)}` : '—', sub: 'Media móvil 50d' },
-    { label: 'MA 200 días', tag: 'free', source: 'EODHD', value: trend.ma200 ? `$${trend.ma200.toFixed(2)}` : '—', sub: 'Media móvil 200d' },
-    { label: 'Tendencia', tag: 'free', source: 'EODHD', value: `<span class="${tCls}">${tLabel}</span>`, sub: 'Precio vs MA200' },
-    { label: 'Vol. histórica 20d', tag: 'free', source: 'EODHD', value: hv.hv_annual_pct ? `${hv.hv_annual_pct}%` : '—', sub: 'Anualizada' },
-    { label: 'Vol. diaria (HV)', tag: 'free', source: 'EODHD', value: hv.hv_daily_pct ? `${hv.hv_daily_pct}%` : '—', sub: 'Movimiento diario promedio' },
-    { label: 'ADV 20d', tag: 'free', source: 'Massive', value: vol.adv ? vol.adv.toLocaleString() : '—', sub: 'Volumen diario promedio' },
-    { label: 'Señal de flujo', tag: 'free', source: 'Massive', value: vol.flow_signal || '—', sub: 'Volumen vs ADV' },
-    { label: 'IV ATM', tag: 'paid', source: 'Massive Pro', value: '—', sub: 'Requiere plan de pago' },
-    { label: 'Skew opciones', tag: 'paid', source: 'Massive Pro', value: '—', sub: 'Requiere plan de pago' },
+    { label: L[0], tag:'free', src:'Massive', value: price ? `$${price.toFixed(2)}` : '—', sub: pc.date||'—' },
+    { label: L[1], tag:'free', src:'EODHD', value: trend.ma50 ? `$${trend.ma50.toFixed(2)}`:'—', sub: L[10] },
+    { label: L[2], tag:'free', src:'EODHD', value: trend.ma200 ? `$${trend.ma200.toFixed(2)}`:'—', sub: L[11] },
+    { label: L[3], tag:'free', src:'EODHD', value: `<span class="${tCls}">${tLabel}</span>`, sub: L[12] },
+    { label: L[4], tag:'free', src:'EODHD', value: hv.hv_annual_pct ? `${hv.hv_annual_pct}%`:'—', sub: L[13] },
+    { label: L[5], tag:'free', src:'EODHD', value: hv.hv_daily_pct ? `${hv.hv_daily_pct}%`:'—', sub: L[14] },
+    { label: L[6], tag:'free', src:'Massive', value: vol.adv ? vol.adv.toLocaleString():'—', sub: L[15] },
+    { label: L[7], tag:'free', src:'Massive', value: vol.flow_signal||'—', sub: L[16] },
+    { label: L[8], tag:'paid', src:'Massive Pro', value:'—', sub: L[17] },
+    { label: L[9], tag:'paid', src:'Massive Pro', value:'—', sub: L[17] },
   ];
 
   document.getElementById('dGrid').innerHTML = cards.map(c => `
     <div class="detail-card">
-      <div class="dc-label">
-        ${c.label}
-        <span class="data-tag ${c.tag === 'free' ? 'tag-free' : 'tag-paid'}">${c.tag}</span>
-        <span style="color:var(--muted);font-size:0.65rem">${c.source}</span>
-      </div>
+      <div class="dc-label">${c.label} <span class="data-tag ${c.tag==='free'?'tag-free':'tag-paid'}">${c.tag}</span> <span style="color:var(--muted);font-size:0.65rem">${c.src}</span></div>
       <div class="dc-value">${c.value}</div>
       <div class="dc-sub">${c.sub}</div>
-    </div>
-  `).join('');
+    </div>`).join('');
 
-  // Regime banner
   const regimeEl = document.getElementById('dRegime');
   if (trend.trend) {
     const isAlcista = trend.trend === 'alcista';
-    regimeEl.innerHTML = `
-      <div class="regime-banner ${isAlcista ? '' : 'warn'}" style="margin:0;border-radius:0;">
-        <div class="regime-badge">${tLabel} · MA200 ${trend.ma200 ? '$'+trend.ma200.toFixed(2) : '—'}</div>
-        <div class="regime-text">
-          ${isAlcista
-            ? `Precio ($${price?.toFixed(2)}) sobre MA200 y MA50. Régimen favorable para estrategias de momentum y stat-arb largo.`
-            : `Precio ($${price?.toFixed(2)}) bajo MA200 ($${trend.ma200?.toFixed(2)}). Cautela — régimen bajista o transición. Evaluar antes de nuevas posiciones largas.`
-          }
-          <span style="margin-left:0.5rem;font-size:0.75rem;color:var(--muted)">Datos: EODHD · ${d.trend?.data_points || '?'} días de histórico</span>
-        </div>
-      </div>`;
+    const txt = {
+      es: isAlcista ? `Precio ($${price?.toFixed(2)}) sobre MA200 y MA50. Régimen favorable.` : `Precio ($${price?.toFixed(2)}) bajo MA200 ($${trend.ma200?.toFixed(2)}). Cautela.`,
+      en: isAlcista ? `Price ($${price?.toFixed(2)}) above MA200 and MA50. Favorable regime.` : `Price ($${price?.toFixed(2)}) below MA200 ($${trend.ma200?.toFixed(2)}). Caution.`,
+      pt: isAlcista ? `Preço ($${price?.toFixed(2)}) acima da MA200 e MA50. Regime favorável.` : `Preço ($${price?.toFixed(2)}) abaixo da MA200 ($${trend.ma200?.toFixed(2)}). Cautela.`,
+    }[currentLang];
+    regimeEl.innerHTML = `<div class="regime-banner ${isAlcista?'':'warn'}" style="margin:0;border-radius:0;">
+      <div class="regime-badge">${tLabel} · MA200 ${trend.ma200?'$'+trend.ma200.toFixed(2):'—'}</div>
+      <div class="regime-text">${txt} <span style="margin-left:0.5rem;font-size:0.75rem;color:var(--muted)">EODHD · ${d.trend?.data_points||'?'} days</span></div>
+    </div>`;
   } else { regimeEl.innerHTML = ''; }
 }
 
@@ -788,28 +896,16 @@ function renderMacro(macro) {
   if (!macro?.yield_curve) return;
   const yc = macro.yield_curve;
   const isOk = yc.spread_10y_2y > 0;
+  const L = {
+    es: ['Bono gobierno EEUU 10 años','Bono gobierno EEUU 2 años','Curva positiva','Curva invertida','Indicador de ciclo económico'],
+    en: ['US Government 10-year bond','US Government 2-year bond','Positive curve','Inverted curve','Economic cycle indicator'],
+    pt: ['Título do governo EUA 10 anos','Título do governo EUA 2 anos','Curva positiva','Curva invertida','Indicador de ciclo econômico'],
+  }[currentLang];
   document.getElementById('macroGrid').innerHTML = `
-    <div class="detail-card">
-      <div class="dc-label">Treasury 10Y <span class="data-tag tag-free">free</span> <span style="color:var(--muted);font-size:0.65rem">EODHD</span></div>
-      <div class="dc-value">${yc.us10y}%</div>
-      <div class="dc-sub">Bono gobierno EEUU 10 años</div>
-    </div>
-    <div class="detail-card">
-      <div class="dc-label">Treasury 2Y <span class="data-tag tag-free">free</span> <span style="color:var(--muted);font-size:0.65rem">EODHD</span></div>
-      <div class="dc-value">${yc.us2y}%</div>
-      <div class="dc-sub">Bono gobierno EEUU 2 años</div>
-    </div>
-    <div class="detail-card">
-      <div class="dc-label">Spread 10Y-2Y <span class="data-tag tag-free">free</span> <span style="color:var(--muted);font-size:0.65rem">EODHD</span></div>
-      <div class="dc-value ${isOk ? 'up' : 'down'}">${yc.spread_10y_2y > 0 ? '+' : ''}${yc.spread_10y_2y}%</div>
-      <div class="dc-sub">${isOk ? 'Curva positiva' : 'Curva invertida'}</div>
-    </div>
-    <div class="detail-card" style="grid-column: span 1;">
-      <div class="dc-label">Régimen macro</div>
-      <div class="dc-value" style="font-size:0.95rem;line-height:1.4">${yc.yield_curve_label}</div>
-      <div class="dc-sub">Indicador de ciclo económico</div>
-    </div>
-  `;
+    <div class="detail-card"><div class="dc-label">Treasury 10Y <span class="data-tag tag-free">free</span> <span style="color:var(--muted);font-size:0.65rem">EODHD</span></div><div class="dc-value">${yc.us10y}%</div><div class="dc-sub">${L[0]}</div></div>
+    <div class="detail-card"><div class="dc-label">Treasury 2Y <span class="data-tag tag-free">free</span> <span style="color:var(--muted);font-size:0.65rem">EODHD</span></div><div class="dc-value">${yc.us2y}%</div><div class="dc-sub">${L[1]}</div></div>
+    <div class="detail-card"><div class="dc-label">Spread 10Y-2Y <span class="data-tag tag-free">free</span> <span style="color:var(--muted);font-size:0.65rem">EODHD</span></div><div class="dc-value ${isOk?'up':'down'}">${yc.spread_10y_2y>0?'+':''}${yc.spread_10y_2y}%</div><div class="dc-sub">${isOk?L[2]:L[3]}</div></div>
+    <div class="detail-card"><div class="dc-label">${currentLang==='pt'?'Regime macro':'Regime macro'}</div><div class="dc-value" style="font-size:0.95rem;line-height:1.4">${yc.yield_curve_label}</div><div class="dc-sub">${L[4]}</div></div>`;
 }
 
 loadSnapshot();
