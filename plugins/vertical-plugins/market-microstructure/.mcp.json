@@ -1,0 +1,21 @@
+{
+  "mcpServers": {
+    "massive": {
+      "comment": "Datos de mercado USA en tiempo real — acciones, opciones, forex, crypto",
+      "comment2": "API key gratuita en https://massive.com — sin tarjeta de crédito",
+      "url": "https://api.massive.com/mcp",
+      "env": {
+        "MASSIVE_API_KEY": "${MASSIVE_API_KEY}"
+      }
+    },
+    "eodhd": {
+      "comment": "Datos fundamentales, históricos globales, forex — 20 llamadas/día gratis",
+      "comment3": "API key gratuita en https://eodhd.com — sin tarjeta de crédito",
+      "url": "https://eodhd.com/mcp",
+      "env": {
+        "EODHD_API_KEY": "${EODHD_API_KEY}"
+      }
+    }
+  },
+  "note": "Configura tus API keys como variables de entorno o reemplaza directamente. Ambas son gratuitas."
+}
